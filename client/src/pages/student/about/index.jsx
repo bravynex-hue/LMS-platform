@@ -26,9 +26,8 @@ function AboutPage() {
             {/* <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               About BravyNex Engineering
             </h1> */}
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
-              Empowering learners with industry-relevant skills through expert-led courses, 
-              hands-on projects, and personalized support. Your success is our mission.
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4 text-center">
+              Empowering learners with industry-relevant skills through expert-led courses, hands-on projects, and personalized support. Your success is our mission.
             </p>
           </div>
 
@@ -82,27 +81,34 @@ function AboutPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Logos Section */}
-            <div className="flex flex-row items-center gap-4 sm:gap-6 lg:gap-8 lg:flex-shrink-0">
+            <div className="flex flex-row flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-8 lg:flex-shrink-0">
               <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/msme.png" 
                   alt="MSME Logo" 
-                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-contain"
+                  className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
                 />
               </div>
               <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/nsdc.png" 
                   alt="NSDC Logo" 
-                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-contain"
+                  className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
+                />
+              </div>
+              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+                <img 
+                  src="/images/vtu.png" 
+                  alt="VTU Logo" 
+                  className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
                 />
               </div>
             </div>
             
             {/* Text Content */}
             <div className="flex-1 text-left pl-0 lg:pl-8">
-              <p className="text-base text-gray-900 leading-relaxed mb-4">
-                Registered under <span className="font-bold">MICRO, SMALL AND MEDIUM ENTERPRISES (MSME) and National Skill Development Corporation (NSDC)</span>,we design impactful courses that blend industry expertise with innovation to empower learners. Our content remains relevant and insightful, helping individuals achieve their goals, make meaningful progress in their careers, and contribute to a skilled workforce. Additionally, we provide internship opportunities that offer hands-on experience, bridging the gap between theory and practice to prepare learners for real-world challenges.
+              <p className="text-base text-gray-900 leading-relaxed text-justify">
+                Registered under <span className="font-bold">MICRO, SMALL AND MEDIUM ENTERPRISES (MSME) and National Skill Development Corporation (NSDC)</span>, and affiliated with <span className="font-bold">Visvesvaraya Technological University (VTU)</span>, we design impactful courses that blend industry expertise with innovation to empower learners. Our content remains relevant and insightful, helping individuals achieve their goals, make meaningful progress in their careers, and contribute to a skilled workforce. Additionally, we provide internship opportunities that offer hands-on experience, bridging the gap between theory and practice to prepare learners for real-world challenges.
               </p>
             </div>
           </div>
@@ -115,7 +121,7 @@ function AboutPage() {
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Text Content */}
             <div className="flex-1 text-white pr-0 lg:pr-8">
-              <p className="text-base leading-relaxed">
+              <p className="text-base leading-relaxed text-justify">
                 Our trainers are industry experts with <span className="font-bold">over 15 years of practical experience</span> and a passion for teaching. They bring in-depth knowledge, real-world insights, and engaging teaching methods to every course. Dedicated to your success, they provide guidance, support, and inspiration, ensuring a fulfilling and effective learning experience for all our students.
               </p>
             </div>
@@ -151,7 +157,7 @@ function AboutPage() {
             
             {/* Text Content */}
             <div className="flex-1 pl-0 lg:pl-8">
-              <p className="text-base text-gray-900 leading-relaxed">
+              <p className="text-base text-gray-900 leading-relaxed text-justify">
                 Our students love the flexibility, expert-led courses, and practical knowledge they gain. They appreciate the interactive learning experience and the personalized support they receive. Many have shared how our courses helped them achieve their goals, boost their careers, or explore new passions. Their success stories inspire us to keep delivering excellence! With pride, <span className="font-bold">we can say that we have successfully trained over 500 students</span>, empowering them to make meaningful progress in their journeys.
               </p>
             </div>
@@ -165,7 +171,7 @@ function AboutPage() {
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Text Content */}
             <div className="flex-1 text-white pr-0 lg:pr-8">
-              <p className="text-base leading-relaxed">
+              <p className="text-base leading-relaxed text-justify">
                 We offer a variety of services to support growth and success. Our Product Development brings innovative ideas to life, while Soft Skill Training enhances communication and leadership abilities. With IT Training, we ensure you're equipped with the latest tech knowledge. Our focus on Innovation and Entrepreneurship empowers creative ventures, and <span className="font-bold">our Consultancy provides expert advice to help you achieve your goals</span>.
               </p>
             </div>
