@@ -82,19 +82,19 @@ function AboutPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Logos Section */}
-            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 lg:flex-shrink-0">
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <div className="flex flex-row items-center gap-4 sm:gap-6 lg:gap-8 lg:flex-shrink-0">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/msme.png" 
                   alt="MSME Logo" 
-                  className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-contain"
                 />
               </div>
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/nsdc.png" 
                   alt="NSDC Logo" 
-                  className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-contain"
                 />
               </div>
             </div>
@@ -124,7 +124,7 @@ function AboutPage() {
             <div className="lg:flex-shrink-0">
               <div className="w-full max-w-[280px] lg:max-w-[320px]">
                 <img 
-                  src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop" 
+                  src="/images/pic4.webp" 
                   alt="Expert Trainer" 
                   className="w-full h-auto rounded-lg"
                 />
@@ -142,7 +142,7 @@ function AboutPage() {
             <div className="lg:flex-shrink-0">
               <div className="w-full max-w-[280px] lg:max-w-[320px]">
                 <img 
-                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=300&fit=crop" 
+                  src="/images/pic2.webp" 
                   alt="Successful Students" 
                   className="w-full h-auto rounded-lg"
                 />
@@ -174,7 +174,7 @@ function AboutPage() {
             <div className="lg:flex-shrink-0">
               <div className="w-full max-w-[280px] lg:max-w-[320px]">
                 <img 
-                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop" 
+                  src="/images/pic5.webp" 
                   alt="Team Collaboration" 
                   className="w-full h-auto rounded-lg"
                 />
@@ -253,22 +253,22 @@ function AboutPage() {
       </section>
 
       {/* Services Section */}
-      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-white">
+      <section className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Our Services</h2>
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
+          <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">Our Services</h2>
+            <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto leading-relaxed px-2 sm:px-4">
               Comprehensive services to support your growth and success in technology and beyond.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Code className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Product Development</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Product Development</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Bring innovative ideas to life with comprehensive development services.
                 </p>
@@ -276,11 +276,11 @@ function AboutPage() {
             </Card>
 
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Soft Skill Training</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Soft Skill Training</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Enhance communication and leadership abilities for professional growth.
                 </p>
@@ -288,11 +288,11 @@ function AboutPage() {
             </Card>
 
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Database className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Database className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">IT Training</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">IT Training</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Stay equipped with the latest technology knowledge and skills.
                 </p>
@@ -300,11 +300,11 @@ function AboutPage() {
             </Card>
 
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Lightbulb className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Innovation & Entrepreneurship</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Innovation & Entrepreneurship</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Foster creative thinking and business development skills.
                 </p>
@@ -312,11 +312,11 @@ function AboutPage() {
             </Card>
 
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Consultancy</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Consultancy</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Expert advice and guidance tailored to your specific needs.
                 </p>
@@ -324,11 +324,11 @@ function AboutPage() {
             </Card>
 
             <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <GraduationCap className="w-6 h-6 text-gray-700" />
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Internship Opportunities</h3>
+                <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Internship Opportunities</h3>
                 <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   Hands-on experience that bridges theory and practice.
                 </p>
