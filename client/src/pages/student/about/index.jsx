@@ -89,13 +89,13 @@ function AboutPage() {
                   className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
                 />
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+              {/* <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/nsdc.png" 
                   alt="NSDC Logo" 
                   className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain"
                 />
-              </div>
+              </div> */}
               <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
                 <img 
                   src="/images/vtu.png" 
