@@ -77,14 +77,120 @@ function AboutPage() {
         </div>
       </section>
 
+      {/* Certification Section */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Logos Section */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 lg:flex-shrink-0">
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <img 
+                  src="/images/msme.png" 
+                  alt="MSME Logo" 
+                  className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                />
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <img 
+                  src="/images/nsdc.png" 
+                  alt="NSDC Logo" 
+                  className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                />
+              </div>
+            </div>
+            
+            {/* Text Content */}
+            <div className="flex-1 text-left pl-0 lg:pl-8">
+              <p className="text-base text-gray-900 leading-relaxed mb-4">
+                Registered under <span className="font-bold">MICRO, SMALL AND MEDIUM ENTERPRISES (MSME) and National Skill Development Corporation (NSDC)</span>,we design impactful courses that blend industry expertise with innovation to empower learners. Our content remains relevant and insightful, helping individuals achieve their goals, make meaningful progress in their careers, and contribute to a skilled workforce. Additionally, we provide internship opportunities that offer hands-on experience, bridging the gap between theory and practice to prepare learners for real-world challenges.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Expert Trainers Section - Black Background */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Text Content */}
+            <div className="flex-1 text-white pr-0 lg:pr-8">
+              <p className="text-base leading-relaxed">
+                Our trainers are industry experts with <span className="font-bold">over 15 years of practical experience</span> and a passion for teaching. They bring in-depth knowledge, real-world insights, and engaging teaching methods to every course. Dedicated to your success, they provide guidance, support, and inspiration, ensuring a fulfilling and effective learning experience for all our students.
+              </p>
+            </div>
+            
+            {/* Image */}
+            <div className="lg:flex-shrink-0">
+              <div className="w-full max-w-[280px] lg:max-w-[320px]">
+                <img 
+                  src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop" 
+                  alt="Expert Trainer" 
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Student Success Stories Section - White Background */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white border-t border-gray-200">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Image */}
+            <div className="lg:flex-shrink-0">
+              <div className="w-full max-w-[280px] lg:max-w-[320px]">
+                <img 
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=300&fit=crop" 
+                  alt="Successful Students" 
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
+            </div>
+            
+            {/* Text Content */}
+            <div className="flex-1 pl-0 lg:pl-8">
+              <p className="text-base text-gray-900 leading-relaxed">
+                Our students love the flexibility, expert-led courses, and practical knowledge they gain. They appreciate the interactive learning experience and the personalized support they receive. Many have shared how our courses helped them achieve their goals, boost their careers, or explore new passions. Their success stories inspire us to keep delivering excellence! With pride, <span className="font-bold">we can say that we have successfully trained over 500 students</span>, empowering them to make meaningful progress in their journeys.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Overview Section - Black Background */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Text Content */}
+            <div className="flex-1 text-white pr-0 lg:pr-8">
+              <p className="text-base leading-relaxed">
+                We offer a variety of services to support growth and success. Our Product Development brings innovative ideas to life, while Soft Skill Training enhances communication and leadership abilities. With IT Training, we ensure you're equipped with the latest tech knowledge. Our focus on Innovation and Entrepreneurship empowers creative ventures, and <span className="font-bold">our Consultancy provides expert advice to help you achieve your goals</span>.
+              </p>
+            </div>
+            
+            {/* Image */}
+            <div className="lg:flex-shrink-0">
+              <div className="w-full max-w-[280px] lg:max-w-[320px]">
+                <img 
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop" 
+                  alt="Team Collaboration" 
+                  className="w-full h-auto rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Mission Section */}
       <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Our Mission</h2>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed px-4">
-              Registered under MSME and NSDC, we design impactful courses that blend industry expertise 
-              with innovation to empower learners.
+              Delivering excellence through expert-led training and comprehensive support for your success.
             </p>
           </div>
           
