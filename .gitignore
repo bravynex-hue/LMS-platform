@@ -1,0 +1,16 @@
+
+/client/node_modules
+/server/node_modules
+
+# Environment variables
+.env
+server/.env
+client/.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
