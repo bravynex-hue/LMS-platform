@@ -36,7 +36,7 @@ const publicRoutes = require("./routes/public-routes");
 const app = express();
 app.set("trust proxy", 1);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
