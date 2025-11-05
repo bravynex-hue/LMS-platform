@@ -6,7 +6,7 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 // Resend requires onboarding@resend.dev for testing or your verified domain
 const FROM_EMAIL = process.env.FROM_EMAIL || "no-reply@bravynex.in";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "bravynex@gmail.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "mohammedsahal1243@gmail.com";
 
 /**
  * Send contact form email using Resend API
