@@ -4,8 +4,8 @@ const fetch = require("node-fetch");
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "re_P5R9xtaR_PunmmxtCDa4XrAaUXKmCXpzJ";
 const RESEND_API_URL = "https://api.resend.com/emails";
 // Resend requires onboarding@resend.dev for testing or your verified domain
-const FROM_EMAIL = process.env.FROM_EMAIL || "BravyNex Engineering <no-reply@bravynex.in>",
-";
+const FROM_EMAIL = process.env.FROM_EMAIL || "BravyNex Engineering <no-reply@bravynex.in>";
+
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "bravynex@gmail.com";
 
 /**
