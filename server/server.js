@@ -52,7 +52,8 @@ const CORS_ORIGINS = (process.env.CORS_ORIGINS || "")
 
 const allowedOrigins = [
   ...CORS_ORIGINS,
-  "https://lms-platform-client.onrender.com",
+   "https://bravynex.in",
+  "https://www.bravynex.in",
  
   // Allow any Render app subdomain for both client and server if configured
   "https://*.onrender.com"
