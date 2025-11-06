@@ -75,7 +75,8 @@ function StudentHomePage() {
         id: 1,
         badge: "Most Popular",
         title: "Master Programming\nSkills",
-        subtitle: "Build your coding expertise with hands-on projects and real-world applications.",
+        subtitle:
+          "Build your coding expertise with hands-on projects and real-world applications.",
         imageUrl: heroImages[0],
         statLeft: "50,000+ students",
         statMid: "4.8 rating",
@@ -85,7 +86,8 @@ function StudentHomePage() {
         id: 2,
         badge: "Trending",
         title: "Learn Backend\nEngineering",
-        subtitle: "APIs, databases and deployments. From fundamentals to production.",
+        subtitle:
+          "APIs, databases and deployments. From fundamentals to production.",
         imageUrl: heroImages[1],
         statLeft: "10+ projects",
         statMid: "Career-ready",
@@ -95,7 +97,8 @@ function StudentHomePage() {
         id: 3,
         badge: "New",
         title: "Dive into Data\nScience",
-        subtitle: "Statistics, Python and ML workflows with beautiful visualizations.",
+        subtitle:
+          "Statistics, Python and ML workflows with beautiful visualizations.",
         imageUrl: heroImages[2],
         statLeft: "150+ lessons",
         statMid: "Hands-on",
@@ -342,6 +345,7 @@ function StudentHomePage() {
 
   function resetAutoplay() {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (!slides.length) return;
     timeoutRef.current = setTimeout(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
@@ -353,8 +357,9 @@ function StudentHomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
-  function transitionTo(index, direction = 1) {
+  function transitionTo(index) {
     if (isAnimatingRef.current) return;
+    if (!slides.length) return;
     isAnimatingRef.current = true;
 
     // Instant transition without animation
@@ -368,19 +373,15 @@ function StudentHomePage() {
 
   function goTo(index) {
     const target = (index + slides.length) % slides.length;
-    const direction =
-      target > current || (current === slides.length - 1 && target === 0)
-        ? 1
-        : -1;
-    transitionTo(target, direction);
+    transitionTo(target);
   }
 
   function next() {
-    transitionTo(current + 1, 1);
+    transitionTo(current + 1);
   }
 
   function prev() {
-    transitionTo(current - 1, -1);
+    transitionTo(current - 1);
   }
 
   // Touch gesture handlers for mobile slider - only horizontal swipes
@@ -429,107 +430,107 @@ function StudentHomePage() {
           {slidersLoading || slides.length === 0 ? (
             <div className="text-center py-20">Loading sliders...</div>
           ) : (
-          <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 items-center p-4 sm:p-6 lg:p-10">
-            {/* Left: Copy */}
-            <div className="order-2 lg:order-1">
-              <span className="inline-flex items-center text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white font-semibold shadow-lg hero-badge">
-                {slides[current]?.badge || "Featured"}
-              </span>
-              <h1 className="mt-4 sm:mt-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight whitespace-pre-line hero-title">
-                {slides[current]?.title || ""}
-              </h1>
-              <p className="mt-4 sm:mt-6 text-gray-600 text-sm sm:text-base lg:text-lg max-w-xl leading-relaxed hero-subtitle">
-                {slides[current]?.subtitle || ""}
-              </p>
-              <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-700">
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-700 rounded-full"></div>
-                  <span className="font-medium text-xs sm:text-sm">
-                    {slides[current]?.statLeft || ""}
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 items-center p-4 sm:p-6 lg:p-10">
+                {/* Left: Copy */}
+                <div className="order-2 lg:order-1">
+                  <span className="inline-flex items-center text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white font-semibold shadow-lg hero-badge">
+                    {slides[current]?.badge || "Featured"}
                   </span>
+                  <h1 className="mt-4 sm:mt-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight whitespace-pre-line hero-title">
+                    {slides[current]?.title || ""}
+                  </h1>
+                  <p className="mt-4 sm:mt-6 text-gray-600 text-sm sm:text-base lg:text-lg max-w-xl leading-relaxed hero-subtitle">
+                    {slides[current]?.subtitle || ""}
+                  </p>
+                  <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-700">
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-700 rounded-full"></div>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {slides[current]?.statLeft || ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-500 rounded-full"></div>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {slides[current]?.statMid || ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full"></div>
+                      <span className="font-medium text-xs sm:text-sm">
+                        {slides[current]?.statRight || ""}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 hero-button">
+                    <Button
+                      onClick={() => navigate("/courses")}
+                      className="bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-black text-white font-semibold px-6 sm:px-8 py-2.5 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto animated-button"
+                    >
+                      Explore Programming
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-6 sm:px-8 py-2.5 sm:py-3 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto animated-button"
+                    >
+                      Watch Preview
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-500 rounded-full"></div>
-                  <span className="font-medium text-xs sm:text-sm">
-                    {slides[current]?.statMid || ""}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full"></div>
-                  <span className="font-medium text-xs sm:text-sm">
-                    {slides[current]?.statRight || ""}
-                  </span>
+
+                {/* Right: Visual (buttons are anchored to this container for perfect alignment) */}
+                <div
+                  className="relative order-1 lg:order-2 touch-pan-y"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <img
+                    key={slides[current]?._id || slides[current]?.id}
+                    src={slides[current]?.imageUrl || ""}
+                    alt="E-learning hero"
+                    loading="eager"
+                    className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[420px] object-cover rounded-lg sm:rounded-xl transition-opacity duration-500 shadow-lg hero-image"
+                  />
+                  {/* Mobile Controls - Always visible on mobile */}
+                  <button
+                    onClick={prev}
+                    aria-label="Previous slide"
+                    className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
+                  >
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
+                      ‹
+                    </span>
+                  </button>
+                  <button
+                    onClick={next}
+                    aria-label="Next slide"
+                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
+                  >
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
+                      ›
+                    </span>
+                  </button>
                 </div>
               </div>
-              <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 hero-button">
-                <Button
-                  onClick={() => navigate("/courses")}
-                  className="bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-black text-white font-semibold px-6 sm:px-8 py-2.5 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto animated-button"
-                >
-                  Explore Programming
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-6 sm:px-8 py-2.5 sm:py-3 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto animated-button"
-                >
-                  Watch Preview
-                </Button>
+
+              {/* Dots - Enhanced for mobile */}
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6">
+                {slides.map((s, i) => (
+                  <button
+                    key={`dot-${s._id || s.id}`}
+                    onClick={() => goTo(i)}
+                    className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 touch-manipulation ${
+                      i === current
+                        ? "w-6 sm:w-8 bg-gradient-to-r from-gray-700 to-black"
+                        : "w-1.5 sm:w-2 bg-gray-300 hover:bg-gray-400"
+                    }`}
+                    aria-label={`Go to slide ${i + 1}`}
+                  />
+                ))}
               </div>
-            </div>
-
-            {/* Right: Visual (buttons are anchored to this container for perfect alignment) */}
-            <div
-              className="relative order-1 lg:order-2 touch-pan-y"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <img
-                key={slides[current]?._id || slides[current]?.id}
-                src={slides[current]?.imageUrl || ""}
-                alt="E-learning hero"
-                loading="eager"
-                className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[420px] object-cover rounded-lg sm:rounded-xl transition-opacity duration-500 shadow-lg hero-image"
-              />
-              {/* Mobile Controls - Always visible on mobile */}
-              <button
-                onClick={prev}
-                aria-label="Previous slide"
-                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
-              >
-                <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
-                  ‹
-                </span>
-              </button>
-              <button
-                onClick={next}
-                aria-label="Next slide"
-                className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
-              >
-                <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
-                  ›
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Dots - Enhanced for mobile */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6">
-            {slides.map((s, i) => (
-              <button
-                key={`dot-${s._id || s.id}`}
-                onClick={() => goTo(i)}
-                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 touch-manipulation ${
-                  i === current
-                    ? "w-6 sm:w-8 bg-gradient-to-r from-gray-700 to-black"
-                    : "w-1.5 sm:w-2 bg-gray-300 hover:bg-gray-400"
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
-          </>
+            </>
           )}
         </div>
       </section>
