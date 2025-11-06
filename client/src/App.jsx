@@ -23,6 +23,7 @@ import PageTransition from "./components/page-transition";
 import InstructorCertificatesPage from "./pages/instructor/certificates";
 import InstructorQuizEditorPage from "./pages/instructor/quiz-editor";
 import CertificateVerificationPage from "./pages/public/certificate-verification";
+import SliderManagementPage from "./pages/instructor/slider-management";
 
 function App() {
   return (
@@ -98,6 +99,14 @@ function App() {
           element={
             <InstructorRouteGuard>
               <InstructorQuizEditorPage />
+            </InstructorRouteGuard>
+          }
+        />
+        <Route
+          path="/instructor/slider-management"
+          element={
+            <InstructorRouteGuard>
+              <SliderManagementPage />
             </InstructorRouteGuard>
           }
         />

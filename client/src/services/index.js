@@ -360,6 +360,38 @@ export async function submitStudentQuizAnswersService(courseId, { studentId, stu
   return data;
 }
 
+// Sliders - admin
+export async function getAllSlidersService() {
+  const { data } = await axiosInstance.get("/admin/sliders/public");
+  return data;
+}
 
+export async function getAdminSlidersService() {
+  const { data } = await axiosInstance.get("/admin/sliders");
+  return data;
+}
 
+export async function createSliderService(sliderData) {
+  const { data } = await axiosInstance.post("/admin/sliders", sliderData);
+  return data;
+}
 
+export async function updateSliderService(id, sliderData) {
+  const { data } = await axiosInstance.put(`/admin/sliders/${id}`, sliderData);
+  return data;
+}
+
+export async function deleteSliderService(id) {
+  const { data } = await axiosInstance.delete(`/admin/sliders/${id}`);
+  return data;
+}
+
+export async function toggleSliderStatusService(id) {
+  const { data } = await axiosInstance.patch(`/admin/sliders/${id}/toggle`);
+  return data;
+}
+
+export async function reorderSlidersService(sliders) {
+  const { data } = await axiosInstance.post("/admin/sliders/reorder", { sliders });
+  return data;
+}

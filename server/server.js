@@ -32,6 +32,7 @@ const instructorInternshipRoutes = require("./routes/instructor-routes/internshi
 const instructorQuizRoutes = require("./routes/instructor-routes/quiz-routes");
 const studentQuizRoutes = require("./routes/student-routes/quiz-routes");
 const publicRoutes = require("./routes/public-routes");
+const sliderRoutes = require("./routes/admin-routes/slider-routes");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -54,6 +55,7 @@ const allowedOrigins = [
   ...CORS_ORIGINS,
    "https://bravynex.in",
   "https://www.bravynex.in",
+  "http://localhost:5173",
  
   // Allow any Render app subdomain for both client and server if configured
   "https://*.onrender.com"
@@ -190,7 +192,9 @@ app.use((req, res, next) => {
       req.path.startsWith('/secure/instructor/') ||
       // Skip CSRF for student order endpoints (they handle their own security)
       req.path.startsWith('/student/order/') ||
-      req.path.startsWith('/student/quizzes/')) {
+      req.path.startsWith('/student/quizzes/') ||
+      // Skip CSRF for admin slider endpoints (they handle their own security)
+      req.path.startsWith('/admin/sliders')) {
     return next();
   }
   return csrfProtection(req, res, next);
@@ -245,6 +249,7 @@ app.use("/student/live-sessions", studentLiveSessionRoutes);
 app.use("/instructor/internships", instructorInternshipRoutes);
 app.use("/instructor/quizzes", instructorQuizRoutes);
 app.use("/student/quizzes", studentQuizRoutes);
+app.use("/admin/sliders", sliderRoutes);
 
 app.get("/favicon.ico", (req, res) => res.sendStatus(204));
 app.get("/health", (req, res) => {
