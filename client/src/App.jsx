@@ -111,33 +111,79 @@ function App() {
           }
         />
 
-        {/* Student Routes */}
-        <Route
-          path="/"
-          element={
-            <StudentRouteGuard>
-              <StudentViewCommonLayout />
-            </StudentRouteGuard>
-          }
-        >
+        {/* Student Routes - Mixed Public and Protected */}
+        <Route path="/" element={<StudentViewCommonLayout />}>
+          {/* Public Pages - No Login Required */}
           <Route path="" element={<StudentHomePage />} />
           <Route path="home" element={<StudentHomePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="courses" element={<StudentViewCoursesPage />} />
+          
+          {/* Protected Routes - Require Authentication */}
           <Route
             path="course/details/:id"
-            element={<StudentViewCourseDetailsPage />}
+            element={
+              <StudentRouteGuard>
+                <StudentViewCourseDetailsPage />
+              </StudentRouteGuard>
+            }
           />
-          <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
-          <Route path="student-courses" element={<StudentCoursesPage />} />
-          <Route path="analytics" element={<StudentAnalyticsPage />} />
+          <Route
+            path="payment-return"
+            element={
+              <StudentRouteGuard>
+                <PaypalPaymentReturnPage />
+              </StudentRouteGuard>
+            }
+          />
+          <Route
+            path="student-courses"
+            element={
+              <StudentRouteGuard>
+                <StudentCoursesPage />
+              </StudentRouteGuard>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <StudentRouteGuard>
+                <StudentAnalyticsPage />
+              </StudentRouteGuard>
+            }
+          />
           <Route
             path="course-progress/:id"
-            element={<StudentViewCourseProgressPage />}
+            element={
+              <StudentRouteGuard>
+                <StudentViewCourseProgressPage />
+              </StudentRouteGuard>
+            }
           />
-          <Route path="learn/:id" element={<LearnPage />} />
-          <Route path="live-sessions" element={<StudentLiveSessionsPage />} />
-          <Route path="live-sessions/:programId" element={<StudentLiveSessionsPage />} />
+          <Route
+            path="learn/:id"
+            element={
+              <StudentRouteGuard>
+                <LearnPage />
+              </StudentRouteGuard>
+            }
+          />
+          <Route
+            path="live-sessions"
+            element={
+              <StudentRouteGuard>
+                <StudentLiveSessionsPage />
+              </StudentRouteGuard>
+            }
+          />
+          <Route
+            path="live-sessions/:programId"
+            element={
+              <StudentRouteGuard>
+                <StudentLiveSessionsPage />
+              </StudentRouteGuard>
+            }
+          />
         </Route>
 
         {/* 404 Route */}

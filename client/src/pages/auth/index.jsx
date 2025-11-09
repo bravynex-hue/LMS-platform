@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signInFormControls, signUpFormControls } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { Clock, Users } from "lucide-react";
-import { useContext } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import ForgotPassword from "@/components/auth/forgot-password";
 import ResetPassword from "@/components/auth/reset-password";
 
 function AuthPage() {
+  const [searchParams] = useSearchParams();
   const {
     signInFormData,
     setSignInFormData,
@@ -25,11 +26,20 @@ function AuthPage() {
     handleLoginUser,
     activeTab,
     handleTabChange,
-    registrationSuccess,
     isRegistering,
     isLoggingIn,
-    forgotPasswordEmail,
   } = useContext(AuthContext);
+
+  // Check for tab query parameter and set active tab accordingly
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["signup", "signin", "forgot", "reset"].includes(tabParam)) {
+      if (activeTab !== tabParam) {
+        handleTabChange(tabParam);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   function checkIfSignInFormIsValid() {
     return (

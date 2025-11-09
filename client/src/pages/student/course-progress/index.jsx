@@ -691,7 +691,7 @@ function StudentViewCourseProgressPage() {
                   <Button
                     onClick={handleRewatchCourse}
                     variant="outline"
-                    className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-3 sm:py-4 touch-manipulation"
+                    className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-3 sm:py-3 w-full touch-manipulation"
                   >
                     <Play className="h-4 w-4 mr-2" /> Rewatch Course
                   </Button>

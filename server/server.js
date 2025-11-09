@@ -12,6 +12,7 @@ const csrf = require("csurf");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
 const path = require("path");
+const fs = require("fs");
 
 // ----------------- Routes -----------------
 const authRoutes = require("./routes/auth-routes/index");
@@ -37,7 +38,7 @@ const sliderRoutes = require("./routes/admin-routes/slider-routes");
 const app = express();
 app.set("trust proxy", 1);
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
@@ -45,7 +46,7 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-// ----------------- CORS -----------------
+// ----------------- CORS (must be before maintenance mode) -----------------
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((o) => o.trim())
@@ -61,8 +62,10 @@ const allowedOrigins = [
   "https://*.onrender.com"
 ];
 
-app.use(cors({
+// CORS configuration
+const corsOptions = {
   origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     const isAllowed = allowedOrigins.some(o => {
       if (o.includes("*")) {
@@ -72,14 +75,77 @@ app.use(cors({
       }
       return origin === o;
     });
-    return isAllowed ? callback(null, true) : callback(new Error("Not allowed by CORS"));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With", "Accept"],
   credentials: true,
-}));
+};
 
-app.options("*", cors()); // preflight
+// Apply CORS middleware first (needed for preflight requests)
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // preflight
+
+// ----------------- Maintenance Mode (after CORS) -----------------
+// Robust check for maintenance mode - handles true, false, undefined, empty string
+const getMaintenanceMode = () => {
+  const mode = process.env.MAINTENANCE_MODE;
+  if (!mode) return false; // Not set or empty
+  return String(mode).toLowerCase().trim() === "true";
+};
+
+const IS_MAINTENANCE_MODE = getMaintenanceMode();
+const maintenanceFilePath = path.join(__dirname, "maintenance.html");
+
+// Log maintenance mode status on startup
+console.log(`🔧 Maintenance Mode: ${IS_MAINTENANCE_MODE ? "ENABLED" : "DISABLED"}`);
+
+// Maintenance mode middleware - always runs, checks flag inside
+app.use((req, res, next) => {
+  // If maintenance mode is OFF, proceed normally
+  if (!IS_MAINTENANCE_MODE) {
+    return next();
+  }
+
+  // Maintenance mode is ON - handle accordingly
+  // Allow health check and OPTIONS preflight to proceed normally
+  if (req.path === "/health" || req.method === "OPTIONS") {
+    return next();
+  }
+
+  const apiPrefixes = [
+    "/public/", "/auth/", "/secure/", "/media/", "/student/", "/instructor/",
+    "/notify/", "/admin/", "/csrf-token"
+  ];
+
+  const isApi = apiPrefixes.some(prefix => {
+    if (prefix.endsWith('/')) return req.path.startsWith(prefix);
+    return req.path === prefix;
+  });
+
+  if (isApi) {
+    // Return JSON 503 for API routes with proper CORS headers
+    res.setHeader('Retry-After', '120');
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(503).json({ 
+      success: false, 
+      message: 'Service under maintenance. Please try again soon.',
+      maintenance: true
+    });
+  }
+
+  // Return HTML maintenance page for non-API routes
+  if (fs.existsSync(maintenanceFilePath)) {
+    res.setHeader('Content-Type', 'text/html');
+    return res.sendFile(maintenanceFilePath);
+  }
+  
+  return res.status(503).send("Service temporarily unavailable - maintenance mode");
+});
 
 // ----------------- Security -----------------
 const { directives } = cspOptions;
@@ -253,7 +319,12 @@ app.use("/admin/sliders", sliderRoutes);
 
 app.get("/favicon.ico", (req, res) => res.sendStatus(204));
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK", timestamp: new Date().toISOString(), environment: process.env.NODE_ENV || "development" });
+  res.status(200).json({ 
+    status: IS_MAINTENANCE_MODE ? "MAINTENANCE" : "OK", 
+    timestamp: new Date().toISOString(), 
+    environment: process.env.NODE_ENV || "development",
+    maintenance: IS_MAINTENANCE_MODE
+  });
 });
 
 // Test endpoint to verify CSRF protection is working
@@ -279,7 +350,6 @@ app.use((err, req, res, next) => {
 
 // ----------------- Static Files -----------------
 // Serve static files from client dist directory
-const fs = require('fs');
 const clientDistPath = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));

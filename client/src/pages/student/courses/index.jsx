@@ -8,8 +8,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions, courseCategories } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
@@ -17,7 +22,7 @@ import {
   checkCoursePurchaseInfoService,
   fetchStudentViewCourseListService,
 } from "@/services";
-import { ArrowUpDownIcon, BookOpen } from "lucide-react";
+import { ArrowUpDownIcon, BookOpen, Filter, X } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SpinnerOverlay } from "@/components/ui/spinner";
@@ -43,6 +48,7 @@ function StudentViewCoursesPage() {
   const [filters, setFilters] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = useMemo(() => (searchParams.get("search") || "").trim(), [searchParams]);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const {
     studentViewCoursesList,
     setStudentViewCoursesList,
@@ -91,6 +97,42 @@ function StudentViewCoursesPage() {
     sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
   }
 
+  function handleClearFilters() {
+    setFilters({});
+    sessionStorage.removeItem("filters");
+  }
+
+  // Filter content component to avoid duplication
+  const FilterContent = () => (
+    <div className="space-y-4 sm:space-y-6">
+      {Object.keys(filterOptions).map((ketItem) => (
+        <div key={ketItem} className="border-t first:border-t-0 border-gray-100 pt-4 sm:pt-6 first:pt-0">
+          <h3 className="font-semibold text-gray-900 mb-3 sm:mb-3 text-sm sm:text-sm uppercase tracking-wide">{ketItem}</h3>
+          <div className="space-y-1 sm:space-y-2">
+            {filterOptions[ketItem].map((option) => (
+              <Label 
+                key={`${ketItem}-${option.id}`} 
+                className="flex font-medium items-center gap-3 sm:gap-3 cursor-pointer hover:bg-gray-50 active:bg-gray-100 p-3 sm:p-2.5 rounded-lg transition-colors touch-manipulation min-h-[44px] sm:min-h-0"
+              >
+                <Checkbox
+                  checked={
+                    filters &&
+                    Object.keys(filters).length > 0 &&
+                    filters[ketItem] &&
+                    filters[ketItem].indexOf(option.id) > -1
+                  }
+                  onCheckedChange={() => handleFilterOnChange(ketItem, option)}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0"
+                />
+                <span className="text-gray-700 text-base sm:text-base flex-1 select-none">{option.label}</span>
+              </Label>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const fetchAllStudentViewCourses = useCallback(async (filtersArg, sortArg, searchArg) => {
     const query = new URLSearchParams({
       ...filtersArg,
@@ -105,6 +147,11 @@ function StudentViewCoursesPage() {
   }, [setStudentViewCoursesList, setLoadingState]);
 
   async function handleCourseNavigate(getCurrentCourseId) {
+    // If user is not authenticated, redirect to login page
+    if (!auth?.authenticate) {
+      return navigate('/auth');
+    }
+    
     const response = await checkCoursePurchaseInfoService(
       getCurrentCourseId,
       auth?.user?._id
@@ -175,106 +222,131 @@ function StudentViewCoursesPage() {
 
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
-          {/* Filters */}
-          <aside className="w-full lg:w-80 space-y-4 sm:space-y-6">
+          {/* Filters - Desktop Sidebar */}
+          <aside className="hidden lg:block w-full lg:w-80 space-y-4 sm:space-y-6">
             <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 sticky top-20 sm:top-24">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900">Filters</h2>
                 <button
-                  onClick={() => { setFilters({}); sessionStorage.removeItem("filters"); }}
+                  onClick={handleClearFilters}
                   className="text-xs sm:text-sm text-gray-600 hover:underline"
                 >
                   Clear all
                 </button>
               </div>
-              <div className="space-y-4 sm:space-y-6">
-                {Object.keys(filterOptions).map((ketItem) => (
-                  <div key={ketItem} className="border-t first:border-t-0 border-gray-100 pt-4 sm:pt-6 first:pt-0">
-                    <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-xs sm:text-sm uppercase tracking-wide">{ketItem}</h3>
-                    <div className="space-y-1 sm:space-y-2">
-                      {filterOptions[ketItem].map((option) => (
-                        <Label key={`${ketItem}-${option.id}`} className="flex font-medium items-center gap-2 sm:gap-3 cursor-pointer hover:bg-gray-50 p-1.5 sm:p-2 rounded-lg">
-                          <Checkbox
-                            checked={
-                              filters &&
-                              Object.keys(filters).length > 0 &&
-                              filters[ketItem] &&
-                              filters[ketItem].indexOf(option.id) > -1
-                            }
-                            onCheckedChange={() => handleFilterOnChange(ketItem, option)}
-                            className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                          />
-                          <span className="text-gray-700 text-xs sm:text-sm">{option.label}</span>
-                        </Label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <FilterContent />
             </div>
           </aside>
 
+          {/* Mobile Filter Dialog */}
+          <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
+            <DialogContent className="max-w-[100vw] sm:max-w-lg max-h-[100vh] sm:max-h-[90vh] overflow-y-auto p-0 m-0 sm:m-auto rounded-none sm:rounded-lg h-full sm:h-auto w-full sm:w-auto">
+              <DialogHeader className="sticky top-0 bg-white z-10 border-b px-4 sm:px-6 py-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-lg sm:text-xl font-bold text-gray-900">Filters</DialogTitle>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleClearFilters}
+                      className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 font-medium active:text-gray-700 transition-colors"
+                    >
+                      Clear all
+                    </button>
+                    <button
+                      onClick={() => setIsFilterDialogOpen(false)}
+                      className="rounded-full w-9 h-9 sm:w-8 sm:h-8 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-600 hover:text-gray-800 flex items-center justify-center transition-colors touch-manipulation"
+                      aria-label="Close filters"
+                    >
+                      <X className="h-5 w-5 sm:h-4 sm:w-4" />
+                    </button>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="px-4 sm:px-6 py-4 pb-6 sm:pb-4">
+                <FilterContent />
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {/* Results */}
           <main className="flex-1">
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-5 mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-gray-900">Course Results</h2>
-                  <p className="text-xs text-gray-600">{studentViewCoursesList.length} total matches</p>
-                </div>
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-5 mb-4 sm:mb-6">
+              {/* Mobile Filter Button */}
+              <div className="lg:hidden mb-4">
+                <Button
+                  onClick={() => setIsFilterDialogOpen(true)}
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                >
+                  <Filter className="h-4 w-4" />
+                  <span className="font-medium">Filters</span>
+                  {Object.keys(filters).length > 0 && (
+                    <span className="ml-1 bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                      {Object.values(filters).flat().length}
+                    </span>
+                  )}
+                </Button>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                {/* Quick Category Filter */}
-                <div className="flex-1 sm:flex-none">
-                  <select
-                    value={(filters.category && filters.category[0]) || ""}
-                    onChange={(event) => {
-                      const val = event.target.value;
-                      if (!val) {
-                        const next = { ...filters };
-                        delete next.category;
-                        setFilters(next);
-                        sessionStorage.setItem("filters", JSON.stringify(next));
-                      } else {
-                        const next = { ...filters, category: [val] };
-                        setFilters(next);
-                        sessionStorage.setItem("filters", JSON.stringify(next));
-                      }
-                    }}
-                    
-                    className="border-gray-300 rounded-md text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 bg-white hover:border-gray-400 w-full sm:w-auto"
-                  >
-                    <option value="">All Categories</option>
-                    {courseCategories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                  </select>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900">Course Results</h2>
+                    <p className="text-xs text-gray-600">{studentViewCoursesList.length} total matches</p>
+                  </div>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-xs sm:text-sm"
+                <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                  {/* Quick Category Filter */}
+                  <div className="flex-1 sm:flex-none">
+                    <select
+                      value={(filters.category && filters.category[0]) || ""}
+                      onChange={(event) => {
+                        const val = event.target.value;
+                        if (!val) {
+                          const next = { ...filters };
+                          delete next.category;
+                          setFilters(next);
+                          sessionStorage.setItem("filters", JSON.stringify(next));
+                        } else {
+                          const next = { ...filters, category: [val] };
+                          setFilters(next);
+                          sessionStorage.setItem("filters", JSON.stringify(next));
+                        }
+                      }}
+                      
+                      className="border-gray-300 rounded-md text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 bg-white hover:border-gray-400 w-full sm:w-auto"
                     >
-                      <ArrowUpDownIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="font-medium hidden sm:inline">Sort By</span>
-                      <span className="sm:hidden">Sort</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[180px] sm:w-[200px] bg-white border-0 shadow-xl rounded-lg">
-                    <DropdownMenuRadioGroup value={sort} onValueChange={(value) => setSort(value)}>
-                      {sortOptions.map((sortItem) => (
-                        <DropdownMenuRadioItem value={sortItem.id} key={sortItem.id} className="hover:bg-gray-50 cursor-pointer text-xs sm:text-sm">
-                          {sortItem.label}
-                        </DropdownMenuRadioItem>
+                      <option value="">All Categories</option>
+                      {courseCategories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </select>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-xs sm:text-sm"
+                      >
+                        <ArrowUpDownIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="font-medium hidden sm:inline">Sort By</span>
+                        <span className="sm:hidden">Sort</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[180px] sm:w-[200px] bg-white border-0 shadow-xl rounded-lg">
+                      <DropdownMenuRadioGroup value={sort} onValueChange={(value) => setSort(value)}>
+                        {sortOptions.map((sortItem) => (
+                          <DropdownMenuRadioItem value={sortItem.id} key={sortItem.id} className="hover:bg-gray-50 cursor-pointer text-xs sm:text-sm">
+                            {sortItem.label}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </div>
 
@@ -336,7 +408,7 @@ function StudentViewCoursesPage() {
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">No Courses Found</h3>
                 <p className="text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto text-sm sm:text-base">Try adjusting your filters or check back later for new courses.</p>
                 <Button
-                  onClick={() => { setFilters({}); sessionStorage.removeItem("filters"); }}
+                  onClick={handleClearFilters}
                   className="bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
                 >
                   Clear Filters
