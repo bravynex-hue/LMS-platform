@@ -33,7 +33,7 @@ function StudentViewCommonHeader() {
       sessionStorage.clear();
     }
     // Navigate to auth page after logout
-    navigate("/auth");
+    navigate("/auth?tab=signin");
   }
 
   function handleSearchSubmit(event) {
@@ -202,7 +202,7 @@ function StudentViewCommonHeader() {
                 {/* Login/Signup buttons for unauthenticated users */}
                 <Button
                   variant="ghost"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/auth?tab=signin")}
                   className="text-gray-700 hover:text-gray-800 hover:bg-gray-100 font-medium text-sm px-3 py-2 rounded-md transition-colors duration-200"
                 >
                   Sign In

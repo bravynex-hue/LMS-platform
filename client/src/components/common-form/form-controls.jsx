@@ -8,13 +8,11 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { useState } from "react";
-import { Info } from "lucide-react";
 import PropTypes from "prop-types";
 import { useToast } from "@/hooks/use-toast";
+import { Info } from "lucide-react";
 
 function FormControls({ formControls = [], formData, setFormData }) {
-  const [focusedField, setFocusedField] = useState(null);
   const { toast } = useToast();
 
   // Date validation handler
@@ -71,31 +69,35 @@ function FormControls({ formControls = [], formData, setFormData }) {
                   });
                 }
               }}
-              onFocus={() => setFocusedField(getControlItem.name)}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => {
+                // Show toast notification for certificate-related fields
+                if (getControlItem.name === "userName") {
+                  toast({
+                    title: (
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <span className="font-semibold text-blue-900">Certificate Information</span>
+                      </div>
+                    ),
+                    description: "Username will appear on your course completion certificate",
+                    duration: 6000,
+                    className: "bg-blue-50 border-2 border-blue-400 shadow-lg [&>div>div]:text-blue-800",
+                  });
+                } else if (getControlItem.name === "guardianName") {
+                  toast({
+                    title: (
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <span className="font-semibold text-blue-900">Certificate Information</span>
+                      </div>
+                    ),
+                    description: "Guardian name will appear on your course completion certificate",
+                    duration: 6000,
+                    className: "bg-blue-50 border-2 border-blue-400 shadow-lg [&>div>div]:text-blue-800",
+                  });
+                }
+              }}
             />
-            {/* Certificate note for username field */}
-            {getControlItem.name === "userName" && focusedField === "userName" && (
-              <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-blue-50 border border-blue-200 rounded-md shadow-sm z-10">
-                <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-800">
-                     Username will appear on your course completion certificate
-                  </p>
-                </div>
-              </div>
-            )}
-            {/* Certificate note for guardian name field */}
-            {getControlItem.name === "guardianName" && focusedField === "guardianName" && (
-              <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-blue-50 border border-blue-200 rounded-md shadow-sm z-10">
-                <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-800">
-                    Guardian name will appear on your course completion certificate
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         );
         break;

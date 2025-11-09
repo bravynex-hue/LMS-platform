@@ -149,7 +149,7 @@ function StudentViewCoursesPage() {
   async function handleCourseNavigate(getCurrentCourseId) {
     // If user is not authenticated, redirect to login page
     if (!auth?.authenticate) {
-      return navigate('/auth');
+      return navigate('/auth?tab=signin');
     }
     
     const response = await checkCoursePurchaseInfoService(
