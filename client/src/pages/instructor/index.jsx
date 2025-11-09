@@ -16,7 +16,6 @@ import {
   BookOpen,
   TrendingUp,
   Menu,
-  X,
   ChevronLeft,
   ChevronRight,
   Image,
@@ -206,12 +205,12 @@ function InstructorDashboardpage() {
                         Dashboard
                       </span>
                       {currentView === "dashboard" && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
                       )}
                     </>
                   )}
                   {isSidebarCollapsed && currentView === "dashboard" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>
@@ -249,12 +248,12 @@ function InstructorDashboardpage() {
                         My Courses
                       </span>
                       {currentView === "courses" && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
                       )}
                     </>
                   )}
                   {isSidebarCollapsed && currentView === "courses" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>
@@ -286,7 +285,7 @@ function InstructorDashboardpage() {
                     </span>
                   )}
                   {isSidebarCollapsed && currentView === "live" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>
@@ -320,7 +319,7 @@ function InstructorDashboardpage() {
                     </span>
                   )}
                   {isSidebarCollapsed && currentView === "certificates" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>
@@ -358,12 +357,12 @@ function InstructorDashboardpage() {
                         Sliders
                       </span>
                       {currentView === "sliders" && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
                       )}
                     </>
                   )}
                   {isSidebarCollapsed && currentView === "sliders" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>
@@ -401,12 +400,12 @@ function InstructorDashboardpage() {
                         Revenue Analysis
                       </span>
                       {currentView === "revenue" && (
-                        <div className="ml-auto w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
                       )}
                     </>
                   )}
                   {isSidebarCollapsed && currentView === "revenue" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
               </li>

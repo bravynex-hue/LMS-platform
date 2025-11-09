@@ -1,4 +1,5 @@
 const Course = require("../../models/Course");
+const User = require("../../models/User");
 
 
 const addNewCourse = async (req, res) => {
@@ -57,6 +58,38 @@ const getCourseDetailsByID = async (req, res) => {
         success: false,
         message: "Course not found!",
       });
+    }
+
+    // Fetch user details for all students to populate missing names and emails
+    if (courseDetails.students && courseDetails.students.length > 0) {
+      const studentIds = courseDetails.students.map(s => s.studentId).filter(Boolean);
+      
+      if (studentIds.length > 0) {
+        const users = await User.find({ _id: { $in: studentIds } }).select('userName userEmail studentId');
+        const userMap = {};
+        users.forEach(user => {
+          userMap[user._id.toString()] = {
+            userName: user.userName,
+            userEmail: user.userEmail,
+            studentId: user.studentId
+          };
+        });
+
+        // Enrich students array with user details
+        courseDetails.students = courseDetails.students.map(student => {
+          const userInfo = userMap[student.studentId];
+          if (userInfo) {
+            return {
+              ...student.toObject ? student.toObject() : student,
+              studentName: student.studentName || userInfo.userName || "",
+              studentEmail: student.studentEmail || userInfo.userEmail || "",
+              userName: userInfo.userName || "",
+              userEmail: userInfo.userEmail || "",
+            };
+          }
+          return student.toObject ? student.toObject() : student;
+        });
+      }
     }
 
     res.status(200).json({

@@ -3,6 +3,7 @@ import { useAuth } from "@/context/auth-context";
 import { scheduleLiveSessionService, listProgramSessionsInstructorService, fetchInstructorCourseListService, deleteLiveSessionService, getSessionAttendanceService, getInstructorCourseQuizService, listQuizSubmissionsService, setLiveSessionMeetingLinkService } from "@/services";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -15,8 +16,8 @@ function InstructorLiveSessionsPage() {
   const [startTime, setStartTime] = useState("");
   const [sessions, setSessions] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [meetingLink, setMeetingLink] = useState("");
   const [quiz, setQuiz] = useState(null);
+  const googleMeetLink = import.meta.env.VITE_GOOGLE_MEET_LINK || "https://meet.google.com/landing?authuser=0";
   const [quizSubs, setQuizSubs] = useState([]);
   const upcomingSessions = useMemo(() => {
     return (sessions || []).slice().sort((a,b) => new Date(a.startTime) - new Date(b.startTime));
@@ -25,15 +26,23 @@ function InstructorLiveSessionsPage() {
   const [attendanceOpen, setAttendanceOpen] = useState(false);
   const [attendanceRows, setAttendanceRows] = useState([]);
   const [attendanceFor, setAttendanceFor] = useState(null);
+  const [startedSessions, setStartedSessions] = useState(() => {
+    // Load started sessions from localStorage
+    try {
+      const stored = localStorage.getItem('startedLiveSessions');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
 
   function exportAttendanceCsv() {
     if (!attendanceRows || attendanceRows.length === 0) return;
-    const header = ["Name", "Email", "Joined At", "Left At", "Student ID"];
+    const header = ["Name", "Email", "Joined At", "Student ID"];
     const lines = attendanceRows.map(a => [
       JSON.stringify(a.studentName || ""),
       JSON.stringify(a.studentEmail || ""),
       JSON.stringify(a.joinedAt ? new Date(a.joinedAt).toLocaleString() : ""),
-      JSON.stringify(a.leftAt ? new Date(a.leftAt).toLocaleString() : ""),
       JSON.stringify(a.studentId || ""),
     ].join(","));
     const csv = [header.join(","), ...lines].join("\n");
@@ -46,13 +55,34 @@ function InstructorLiveSessionsPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function handleSetMeetingLink(sessionId) {
+    const currentLink = sessions.find(s => s._id === sessionId)?.meetingLink || googleMeetLink;
+    const url = prompt('Enter the meeting link to share with students:', currentLink);
+    if (url && /^https?:\/\//i.test(url)) {
+      try {
+        const resp = await setLiveSessionMeetingLinkService(sessionId, url.trim());
+        if (resp?.success) {
+          toast({ title: "Link updated", description: "Meeting link has been set for this session." });
+          fetchSessions();
+        } else {
+          toast({ title: "Failed to update link", description: resp?.message || "Please try again.", variant: "destructive" });
+        }
+      } catch (e) {
+        const msg = e?.response?.data?.message || e?.message || "Request failed";
+        toast({ title: "Failed to update link", description: msg, variant: "destructive" });
+      }
+    } else if (url) {
+      toast({ title: "Invalid link", description: "Please enter a valid URL starting with http:// or https://", variant: "destructive" });
+    }
+  }
+
   async function handleCreate() {
     if (!programId) {
       toast({ title: "Select a course", description: "Please choose a course to attach this session." });
       return;
     }
-    if (!topic || !startTime || !meetingLink?.trim()) {
-      toast({ title: "Missing details", description: "Add a topic, date/time, and meeting link." });
+    if (!topic || !startTime) {
+      toast({ title: "Missing details", description: "Add a topic and date/time." });
       return;
     }
     try {
@@ -62,13 +92,12 @@ function InstructorLiveSessionsPage() {
         instructorName: auth?.user?.userName,
         topic,
         startTime: new Date(startTime),
-        meetingLink: meetingLink?.trim() || undefined,
+        meetingLink: googleMeetLink,
       });
       if (res?.success) {
         toast({ title: "Session scheduled", description: "Session created successfully." });
         setTopic("");
         setStartTime("");
-        setMeetingLink("");
         fetchSessions();
       } else {
         toast({ title: "Failed to schedule", description: res?.message || "Please try again.", variant: "destructive" });
@@ -116,21 +145,31 @@ function InstructorLiveSessionsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Course</label>
-              <select 
-                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
-                value={programId} 
-                onChange={(e) => setProgramId(e.target.value)}
-              >
-                <option value="">Select a course</option>
-                {courses.map((c) => (
-                  <option key={c._id} value={c._id}>{c.title}</option>
-                ))}
-              </select>
+              <Select value={programId || undefined} onValueChange={(value) => setProgramId(value)}>
+                <SelectTrigger className="w-full h-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all text-sm bg-white text-gray-900 hover:border-gray-400 shadow-sm">
+                  <SelectValue placeholder="Select a course" className="text-gray-500" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 rounded-lg shadow-xl max-h-[300px]">
+                  {courses.length === 0 ? (
+                    <div className="px-2 py-6 text-center text-sm text-gray-500">No courses available</div>
+                  ) : (
+                    courses.map((c) => (
+                      <SelectItem 
+                        key={c._id} 
+                        value={c._id}
+                        className="cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-900 data-[highlighted]:bg-gray-50 data-[state=checked]:bg-gray-100 data-[state=checked]:font-medium py-2.5"
+                      >
+                        {c.title}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
               <input 
-                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
+                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2  focus:border-transparent transition-all text-sm" 
                 placeholder="e.g. Orientation / Sprint Planning" 
                 value={topic} 
                 onChange={(e) => setTopic(e.target.value)} 
@@ -139,29 +178,16 @@ function InstructorLiveSessionsPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Date & Time</label>
               <input 
-                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
+                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2  focus:border-transparent transition-all text-sm" 
                 type="datetime-local" 
                 value={startTime} 
                 onChange={(e) => setStartTime(e.target.value)} 
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Meeting Link <span className="text-red-600">*</span>
-              </label>
-              <input 
-                className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" 
-                placeholder="Paste meeting URL (Zoom, Meet, etc.)" 
-                value={meetingLink} 
-                onChange={(e) => setMeetingLink(e.target.value)} 
-                required 
-              />
-              <p className="text-xs text-gray-500 mt-1.5">Paste the meeting link from Zoom, Google Meet, Teams, etc.</p>
-            </div>
             <div className="pt-2">
               <Button 
                 onClick={handleCreate} 
-                disabled={!programId || !topic || !startTime || !meetingLink?.trim()} 
+                disabled={!programId || !topic || !startTime} 
                 className="w-full bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-gray-700"
               >
                 Create Session
@@ -199,26 +225,27 @@ function InstructorLiveSessionsPage() {
                     <p className="text-xs sm:text-sm text-gray-600 mt-1">{new Date(s.startTime).toLocaleString()}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {s.meetingLink && (
+                    {!startedSessions[s._id] && (
                       <button
                         type="button"
-                        onClick={() => window.open(s.meetingLink, '_blank', 'noopener,noreferrer')}
+                        onClick={() => {
+                          // Mark session as started
+                          const newStarted = { ...startedSessions, [s._id]: true };
+                          setStartedSessions(newStarted);
+                          localStorage.setItem('startedLiveSessions', JSON.stringify(newStarted));
+                          // Open the session's meeting link or fallback to default
+                          const meetingUrl = s.meetingLink || googleMeetLink;
+                          window.open(meetingUrl, '_blank', 'noopener,noreferrer');
+                        }}
                         className="text-xs sm:text-sm text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
                       >Start</button>
                     )}
                     <button
                       type="button"
-                      onClick={async () => {
-                        const url = prompt('Paste the meeting link');
-                        if (url && /^https?:\/\//i.test(url)) {
-                          try {
-                            const resp = await setLiveSessionMeetingLinkService(s._id, url.trim());
-                            if (resp?.success) fetchSessions();
-                          } catch {}
-                        }
-                      }}
+                      onClick={() => handleSetMeetingLink(s._id)}
                       className="text-xs sm:text-sm text-gray-700 bg-white hover:bg-gray-100 border border-gray-300 px-3 py-1.5 rounded-lg font-medium transition-colors"
-                    >Link</button>
+                      title="Set meeting link for students"
+                    >Sharing Link</button>
                     <button
                       type="button"
                       onClick={async () => {
@@ -294,7 +321,7 @@ function InstructorLiveSessionsPage() {
                 <span className="text-2xl">✏️</span>
               </div>
               <p className="text-sm text-gray-600 mb-3">No quiz found for this course.</p>
-              <p className="text-xs text-gray-500">Click "Create Quiz" to add 10 questions.</p>
+              <p className="text-xs text-gray-500">Click &quot;Create Quiz&quot; to add 10 questions.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -349,7 +376,6 @@ function InstructorLiveSessionsPage() {
                   <th className="text-left px-3 py-2">Name</th>
                   <th className="text-left px-3 py-2">Email</th>
                   <th className="text-left px-3 py-2">Joined</th>
-                  <th className="text-left px-3 py-2">Left</th>
                 </tr>
               </thead>
               <tbody>
@@ -358,11 +384,10 @@ function InstructorLiveSessionsPage() {
                     <td className="px-3 py-2">{a.studentName || a.studentId || "-"}</td>
                     <td className="px-3 py-2">{a.studentEmail || "-"}</td>
                     <td className="px-3 py-2">{a.joinedAt ? new Date(a.joinedAt).toLocaleString() : "-"}</td>
-                    <td className="px-3 py-2">{a.leftAt ? new Date(a.leftAt).toLocaleString() : "-"}</td>
                   </tr>
                 )) : (
                   <tr>
-                    <td className="px-3 py-6 text-center text-gray-600" colSpan={4}>No attendees yet.</td>
+                    <td className="px-3 py-6 text-center text-gray-600" colSpan={3}>No attendees yet.</td>
                   </tr>
                 )}
               </tbody>

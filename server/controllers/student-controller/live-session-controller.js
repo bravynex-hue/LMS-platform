@@ -39,7 +39,9 @@ const joinSession = async (req, res) => {
     if (session.meetingLink && /jit\.si/i.test(session.meetingLink)) {
       return res.status(400).json({ success: false, message: "Meeting link is not available" });
     }
-    res.status(200).json({ success: true, meetingLink: session.meetingLink });
+    // Return session's meeting link or default Google Meet link
+    const meetingLink = session.meetingLink || process.env.GOOGLE_MEET_LINK || "https://meet.google.com/landing?authuser=0";
+    res.status(200).json({ success: true, meetingLink });
   } catch (error) {
     console.error("joinSession error", error);
     res.status(500).json({ success: false, message: "Failed to join session" });

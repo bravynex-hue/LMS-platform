@@ -118,3 +118,18 @@ body::-webkit-scrollbar-thumb {
   @apply bg-[darkgrey];
   outline: 1px solid slategrey;
 }
+
+/* Enhanced styling for custom Select component */
+[data-radix-select-content] {
+  z-index: 50;
+}
+
+[data-radix-select-item][data-highlighted] {
+  background-color: #f3f4f6 !important;
+  outline: none;
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background-color: #e5e7eb !important;
+  font-weight: 500;
+}

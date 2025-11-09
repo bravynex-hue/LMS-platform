@@ -1,4 +1,5 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { useContext } from "react";
 import AuthPage from "./pages/auth";
 import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard } from "./components/route-guard";
 import NotFoundPage from "./pages/not-found";
@@ -19,11 +20,30 @@ import LearnPage from "./pages/student/learn";
 import AboutPage from "./pages/student/about";
 import StudentAnalyticsPage from "./pages/student/analytics";
 import AnimationProvider from "./context/animation-context";
-import PageTransition from "./components/page-transition";
 import InstructorCertificatesPage from "./pages/instructor/certificates";
 import InstructorQuizEditorPage from "./pages/instructor/quiz-editor";
 import CertificateVerificationPage from "./pages/public/certificate-verification";
 import SliderManagementPage from "./pages/instructor/slider-management";
+import { AuthContext } from "./context/auth-context";
+import { SpinnerFullPage } from "./components/ui/spinner";
+
+// Component to redirect instructors away from student home page
+function HomePageRedirect() {
+  const { auth, loading } = useContext(AuthContext);
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return <SpinnerFullPage message="Loading..." />;
+  }
+
+  // If user is authenticated and is an instructor, redirect to instructor dashboard
+  if (auth.authenticate && auth.user?.role === "instructor") {
+    return <Navigate to="/instructor" replace />;
+  }
+
+  // Otherwise, show the student home page
+  return <StudentHomePage />;
+}
 
 function App() {
   return (
@@ -114,8 +134,8 @@ function App() {
         {/* Student Routes - Mixed Public and Protected */}
         <Route path="/" element={<StudentViewCommonLayout />}>
           {/* Public Pages - No Login Required */}
-          <Route path="" element={<StudentHomePage />} />
-          <Route path="home" element={<StudentHomePage />} />
+          <Route path="" element={<HomePageRedirect />} />
+          <Route path="home" element={<HomePageRedirect />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="courses" element={<StudentViewCoursesPage />} />
           
