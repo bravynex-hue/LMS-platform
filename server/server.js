@@ -5,6 +5,9 @@ const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const http = require("http");
+const { Server } = require("socket.io");
+const { initializeSocket } = require("./socket");
 const { generalApiLimiter } = require("./middleware/rate-limiters");
 const { cspOptions, securityLoggerMiddleware } = require("./middleware/security-middleware");
 const cookieParser = require("cookie-parser");
@@ -29,11 +32,21 @@ const notifyRoutes = require("./routes/notify-routes");
 const secureInstructorRoutes = require("./routes/instructor-routes/secure-instructor-routes");
 const instructorLiveSessionRoutes = require("./routes/instructor-routes/live-session-routes");
 const studentLiveSessionRoutes = require("./routes/student-routes/live-session-routes");
+const studentInternshipTaskRoutes = require("./routes/student-routes/internship-task-routes");
+const studentMessagingRoutes = require("./routes/student-routes/messaging-routes");
 const instructorInternshipRoutes = require("./routes/instructor-routes/internship-routes");
+const instructorInternshipTaskRoutes = require("./routes/instructor-routes/internship-task-routes");
+const instructorMessagingRoutes = require("./routes/instructor-routes/messaging-routes");
 const instructorQuizRoutes = require("./routes/instructor-routes/quiz-routes");
 const studentQuizRoutes = require("./routes/student-routes/quiz-routes");
 const publicRoutes = require("./routes/public-routes");
 const sliderRoutes = require("./routes/admin-routes/slider-routes");
+const adminUserRoutes = require("./routes/admin-routes/user-routes");
+const adminCourseRoutes = require("./routes/admin-routes/course-routes");
+const adminPaymentRoutes = require("./routes/admin-routes/payment-routes");
+const adminFeedbackRoutes = require("./routes/admin-routes/feedback-routes");
+const adminCertificateRoutes = require("./routes/admin-routes/certificate-routes");
+const feedbackRoutes = require("./routes/feedback-routes");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -247,6 +260,8 @@ app.use((req, res, next) => {
       req.path.startsWith('/student/course-progress/') ||
       req.path.startsWith('/student/course-progress/certificate/') ||
       req.path.startsWith('/student/live-sessions/') ||
+      req.path.startsWith('/student/internships/') ||
+      req.path.startsWith('/student/messages/') ||
       // Skip CSRF for media upload endpoints (they handle their own security)
       req.path.startsWith('/media/upload') ||
       req.path.startsWith('/media/bulk-upload') ||
@@ -254,13 +269,17 @@ app.use((req, res, next) => {
       req.path.startsWith('/instructor/course/') ||
       req.path.startsWith('/instructor/live-sessions/') ||
       req.path.startsWith('/instructor/quizzes/') ||
+      req.path.startsWith('/instructor/internships/') ||
+      req.path.startsWith('/instructor/messages/') ||
       // Skip CSRF for secure instructor endpoints (bearer auth only)
       req.path.startsWith('/secure/instructor/') ||
       // Skip CSRF for student order endpoints (they handle their own security)
       req.path.startsWith('/student/order/') ||
       req.path.startsWith('/student/quizzes/') ||
-      // Skip CSRF for admin slider endpoints (they handle their own security)
-      req.path.startsWith('/admin/sliders')) {
+      // Skip CSRF for admin endpoints (they use bearer token authentication)
+      req.path.startsWith('/admin/') ||
+      // Skip CSRF for feedback endpoints (they use bearer token authentication)
+      req.path.startsWith('/feedback')) {
     return next();
   }
   return csrfProtection(req, res, next);
@@ -312,10 +331,20 @@ app.use("/notify", notifyRoutes);
 app.use("/secure/instructor", secureInstructorRoutes);
 app.use("/instructor/live-sessions", instructorLiveSessionRoutes);
 app.use("/student/live-sessions", studentLiveSessionRoutes);
+app.use("/student/internships", studentInternshipTaskRoutes);
+app.use("/student/messages", studentMessagingRoutes);
 app.use("/instructor/internships", instructorInternshipRoutes);
+app.use("/instructor/internships", instructorInternshipTaskRoutes);
+app.use("/instructor/messages", instructorMessagingRoutes);
 app.use("/instructor/quizzes", instructorQuizRoutes);
 app.use("/student/quizzes", studentQuizRoutes);
 app.use("/admin/sliders", sliderRoutes);
+app.use("/admin/users", adminUserRoutes);
+app.use("/admin/courses", adminCourseRoutes);
+app.use("/admin/payments", adminPaymentRoutes);
+app.use("/admin/feedback", adminFeedbackRoutes);
+app.use("/admin/certificates", adminCertificateRoutes);
+app.use("/feedback", feedbackRoutes);
 
 app.get("/favicon.ico", (req, res) => res.sendStatus(204));
 app.get("/health", (req, res) => {
@@ -401,7 +430,13 @@ app.get("*", (req, res) => {
 });
 
 // ----------------- Start -----------------
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+initializeSocket(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 WebSocket server initialized`);
 });
 

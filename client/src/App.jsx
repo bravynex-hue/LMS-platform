@@ -1,10 +1,11 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import AuthPage from "./pages/auth";
-import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard } from "./components/route-guard";
+import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard, AdminRouteGuard } from "./components/route-guard";
 import NotFoundPage from "./pages/not-found";
 import UnauthorizedPage from "./pages/not-found/unauthorized";
 import InstructorDashboardpage from "./pages/instructor";
+import AdminDashboardpage from "./pages/admin";
 import InstructorLiveSessionsPage from "./pages/instructor/live-sessions";
 // import InstructorInternshipsPage from "./pages/instructor/internships";
 import AddNewCoursePage from "./pages/instructor/add-new-course";
@@ -19,6 +20,7 @@ import StudentLiveSessionsPage from "./pages/student/live-sessions";
 import LearnPage from "./pages/student/learn";
 import AboutPage from "./pages/student/about";
 import StudentAnalyticsPage from "./pages/student/analytics";
+import StudentFeedbackSupportPage from "./pages/student/feedback-support";
 import AnimationProvider from "./context/animation-context";
 import InstructorCertificatesPage from "./pages/instructor/certificates";
 import InstructorQuizEditorPage from "./pages/instructor/quiz-editor";
@@ -30,13 +32,17 @@ import { SpinnerFullPage } from "./components/ui/spinner";
 // Component to redirect instructors away from student home page
 function HomePageRedirect() {
   const { auth, loading } = useContext(AuthContext);
+  
 
   // Show loading spinner while checking authentication
   if (loading) {
     return <SpinnerFullPage message="Loading..." />;
   }
 
-  // If user is authenticated and is an instructor, redirect to instructor dashboard
+  // If user is authenticated, redirect to appropriate dashboard based on role
+  if (auth.authenticate && auth.user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
   if (auth.authenticate && auth.user?.role === "instructor") {
     return <Navigate to="/instructor" replace />;
   }
@@ -64,6 +70,16 @@ function App() {
 
         {/* Unauthorized Route */}
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRouteGuard>
+              <AdminDashboardpage />
+            </AdminRouteGuard>
+          }
+        />
 
         {/* Instructor Routes */}
         <Route
@@ -201,6 +217,14 @@ function App() {
             element={
               <StudentRouteGuard>
                 <StudentLiveSessionsPage />
+              </StudentRouteGuard>
+            }
+          />
+          <Route
+            path="feedback-support"
+            element={
+              <StudentRouteGuard>
+                <StudentFeedbackSupportPage />
               </StudentRouteGuard>
             }
           />

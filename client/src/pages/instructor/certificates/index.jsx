@@ -7,7 +7,7 @@ import {
   fetchInstructorCourseDetailsService,
   listApprovedCertificatesService,
   approveCertificateService,
-  revokeCertificateService,
+  instructorRevokeCertificateService,
 } from "@/services";
 function InstructorCertificatesPage() {
   const { auth } = useAuth();
@@ -101,7 +101,7 @@ function InstructorCertificatesPage() {
     setWorking(true);
     try {
       if (isApproved) {
-        const res = await revokeCertificateService({ courseId, studentId: student.studentId });
+        const res = await instructorRevokeCertificateService({ courseId, studentId: student.studentId });
         if (res?.success) setApprovedMap((m) => ({ ...m, [student.studentId]: false }));
       } else {
         const res = await approveCertificateService({ courseId, studentId: student.studentId, approverId: auth?.user?._id });
@@ -133,7 +133,7 @@ function InstructorCertificatesPage() {
     if (!ids.length) return;
     setWorking(true);
     try {
-      await Promise.allSettled(ids.map((sid) => revokeCertificateService({ courseId, studentId: sid })));
+      await Promise.allSettled(ids.map((sid) => instructorRevokeCertificateService({ courseId, studentId: sid })));
       await loadCourseStudentsAndApprovals(courseId);
     } finally {
       setWorking(false);

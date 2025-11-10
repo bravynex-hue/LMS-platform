@@ -124,7 +124,9 @@ export default function AuthProvider({ children }) {
         toast({ title: "Login successful", description: `Welcome back, ${data.data.user.userName || "student"}!` });
         
         // Redirect based on user role immediately
-        if (data.data.user.role === "instructor") {
+        if (data.data.user.role === "admin") {
+          navigate("/admin");
+        } else if (data.data.user.role === "instructor") {
           navigate("/instructor");
         } else {
           navigate("/");

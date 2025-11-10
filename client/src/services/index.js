@@ -247,7 +247,7 @@ export async function approveCertificateService({ courseId, studentId, approverI
   return data;
 }
 
-export async function revokeCertificateService({ courseId, studentId }) {
+export async function instructorRevokeCertificateService({ courseId, studentId }) {
   const { data } = await axiosInstance.post(`/secure/instructor/certificates/revoke`, { courseId, studentId });
   return data;
 }
@@ -270,6 +270,100 @@ export async function createInternshipProgramService(payload) {
 
 export async function listInstructorProgramsService(instructorId) {
   const { data } = await axiosInstance.get(`/instructor/internships/list/${instructorId}`);
+  return data;
+}
+
+// Internship tasks - instructor
+export async function createInternshipTaskService(programId, taskData) {
+  const { data } = await axiosInstance.post(`/instructor/internships/${programId}/tasks`, taskData);
+  return data;
+}
+
+export async function getInternshipTasksService(programId) {
+  const { data } = await axiosInstance.get(`/instructor/internships/${programId}/tasks`);
+  return data;
+}
+
+export async function updateInternshipTaskService(taskId, taskData) {
+  const { data } = await axiosInstance.put(`/instructor/internships/tasks/${taskId}`, taskData);
+  return data;
+}
+
+export async function deleteInternshipTaskService(taskId) {
+  const { data } = await axiosInstance.delete(`/instructor/internships/tasks/${taskId}`);
+  return data;
+}
+
+// Internship tasks - student
+export async function getMyInternshipProgramsService() {
+  const { data } = await axiosInstance.get(`/student/internships/my-programs`);
+  return data;
+}
+
+export async function getStudentInternshipTasksService(programId) {
+  const { data } = await axiosInstance.get(`/student/internships/${programId}/tasks`);
+  return data;
+}
+
+export async function submitInternshipTaskService(taskId, submissionData) {
+  const { data } = await axiosInstance.post(`/student/internships/tasks/${taskId}/submit`, submissionData);
+  return data;
+}
+
+export async function getTaskSubmissionService(taskId) {
+  const { data } = await axiosInstance.get(`/student/internships/tasks/${taskId}/submission`);
+  return data;
+}
+
+// Messaging - Instructor
+export async function getCourseStudentsService(courseId) {
+  const { data } = await axiosInstance.get(`/instructor/messages/courses/${courseId}/students`);
+  return data;
+}
+
+export async function sendMessageToStudentService(messageData) {
+  const { data } = await axiosInstance.post(`/instructor/messages/send`, messageData);
+  return data;
+}
+
+export async function getConversationService(courseId, studentId) {
+  const { data } = await axiosInstance.get(`/instructor/messages/conversation/${courseId}/${studentId}`);
+  return data;
+}
+
+export async function getAllConversationsService() {
+  const { data} = await axiosInstance.get(`/instructor/messages/conversations`);
+  return data;
+}
+
+// Messaging - Student
+export async function getCourseInstructorService(courseId) {
+  const { data } = await axiosInstance.get(`/student/messages/courses/${courseId}/instructor`);
+  return data;
+}
+
+export async function sendMessageToInstructorService(messageData) {
+  const { data } = await axiosInstance.post(`/student/messages/send`, messageData);
+  return data;
+}
+
+export async function getConversationWithInstructorService(courseId) {
+  const { data } = await axiosInstance.get(`/student/messages/conversation/${courseId}`);
+  return data;
+}
+
+export async function getMyConversationsService() {
+  const { data } = await axiosInstance.get(`/student/messages/conversations`);
+  return data;
+}
+
+export async function clearConversationService(courseId) {
+  const { data } = await axiosInstance.delete(`/student/messages/conversation/${courseId}/clear`);
+  return data;
+}
+
+export async function clearInstructorConversationService(courseId, studentId) {
+  const { data } = await axiosInstance.delete(`/instructor/messages/conversation/${courseId}/${studentId}/clear`);
   return data;
 }
 
@@ -393,5 +487,137 @@ export async function toggleSliderStatusService(id) {
 
 export async function reorderSlidersService(sliders) {
   const { data } = await axiosInstance.post("/admin/sliders/reorder", { sliders });
+  return data;
+}
+
+// User Management - admin
+export async function getAllUsersService() {
+  const { data } = await axiosInstance.get("/admin/users");
+  return data;
+}
+
+export async function createUserService(userData) {
+  const { data } = await axiosInstance.post("/admin/users", userData);
+  return data;
+}
+
+export async function updateUserService(userId, userData) {
+  const { data } = await axiosInstance.put(`/admin/users/${userId}`, userData);
+  return data;
+}
+
+export async function toggleUserBlockService(userId) {
+  const { data } = await axiosInstance.patch(`/admin/users/${userId}/toggle-block`);
+  return data;
+}
+
+export async function deleteUserService(userId) {
+  const { data } = await axiosInstance.delete(`/admin/users/${userId}`);
+  return data;
+}
+
+// Course Management - admin
+export async function getAllAdminCoursesService() {
+  const { data } = await axiosInstance.get("/admin/courses");
+  return data;
+}
+
+export async function getAdminCourseByIdService(courseId) {
+  const { data } = await axiosInstance.get(`/admin/courses/${courseId}`);
+  return data;
+}
+
+export async function updateAdminCourseService(courseId, courseData) {
+  const { data } = await axiosInstance.put(`/admin/courses/${courseId}`, courseData);
+  return data;
+}
+
+export async function approveCourseService(courseId) {
+  const { data } = await axiosInstance.patch(`/admin/courses/${courseId}/approve`);
+  return data;
+}
+
+export async function unpublishCourseService(courseId) {
+  const { data } = await axiosInstance.patch(`/admin/courses/${courseId}/unpublish`);
+  return data;
+}
+
+// Payments & Transactions - admin
+export async function getAllTransactionsService() {
+  const { data } = await axiosInstance.get("/admin/payments");
+  return data;
+}
+
+export async function exportTransactionsReportService() {
+  const { data } = await axiosInstance.get("/admin/payments/export");
+  return data;
+}
+
+// Feedback & Support - student/instructor
+export async function submitFeedbackService(feedbackData) {
+  const { data } = await axiosInstance.post("/feedback", feedbackData);
+  return data;
+}
+
+export async function getMyFeedbackTicketsService() {
+  const { data } = await axiosInstance.get("/feedback");
+  return data;
+}
+
+export async function getFeedbackTicketByIdService(ticketId) {
+  const { data } = await axiosInstance.get(`/feedback/${ticketId}`);
+  return data;
+}
+
+// Feedback & Support - admin
+export async function getAllFeedbackTicketsService() {
+  const { data } = await axiosInstance.get("/admin/feedback");
+  return data;
+}
+
+export async function getAdminFeedbackTicketByIdService(ticketId) {
+  const { data } = await axiosInstance.get(`/admin/feedback/${ticketId}`);
+  return data;
+}
+
+export async function updateFeedbackTicketStatusService(ticketId, statusData) {
+  const { data } = await axiosInstance.patch(`/admin/feedback/${ticketId}/status`, statusData);
+  return data;
+}
+
+export async function resolveFeedbackTicketService(ticketId, adminResponse) {
+  const { data } = await axiosInstance.patch(`/admin/feedback/${ticketId}/resolve`, { adminResponse });
+  return data;
+}
+
+// Certificate Management - Admin
+export async function getAllCertificateRequestsService(status) {
+  const params = status ? { status } : {};
+  const { data } = await axiosInstance.get("/admin/certificates", { params });
+  return data;
+}
+
+export async function getCertificateRequestByIdService(certificateId) {
+  const { data } = await axiosInstance.get(`/admin/certificates/${certificateId}`);
+  return data;
+}
+
+export async function approveCertificateRequestService(certificateId, approvalData) {
+  const { data } = await axiosInstance.post(`/admin/certificates/${certificateId}/approve`, approvalData);
+  return data;
+}
+
+export async function rejectCertificateRequestService(certificateId, rejectionData) {
+  const { data } = await axiosInstance.post(`/admin/certificates/${certificateId}/reject`, rejectionData);
+  return data;
+}
+
+export async function adminRevokeCertificateService(certificateId, revocationData) {
+  const { data } = await axiosInstance.post(`/admin/certificates/${certificateId}/revoke`, revocationData);
+  return data;
+}
+
+export async function downloadCertificatePDFService(certificateId) {
+  const { data } = await axiosInstance.get(`/admin/certificates/${certificateId}/download`);
   return data;
 }

@@ -92,19 +92,28 @@ axiosInstance.interceptors.request.use(
     const isMediaUploadEndpoint = /\/media\/(upload|bulk-upload)/.test(url);
     
     // Check if this is an instructor course endpoint (excluded from CSRF)
-    const isInstructorCourseEndpoint = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url);
+    const isInstructorCourseEndpoint = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/internships\//.test(url) || /\/instructor\/messages\//.test(url);
     
     // Check if this is a student order endpoint (excluded from CSRF)
     const isStudentOrderEndpoint = /\/student\/order\//.test(url);
     
+    // Check if this is a student messages endpoint (excluded from CSRF)
+    const isStudentMessagesEndpoint = /\/student\/messages\//.test(url);
+    
     // Check if this is a secure instructor endpoint (excluded from CSRF)
     const isSecureInstructorEndpoint = /\/secure\/instructor\//.test(url);
+    
+    // Check if this is an admin endpoint (excluded from CSRF)
+    const isAdminEndpoint = /\/admin\//.test(url);
+    
+    // Check if this is a feedback endpoint (excluded from CSRF)
+    const isFeedbackEndpoint = /\/feedback($|\/)/.test(url);
     
     // Check if this is a course-related endpoint
     const isCourseRelated = /\/course\//.test(url) || /\/student\//.test(url) || /\/course-progress\//.test(url);
     
-    // Only attach CSRF token for non-auth, non-course-progress, non-media-upload, non-instructor-course, non-student-order, and non-secure-instructor endpoints
-    const shouldAttachCsrf = !isAuthEndpoint && !isCourseProgressEndpoint && !isMediaUploadEndpoint && !isInstructorCourseEndpoint && !isStudentOrderEndpoint && !isSecureInstructorEndpoint && ["post", "put", "patch", "delete"].includes(method);
+    // Only attach CSRF token for non-auth, non-course-progress, non-media-upload, non-instructor-course, non-student-order, non-secure-instructor, non-admin, and non-feedback endpoints
+    const shouldAttachCsrf = !isAuthEndpoint && !isCourseProgressEndpoint && !isMediaUploadEndpoint && !isInstructorCourseEndpoint && !isStudentOrderEndpoint && !isSecureInstructorEndpoint && !isAdminEndpoint && !isFeedbackEndpoint && !isStudentMessagesEndpoint && !isCourseRelated && ["post", "put", "patch", "delete"].includes(method);
     if (shouldAttachCsrf) {
       try {
         const token = await ensureCsrfToken();
@@ -148,9 +157,11 @@ axiosInstance.interceptors.response.use(
     const isNotifyContact = /\/notify\/contact-admin($|\?|\/)/.test(url);
     const isVideoProgress = /\/course-progress\//.test(url) || /\/student\/course/.test(url);
     const isCourseRelated = /\/course\//.test(url) || /\/student\//.test(url);
-    const isInstructorCourse = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url);
+    const isInstructorCourse = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/internships\//.test(url) || /\/instructor\/messages\//.test(url);
     const isStudentOrder = /\/student\/order\//.test(url);
     const isSecureInstructor = /\/secure\/instructor\//.test(url);
+    const isAdminEndpoint = /\/admin\//.test(url);
+    const isFeedbackEndpoint = /\/feedback($|\/)/.test(url);
     
     
     if (status === 401 || status === 403) {
@@ -165,7 +176,7 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
       }
       
-      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor) {
+      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
         // Only clear token and redirect for non-course related endpoints
         tokenManager.removeToken();
         toast({ title: "Session expired", description: "Please login again to continue" });
@@ -174,8 +185,8 @@ axiosInstance.interceptors.response.use(
         }
       } else if (isAuthLogin) {
         // For login failures, do not redirect or clear input; allow caller to handle toast
-      } else if (isVideoProgress || isCourseRelated || isInstructorCourse || isStudentOrder || isSecureInstructor) {
-        console.warn("Course/instructor-related request failed:", message);
+      } else if (isVideoProgress || isCourseRelated || isInstructorCourse || isStudentOrder || isSecureInstructor || isAdminEndpoint || isFeedbackEndpoint) {
+        console.warn("Course/instructor/admin/feedback-related request failed:", message);
       }
     }
     // CSRF errors - clear token and retry (but not for auth endpoints)
@@ -187,8 +198,8 @@ axiosInstance.interceptors.response.use(
       lastFetchTime = 0;
       retryCount = 0;
       
-      // Don't show CSRF error for auth endpoints, course-related requests, media uploads, instructor course, secure instructor, or student order endpoints
-      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor) {
+      // Don't show CSRF error for auth endpoints, course-related requests, media uploads, instructor course, secure instructor, student order, admin, or feedback endpoints
+      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
         toast({ 
           title: "Security error", 
           description: "Please refresh the page and try again",

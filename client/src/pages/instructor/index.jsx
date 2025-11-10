@@ -1,9 +1,9 @@
 import InstructorCourses from "@/components/instructor-view/courses";
-import InstructorDashboard from "@/components/instructor-view/dashboard";
-import RevenueAnalysis from "@/components/instructor-view/revenue-analysis/real-time";
 import InstructorLiveSessionsPage from "@/pages/instructor/live-sessions";
 import InstructorCertificatesPage from "@/pages/instructor/certificates";
-import SliderManagementPage from "@/pages/instructor/slider-management";
+import InternshipTasksPage from "@/pages/instructor/internship-tasks";
+import CommunicationPage from "@/pages/instructor/communication";
+import InstructorFeedbackSupportPage from "@/pages/instructor/feedback-support";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
 import { fetchInstructorCourseListService } from "@/services";
@@ -12,19 +12,23 @@ import {
   Search,
   Calendar,
   LogOut,
-  BarChart3,
   BookOpen,
-  TrendingUp,
   Menu,
   ChevronLeft,
   ChevronRight,
-  Image,
+  Briefcase,
+  BarChart3,
+  MessageCircle,
+  ClipboardCheck,
+  Video,
+  Award,
+  HelpCircle,
 } from "lucide-react";
 import { gsap } from "gsap"; // Import GSAP
 import { useNavigate } from "react-router-dom";
 
 function InstructorDashboardpage() {
-  const [currentView, setCurrentView] = useState("dashboard");
+  const [currentView, setCurrentView] = useState("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -87,20 +91,20 @@ function InstructorDashboardpage() {
   // Render the appropriate component based on current view
   const renderContent = () => {
     switch (currentView) {
-      case "dashboard":
-        return <InstructorDashboard listOfCourses={filteredCourses} />;
       case "courses":
         return <InstructorCourses listOfCourses={filteredCourses} />;
+      case "internships":
+        return <InternshipTasksPage />;
       case "live":
         return <InstructorLiveSessionsPage />;
-      case "sliders":
-        return <SliderManagementPage />;
-      case "revenue":
-        return <RevenueAnalysis listOfCourses={filteredCourses} />;
+      case "communication":
+        return <CommunicationPage />;
       case "certificates":
         return <InstructorCertificatesPage />;
+      case "feedback":
+        return <InstructorFeedbackSupportPage />;
       default:
-        return <InstructorDashboard listOfCourses={filteredCourses} />;
+        return <InstructorCourses listOfCourses={filteredCourses} />;
     }
   };
 
@@ -172,51 +176,6 @@ function InstructorDashboardpage() {
               <li>
                 <button
                   onClick={() => {
-                    setCurrentView("dashboard");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? "justify-center" : "gap-2 sm:gap-3"
-                  } w-full px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 ${
-                    currentView === "dashboard"
-                      ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 shadow-sm"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
-                  } group relative touch-manipulation`}
-                  title={isSidebarCollapsed ? "Dashboard" : ""}
-                >
-                  <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      currentView === "dashboard"
-                        ? "bg-gray-200"
-                        : "bg-gray-100"
-                    }`}
-                  >
-                    <BarChart3
-                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
-                        currentView === "dashboard"
-                          ? "text-gray-700"
-                          : "text-gray-500"
-                      }`}
-                    />
-                  </div>
-                  {!isSidebarCollapsed && (
-                    <>
-                      <span className="font-medium text-sm sm:text-base truncate">
-                        Dashboard
-                      </span>
-                      {currentView === "dashboard" && (
-                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
-                      )}
-                    </>
-                  )}
-                  {isSidebarCollapsed && currentView === "dashboard" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
-                  )}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
                     setCurrentView("courses");
                     setIsMobileMenuOpen(false);
                   }}
@@ -260,6 +219,49 @@ function InstructorDashboardpage() {
               <li>
                 <button
                   onClick={() => {
+                    setCurrentView("internships");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center ${
+                    isSidebarCollapsed ? "justify-center" : "gap-2 sm:gap-3"
+                  } w-full px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 ${
+                    currentView === "internships"
+                      ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
+                  } group relative touch-manipulation`}
+                  title={isSidebarCollapsed ? "Internship Tasks" : ""}
+                >
+                  <div
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      currentView === "internships" ? "bg-gray-200" : "bg-gray-100"
+                    }`}
+                  >
+                    <Briefcase
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                        currentView === "internships"
+                          ? "text-gray-700"
+                          : "text-gray-500"
+                      }`}
+                    />
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <>
+                      <span className="font-medium text-sm sm:text-base truncate">
+                        Internship Tasks
+                      </span>
+                      {currentView === "internships" && (
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
+                      )}
+                    </>
+                  )}
+                  {isSidebarCollapsed && currentView === "internships" && (
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
+                  )}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
                     setCurrentView("live");
                     setIsMobileMenuOpen(false);
                   }}
@@ -277,14 +279,68 @@ function InstructorDashboardpage() {
                       currentView === "live" ? "bg-gray-200" : "bg-gray-100"
                     }`}
                   >
-                    <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-green-500 inline-block" />
+                    <Video
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                        currentView === "live"
+                          ? "text-gray-700"
+                          : "text-gray-500"
+                      }`}
+                    />
                   </div>
                   {!isSidebarCollapsed && (
-                    <span className="font-medium text-sm sm:text-base truncate">
-                      Live Sessions
-                    </span>
+                    <>
+                      <span className="font-medium text-sm sm:text-base truncate">
+                        Live Sessions
+                      </span>
+                      {currentView === "live" && (
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
+                      )}
+                    </>
                   )}
                   {isSidebarCollapsed && currentView === "live" && (
+                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
+                  )}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setCurrentView("communication");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center ${
+                    isSidebarCollapsed ? "justify-center" : "gap-2 sm:gap-3"
+                  } w-full px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 ${
+                    currentView === "communication"
+                      ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
+                  } group relative touch-manipulation`}
+                  title={isSidebarCollapsed ? "Communication" : ""}
+                >
+                  <div
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      currentView === "communication" ? "bg-gray-200" : "bg-gray-100"
+                    }`}
+                  >
+                    <MessageCircle
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                        currentView === "communication"
+                          ? "text-gray-700"
+                          : "text-gray-500"
+                      }`}
+                    />
+                  </div>
+                  {!isSidebarCollapsed && (
+                    <>
+                      <span className="font-medium text-sm sm:text-base truncate">
+                        Communication
+                      </span>
+                      {currentView === "communication" && (
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
+                      )}
+                    </>
+                  )}
+                  {isSidebarCollapsed && currentView === "communication" && (
                     <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
@@ -311,12 +367,23 @@ function InstructorDashboardpage() {
                         : "bg-gray-100"
                     }`}
                   >
-                    <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-purple-600 inline-block" />
+                    <Award
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                        currentView === "certificates"
+                          ? "text-gray-700"
+                          : "text-gray-500"
+                      }`}
+                    />
                   </div>
                   {!isSidebarCollapsed && (
-                    <span className="font-medium text-sm sm:text-base truncate">
-                      Certificates
-                    </span>
+                    <>
+                      <span className="font-medium text-sm sm:text-base truncate">
+                        Certificates
+                      </span>
+                      {currentView === "certificates" && (
+                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
+                      )}
+                    </>
                   )}
                   {isSidebarCollapsed && currentView === "certificates" && (
                     <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
@@ -326,26 +393,28 @@ function InstructorDashboardpage() {
               <li>
                 <button
                   onClick={() => {
-                    setCurrentView("sliders");
+                    setCurrentView("feedback");
                     setIsMobileMenuOpen(false);
                   }}
                   className={`flex items-center ${
                     isSidebarCollapsed ? "justify-center" : "gap-2 sm:gap-3"
                   } w-full px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 ${
-                    currentView === "sliders"
+                    currentView === "feedback"
                       ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 shadow-sm"
                       : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
                   } group relative touch-manipulation`}
-                  title={isSidebarCollapsed ? "Slider Management" : ""}
+                  title={isSidebarCollapsed ? "Feedback & Support" : ""}
                 >
                   <div
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      currentView === "sliders" ? "bg-gray-200" : "bg-gray-100"
+                      currentView === "feedback"
+                        ? "bg-gray-200"
+                        : "bg-gray-100"
                     }`}
                   >
-                    <Image
+                    <HelpCircle
                       className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
-                        currentView === "sliders"
+                        currentView === "feedback"
                           ? "text-gray-700"
                           : "text-gray-500"
                       }`}
@@ -354,57 +423,14 @@ function InstructorDashboardpage() {
                   {!isSidebarCollapsed && (
                     <>
                       <span className="font-medium text-sm sm:text-base truncate">
-                        Sliders
+                        Feedback & Support
                       </span>
-                      {currentView === "sliders" && (
+                      {currentView === "feedback" && (
                         <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
                       )}
                     </>
                   )}
-                  {isSidebarCollapsed && currentView === "sliders" && (
-                    <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
-                  )}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    setCurrentView("revenue");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? "justify-center" : "gap-2 sm:gap-3"
-                  } w-full px-2 sm:px-3 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 ${
-                    currentView === "revenue"
-                      ? "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300 shadow-sm"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm"
-                  } group relative touch-manipulation`}
-                  title={isSidebarCollapsed ? "Revenue Analysis" : ""}
-                >
-                  <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      currentView === "revenue" ? "bg-gray-200" : "bg-gray-100"
-                    }`}
-                  >
-                    <TrendingUp
-                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
-                        currentView === "revenue"
-                          ? "text-gray-700"
-                          : "text-gray-500"
-                      }`}
-                    />
-                  </div>
-                  {!isSidebarCollapsed && (
-                    <>
-                      <span className="font-medium text-sm sm:text-base truncate">
-                        Revenue Analysis
-                      </span>
-                      {currentView === "revenue" && (
-                        <div className="ml-auto w-2 h-2 bg-black rounded-full flex-shrink-0"></div>
-                      )}
-                    </>
-                  )}
-                  {isSidebarCollapsed && currentView === "revenue" && (
+                  {isSidebarCollapsed && currentView === "feedback" && (
                     <div className="absolute right-1 top-1 w-2 h-2 bg-black rounded-full"></div>
                   )}
                 </button>
@@ -455,30 +481,40 @@ function InstructorDashboardpage() {
 
               <div className="flex-1 min-w-0 overflow-hidden">
                 <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
-                  {currentView === "dashboard"
-                    ? "Dashboard"
-                    : currentView === "courses"
+                  {currentView === "courses"
                     ? "My Courses"
+                    : currentView === "internships"
+                    ? "Internship Tasks"
                     : currentView === "live"
                     ? "Live Sessions"
+                    : currentView === "progress"
+                    ? "Progress Tracking"
+                    : currentView === "communication"
+                    ? "Communication"
                     : currentView === "certificates"
                     ? "Certificates"
-                    : currentView === "revenue"
-                    ? "Revenue Analysis"
-                    : "Dashboard"}
+                    : currentView === "feedback"
+                    ? "Feedback & Support"
+                    : "My Courses"}
                 </h2>
                 <p className="hidden sm:block text-xs sm:text-sm text-gray-500 truncate">
-                  {currentView === "dashboard"
-                    ? "Monitor your courses and student progress"
-                    : currentView === "courses"
+                  {currentView === "courses"
                     ? "Manage your course portfolio"
+                    : currentView === "internships"
+                    ? "Create internship milestones or daily/weekly tasks"
                     : currentView === "live"
                     ? "Schedule sessions and review attendance"
+                    : currentView === "progress"
+                    ? "Monitor intern progress, attendance, and submission rates"
+                    : currentView === "communication"
+                    ? "Chat and message with your interns"
+                    : currentView === "evaluation"
+                    ? "Mark assignments, give scores, and provide feedback"
                     : currentView === "certificates"
                     ? "Approve or revoke student certificates"
-                    : currentView === "revenue"
-                    ? "Analyze revenue trends and performance metrics"
-                    : "Monitor your courses and student progress"}
+                    : currentView === "feedback"
+                    ? "Submit feedback or report issues to admin"
+                    : "Manage your course portfolio"}
                 </p>
               </div>
             </div>

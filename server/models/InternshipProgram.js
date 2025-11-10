@@ -13,6 +13,7 @@ const InternshipProgramSchema = new mongoose.Schema(
     description: { type: String },
     instructorId: { type: String, required: true },
     instructorName: { type: String },
+    linkedCourseId: { type: String, index: true }, // Link to course - students auto-enrolled when they buy this course
     startDate: { type: Date },
     endDate: { type: Date },
     image: { type: String },

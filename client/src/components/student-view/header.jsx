@@ -5,6 +5,7 @@ import {
   User,
   LogOut,
   BarChart3,
+  HelpCircle,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -98,6 +99,16 @@ function StudentViewCommonHeader() {
                 Analytics
               </Button>
 
+
+
+              <Button
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors duration-200"
+                onClick={() => navigate("/feedback-support")}
+              >
+                Support
+              </Button>
+              
               <Button
                 variant="ghost"
                 className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors duration-200"
@@ -105,6 +116,7 @@ function StudentViewCommonHeader() {
               >
                 About
               </Button>
+
             </nav>
             <form
               onSubmit={handleSearchSubmit}
@@ -179,6 +191,13 @@ function StudentViewCommonHeader() {
                       <BarChart3 className="w-4 h-4 text-gray-600" />
                       <span>Analytics</span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => navigate("/feedback-support")}
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <HelpCircle className="w-4 h-4 text-gray-600" />
+                      <span>Feedback & Support</span>
+                    </DropdownMenuItem>
                     {/* <DropdownMenuItem 
                       onClick={() => navigate("/profile")}
                       className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -251,6 +270,15 @@ function StudentViewCommonHeader() {
             >
               About
             </Button>
+            {auth?.authenticate && (
+              <Button
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+                onClick={() => navigate("/feedback-support")}
+              >
+                Support
+              </Button>
+            )}
           </div>
           <form
             onSubmit={handleSearchSubmit}

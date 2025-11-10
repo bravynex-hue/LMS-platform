@@ -2,11 +2,20 @@ const InternshipProgram = require("../../models/InternshipProgram");
 
 const createProgram = async (req, res) => {
   try {
-    const { title, description, instructorId, instructorName, startDate, endDate, pricing = 0 } = req.body;
+    const { title, description, instructorId, instructorName, startDate, endDate } = req.body;
     if (!title || !instructorId) {
       return res.status(400).json({ success: false, message: "Title and instructorId are required" });
     }
-    const program = await InternshipProgram.create({ title, description, instructorId, instructorName, startDate, endDate, pricing });
+    // Pricing removed - students already purchased courses
+    const program = await InternshipProgram.create({ 
+      title, 
+      description, 
+      instructorId, 
+      instructorName, 
+      startDate, 
+      endDate,
+      pricing: 0 // Always free since students already paid for courses
+    });
     res.status(201).json({ success: true, data: program });
   } catch (error) {
     console.error("createProgram error", error);

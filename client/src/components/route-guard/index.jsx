@@ -21,7 +21,9 @@ export default function RouteGuard({ children, requireAuth = true, allowedRoles 
   // If route doesn't require authentication but user is authenticated
   if (!requireAuth && auth.authenticate) {
     // Redirect to appropriate dashboard based on role
-    if (auth.user?.role === "instructor") {
+    if (auth.user?.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    } else if (auth.user?.role === "instructor") {
       return <Navigate to="/instructor" replace />;
     } else {
       return <Navigate to="/" replace />;
@@ -52,6 +54,14 @@ export function StudentRouteGuard({ children }) {
 export function InstructorRouteGuard({ children }) {
   return (
     <RouteGuard requireAuth={true} allowedRoles={["instructor"]}>
+      {children}
+    </RouteGuard>
+  );
+}
+
+export function AdminRouteGuard({ children }) {
+  return (
+    <RouteGuard requireAuth={true} allowedRoles={["admin"]}>
       {children}
     </RouteGuard>
   );
