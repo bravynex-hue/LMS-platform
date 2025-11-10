@@ -38,9 +38,19 @@ const getInstructorAnalytics = async (req, res) => {
       console.log(`Order ID: ${o._id}, Payment Status: ${o.paymentStatus}, Order Status: ${o.orderStatus}, Raw coursePricing: ${o.coursePricing}, Parsed: ${parseAmount(o.coursePricing)}`);
     });
 
-    // Totals
-    const totalRevenue = orders.reduce((sum, o) => sum + parseAmount(o.coursePricing), 0);
+    // Totals - calculate from orders first, fallback to course data if no orders
+    let totalRevenue = orders.reduce((sum, o) => sum + parseAmount(o.coursePricing), 0);
     const totalStudents = courses.reduce((sum, c) => sum + (Array.isArray(c.students) ? c.students.length : 0), 0);
+    
+    // If no orders but students exist, calculate revenue from course pricing
+    if (totalRevenue === 0 && totalStudents > 0) {
+      console.log("No orders found, calculating revenue from course enrollments");
+      totalRevenue = courses.reduce((sum, c) => {
+        const studentCount = Array.isArray(c.students) ? c.students.length : 0;
+        return sum + (Number(c.pricing || 0) * studentCount);
+      }, 0);
+    }
+    
     const avgRevenuePerStudent = totalStudents > 0 ? totalRevenue / totalStudents : 0;
 
     console.log("Calculated Totals: Total Revenue =", totalRevenue, "Total Students =", totalStudents);
@@ -64,6 +74,17 @@ const getInstructorAnalytics = async (req, res) => {
         monthly[idx].students += 1;
       }
     });
+    
+    // If no orders, add current course enrollment data to current month
+    if (orders.length === 0 && totalStudents > 0) {
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      if (monthKeyIndex.has(currentMonthKey)) {
+        const idx = monthKeyIndex.get(currentMonthKey);
+        monthly[idx].revenue = totalRevenue;
+        monthly[idx].students = totalStudents;
+      }
+    }
+    
     console.log("Monthly Data:", monthly);
 
     // Daily breakdown last 30 days
@@ -84,6 +105,17 @@ const getInstructorAnalytics = async (req, res) => {
         daily[idx].students += 1;
       }
     });
+    
+    // If no orders, add current course enrollment data to today's entry
+    if (orders.length === 0 && totalStudents > 0) {
+      const todayKey = now.toISOString().slice(0, 10);
+      if (dayKeyIndex.has(todayKey)) {
+        const idx = dayKeyIndex.get(todayKey);
+        daily[idx].revenue = totalRevenue;
+        daily[idx].students = totalStudents;
+      }
+    }
+    
     console.log("Daily Data:", daily);
 
     // Hourly breakdown last 24 hours
@@ -104,6 +136,17 @@ const getInstructorAnalytics = async (req, res) => {
         hourly[idx].students += 1;
       }
     });
+    
+    // If no orders, add current course enrollment data to current hour
+    if (orders.length === 0 && totalStudents > 0) {
+      const currentHourKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + 'T' + String(now.getHours()).padStart(2,'0');
+      if (hourKeyIndex.has(currentHourKey)) {
+        const idx = hourKeyIndex.get(currentHourKey);
+        hourly[idx].revenue = totalRevenue;
+        hourly[idx].students = totalStudents;
+      }
+    }
+    
     console.log("Hourly Data:", hourly);
 
     // Course performance

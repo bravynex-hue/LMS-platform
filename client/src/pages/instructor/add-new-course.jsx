@@ -32,8 +32,6 @@ function AddNewCoursePage() {
   const navigate = useNavigate();
   const params = useParams();
 
-  console.log(params);
-
   function isEmpty(value) {
     if (Array.isArray(value)) {
       return value.length === 0;

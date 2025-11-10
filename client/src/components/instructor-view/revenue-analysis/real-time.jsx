@@ -17,6 +17,7 @@ import {
 import PropTypes from "prop-types";
 import { useState, useMemo, useEffect, useContext } from "react";
 import { AuthContext } from "@/context/auth-context";
+import { useSocket } from "@/context/socket-context";
 import { fetchInstructorAnalyticsService } from "@/services";
 import {
   LineChart,
@@ -35,6 +36,7 @@ import {
 
 function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
   const { auth } = useContext(AuthContext);
+  const { socket, connected } = useSocket();
   const [selectedPeriod, setSelectedPeriod] = useState("daily");
   const [realTimeData] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -47,22 +49,41 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
     lastUpdated: null
   });
 
-  // Load instructor analytics - fetch once on mount, no polling
+  // Load instructor analytics - fetch once on mount
   useEffect(() => {
     let isMounted = true;
     
     async function load() {
       if (!auth?.user?._id) return;
       
+      // Admin users: calculate from all courses (they don't own courses)
+      if (auth?.user?.role === 'admin') {
+        const safeCourses = Array.isArray(listOfCourses) ? listOfCourses : [];
+        const totalRevenue = safeCourses.reduce((sum, c) => {
+          return sum + ((c.students?.length || 0) * (c.pricing || 0));
+        }, 0);
+        const totalStudents = safeCourses.reduce((sum, c) => {
+          return sum + (c.students?.length || 0);
+        }, 0);
+        
+        setLiveStats({
+          totalRevenue,
+          totalStudents,
+          todayRevenue: totalRevenue,
+          todayStudents: totalStudents,
+          lastEnrollment: null,
+          lastUpdated: new Date().toLocaleTimeString(),
+        });
+        return;
+      }
+      
+      // Regular instructors: fetch from API
       try {
-        console.log("Fetching instructor analytics...");
         const res = await fetchInstructorAnalyticsService(auth.user._id);
         
-        if (isMounted && res?.success) {
-          console.log("Received analytics data");
+        if (isMounted && res?.success && res?.data) {
           setAnalytics(res.data);
           
-          // Derive today's stats from dailyData last item if available
           const today = res.data?.dailyData?.[res.data.dailyData.length - 1];
           const totals = res.data?.totals || {};
           
@@ -74,30 +95,62 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
             lastEnrollment: res.data?.lastEnrollment || null,
             lastUpdated: new Date().toLocaleTimeString(),
           });
-        } else if (res && !res.success) {
-          console.error("Failed to fetch analytics:", res.message);
         }
       } catch (error) {
         console.error("Error fetching analytics:", error);
       }
     }
     
-    // Initial load only
     load();
     
     return () => { 
       isMounted = false;
     };
-  }, [auth?.user?._id]);
+  }, [auth?.user?._id, auth?.user?.role, listOfCourses]);
 
-  // Add a log for analytics state after it's updated
+  // Listen for real-time revenue updates via Socket.IO
   useEffect(() => {
-    console.log("Analytics state updated:", analytics); // Log 3
-  }, [analytics]);
+    if (!socket || !connected || !auth?.user?._id) return;
+    if (auth?.user?.role === 'admin') return; // Skip for admin users
+
+    const handleRevenueUpdate = (data) => {
+      // Only update if this update is for the current instructor
+      if (data.instructorId !== auth.user._id) return;
+
+      setLiveStats((prev) => ({
+        ...prev,
+        todayRevenue: prev.todayRevenue + Number(data.revenue || 0),
+        todayStudents: prev.todayStudents + 1,
+        totalRevenue: prev.totalRevenue + Number(data.revenue || 0),
+        totalStudents: prev.totalStudents + 1,
+        lastEnrollment: {
+          studentName: data.studentName,
+          courseTitle: data.courseTitle,
+          revenue: data.revenue,
+          timestamp: data.timestamp,
+        },
+        lastUpdated: new Date().toLocaleTimeString(),
+      }));
+
+      // Refresh analytics data
+      fetchInstructorAnalyticsService(auth.user._id)
+        .then((res) => {
+          if (res?.success) setAnalytics(res.data);
+        })
+        .catch((err) => console.error("Error refreshing analytics:", err));
+    };
+
+    socket.on("revenue-update", handleRevenueUpdate);
+
+    return () => {
+      socket.off("revenue-update", handleRevenueUpdate);
+    };
+  }, [socket, connected, auth?.user?._id, auth?.user?.role]);
 
   // Calculate revenue data
   const revenueData = useMemo(() => {
-    if (analytics) {
+    // Use analytics data if available
+    if (analytics && analytics.totals) {
       const totals = analytics.totals || {};
       return {
         totalRevenue: Number(totals.totalRevenue || 0),
@@ -110,8 +163,23 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
         categoryData: analytics.categoryData || [],
       };
     }
-    // Fallback to course-derived summary until analytics loads
+    
+    // Fallback: calculate from courses (for admin or when analytics loading)
     const safeCourses = Array.isArray(listOfCourses) ? listOfCourses : [];
+    
+    if (safeCourses.length === 0) {
+      return {
+        totalRevenue: 0,
+        totalStudents: 0,
+        averageRevenuePerStudent: 0,
+        hourlyData: [],
+        dailyData: [],
+        monthlyData: [],
+        coursePerformance: [],
+        categoryData: [],
+      };
+    }
+    
     const courseRevenue = safeCourses.map(course => ({
       id: course._id || `course-${Math.random()}`,
       title: course.title || "Untitled Course",
@@ -124,17 +192,57 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
     const totalRevenue = courseRevenue.reduce((sum, c) => sum + c.revenue, 0);
     const totalStudents = courseRevenue.reduce((sum, c) => sum + c.students, 0);
     const averageRevenuePerStudent = totalStudents > 0 ? totalRevenue / totalStudents : 0;
+    
+    // Generate time-based data for charts (show all revenue in current period)
+    const now = new Date();
+    
+    // Daily data - last 30 days (show all revenue on today)
+    const dailyData = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const isToday = i === 0;
+      dailyData.push({
+        day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        revenue: isToday ? totalRevenue : 0,
+        students: isToday ? totalStudents : 0,
+      });
+    }
+    
+    // Monthly data - last 12 months (show all revenue in current month)
+    const monthlyData = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const isCurrentMonth = i === 0;
+      monthlyData.push({
+        month: d.toLocaleString('en-US', { month: 'short' }),
+        revenue: isCurrentMonth ? totalRevenue : 0,
+        students: isCurrentMonth ? totalStudents : 0,
+      });
+    }
+    
+    // Hourly data - last 24 hours (show all revenue in current hour)
+    const hourlyData = [];
+    for (let i = 23; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const isCurrentHour = i === 0;
+      hourlyData.push({
+        hour: `${String(d.getHours()).padStart(2, '0')}:00`,
+        revenue: isCurrentHour ? totalRevenue : 0,
+        students: isCurrentHour ? totalStudents : 0,
+      });
+    }
+    
     return {
       totalRevenue,
       totalStudents,
       averageRevenuePerStudent,
-      hourlyData: [],
-      dailyData: [],
-      monthlyData: [],
+      hourlyData,
+      dailyData,
+      monthlyData,
       coursePerformance: courseRevenue.sort((a,b) => b.revenue - a.revenue).slice(0,10),
       categoryData: [],
     };
-  }, [analytics, listOfCourses]);
+  }, [analytics, listOfCourses, auth?.user?.role]);
 
   // KPI Cards with real-time indicators
   const kpiCards = [
@@ -180,9 +288,6 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
     }
   ];
 
-  // Chart colors
-  // const COLORS = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4', '#84CC16', '#F97316'];
-
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
@@ -191,8 +296,10 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             Real-Time Revenue Analysis
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-normal text-green-600">LIVE</span>
+              <div className={`w-3 h-3 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span className={`text-sm font-normal ${connected ? 'text-green-600' : 'text-gray-500'}`}>
+                {connected ? 'LIVE' : 'OFFLINE'}
+              </span>
             </div>
           </h1>
           <p className="text-gray-600 mt-2">
@@ -532,13 +639,17 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                     <p className="text-gray-600">Today&apos;s Enrollments</p>
                   </div>
 
-                  <div className="bg-green-50 rounded-lg p-4">
+                  <div className={`rounded-lg p-4 ${connected ? 'bg-green-50' : 'bg-gray-50'}`}>
                     <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-4 h-4 text-green-600" />
-                      <span className="font-semibold text-green-800">Live Updates</span>
+                      <Zap className={`w-4 h-4 ${connected ? 'text-green-600' : 'text-gray-600'}`} />
+                      <span className={`font-semibold ${connected ? 'text-green-800' : 'text-gray-800'}`}>
+                        {connected ? 'Live Updates Active' : 'Live Updates Offline'}
+                      </span>
                     </div>
-                    <p className="text-sm text-green-700">
-                      Data updates every 15 seconds from live analytics.
+                    <p className={`text-sm ${connected ? 'text-green-700' : 'text-gray-700'}`}>
+                      {connected 
+                        ? 'Real-time updates via WebSocket connection.' 
+                        : 'Reconnecting to live updates...'}
                     </p>
                   </div>
                 </div>

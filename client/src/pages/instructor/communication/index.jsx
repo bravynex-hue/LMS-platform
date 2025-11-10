@@ -56,7 +56,6 @@ function CommunicationPage() {
   useEffect(() => {
     if (socket) {
       socket.on("new-message", (message) => {
-        console.log("📨 New message received:", message);
         setMessages((prev) => [...prev, message]);
         scrollToBottom();
       });
@@ -111,10 +110,8 @@ function CommunicationPage() {
     setLoading(true);
     try {
       const res = await getCourseStudentsService(selectedCourseId);
-      console.log("Students response:", res);
       if (res?.success) {
         setStudents(res.data || []);
-        console.log("Loaded students:", res.data);
       } else {
         console.error("Failed to load students:", res?.message);
       }

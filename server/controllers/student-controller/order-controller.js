@@ -3,6 +3,7 @@ const { getRazorpayInstance } = require("../../helpers/razorpay");
 const Order = require("../../models/Order");
 const Course = require("../../models/Course");
 const StudentCourses = require("../../models/StudentCourses");
+const { getIO } = require("../../socket");
 
 
 const createOrder = async (req, res) => {
@@ -171,7 +172,22 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
       },
     });
 
-
+    // Emit real-time revenue update via Socket.IO
+    try {
+      const io = getIO();
+      io.emit("revenue-update", {
+        instructorId: order.instructorId,
+        orderId: order._id,
+        studentName: order.userName,
+        courseTitle: order.courseTitle,
+        revenue: order.coursePricing,
+        timestamp: new Date(),
+      });
+      console.log(`Revenue update emitted for instructor ${order.instructorId}`);
+    } catch (socketError) {
+      console.error("Failed to emit revenue update:", socketError);
+      // Don't fail the request if socket emission fails
+    }
 
     res.status(200).json({
       success: true,

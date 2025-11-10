@@ -62,4 +62,12 @@ function emitNewMessage(courseId, message) {
   }
 }
 
-module.exports = { initializeSocket, getIO, emitNewMessage };
+// Emit revenue update to all connected clients (or specific instructor)
+function emitRevenueUpdate(data) {
+  if (io) {
+    io.emit("revenue-update", data);
+    console.log(`Revenue update emitted for instructor ${data.instructorId}`);
+  }
+}
+
+module.exports = { initializeSocket, getIO, emitNewMessage, emitRevenueUpdate };

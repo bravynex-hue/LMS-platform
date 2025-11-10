@@ -225,7 +225,6 @@ function LearnPage() {
   useEffect(() => {
     if (socket) {
       socket.on("new-message", (message) => {
-        console.log("📨 New message received:", message);
         setMessages((prev) => [...prev, message]);
         
         // If message from instructor and dialog is closed, increment unread

@@ -75,14 +75,11 @@ function StudentViewCoursesPage() {
     const indexOfCurrentSeection =
       Object.keys(cpyFilters).indexOf(getSectionId);
 
-    console.log(indexOfCurrentSeection, getSectionId);
     if (indexOfCurrentSeection === -1) {
       cpyFilters = {
         ...cpyFilters,
         [getSectionId]: [getCurrentOption.id],
       };
-
-      console.log(cpyFilters);
     } else {
       const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
         getCurrentOption.id
@@ -199,9 +196,6 @@ function StudentViewCoursesPage() {
       sessionStorage.removeItem("filters");
     };
   }, []);
-
-  console.log(loadingState, "loadingState");
-
 
   return (
     <div className="min-h-screen bg-gray-50">

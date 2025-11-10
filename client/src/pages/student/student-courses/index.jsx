@@ -23,7 +23,6 @@ function StudentCoursesPage() {
       if (response?.success) {
         setStudentBoughtCoursesList(response?.data || []);
       }
-      console.log(response);
     } finally {
       setIsLoading(false);
     }

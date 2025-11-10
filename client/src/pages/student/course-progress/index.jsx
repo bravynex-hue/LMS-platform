@@ -112,17 +112,13 @@ function StudentViewCourseProgressPage() {
 
   const markLectureAsViewed = useCallback(async (lectureId) => {
     try {
-      console.log('Marking lecture as viewed:', lectureId);
       const response = await markLectureAsViewedService(
         auth?.user?._id,
         studentCurrentCourseProgress?.courseDetails?._id,
         lectureId
       );
 
-      console.log('Mark lecture response:', response);
-
       if (response?.success) {
-        // Update the progress state
         setStudentCurrentCourseProgress(prev => ({
           ...prev,
           progress: response.data.lecturesProgress,
@@ -130,22 +126,18 @@ function StudentViewCourseProgressPage() {
           completionDate: response.data.completionDate
         }));
 
-        // Check if course is completed
         if (response.data.completed && !isCourseCompleted) {
-          console.log('Course completed! Setting completion state...');
           setIsCourseCompleted(true);
           setShowCourseCompleteDialog(true);
           setShowConfetti(true);
         }
-        
-        // Also check if all lectures are viewed (in case completion status is not updated)
+
         const allLecturesViewed = studentCurrentCourseProgress?.courseDetails?.curriculum?.every(lecture => {
           const progressEntry = response.data.lecturesProgress?.find(p => p.lectureId === lecture._id);
           return progressEntry && progressEntry.viewed;
         });
-        
+
         if (allLecturesViewed && !isCourseCompleted) {
-          console.log('All lectures completed! Setting completion state...');
           setIsCourseCompleted(true);
           setShowCourseCompleteDialog(true);
           setShowConfetti(true);
@@ -155,14 +147,10 @@ function StudentViewCourseProgressPage() {
       }
     } catch (error) {
       console.error('Error marking lecture as viewed:', error);
-      // Don't show error to user for progress tracking - it's not critical
-      // The video completion flow should continue regardless
     }
   }, [auth?.user?._id, studentCurrentCourseProgress?.courseDetails?._id, setStudentCurrentCourseProgress, isCourseCompleted, studentCurrentCourseProgress?.courseDetails?.curriculum]);
 
   const handleVideoEnded = useCallback(async () => {
-    console.log("Video ended, checking for next lecture");
-    
     if (!currentLecture || !studentCurrentCourseProgress?.courseDetails?.curriculum) {
       console.warn("Missing required data for video completion");
       return;
@@ -178,80 +166,48 @@ function StudentViewCourseProgressPage() {
     }
 
     try {
-      // Show completion notification for current video
       setCompletedVideoTitle(currentLecture.title);
       setShowVideoCompleteNotification(true);
 
-      // Mark current lecture as viewed first with retry logic
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           await markLectureAsViewed(currentLecture._id);
-          console.log("Lecture marked as viewed successfully");
           break;
         } catch (error) {
           retryCount++;
           console.warn(`Failed to mark lecture as viewed (attempt ${retryCount}):`, error);
-          
-          if (retryCount >= maxRetries) {
-            console.error("Failed to mark lecture as viewed after all retries");
-            toast({
-              title: "Progress not saved",
-              description: "There was an issue saving your progress. Don't worry, you can continue watching.",
-              variant: "destructive"
-            });
-            // Don't return here - still allow navigation to next video
-          }
-          
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
       }
 
-      // Check if there's a next lecture
       const nextIndex = currentIndex + 1;
       if (nextIndex < studentCurrentCourseProgress.courseDetails.curriculum.length) {
-        // Move to next lecture after a short delay
         setTimeout(() => {
           const nextLecture = studentCurrentCourseProgress.courseDetails.curriculum[nextIndex];
-          console.log("Moving to next lecture:", nextLecture.title);
           setCurrentLecture(nextLecture);
           setShowVideoCompleteNotification(false);
-        }, 2000); // 2 second delay to show completion notification
+        }, 2000);
       } else {
-        // This was the last lecture - show final completion
         setTimeout(() => {
-          console.log("All lectures completed! Showing completion dialog");
           setShowVideoCompleteNotification(false);
           setIsCourseCompleted(true);
           setShowCourseCompleteDialog(true);
           setShowConfetti(true);
-        }, 2000); // 2 second delay to show completion notification
+        }, 2000);
       }
     } catch (error) {
       console.error("Error in video completion handler:", error);
-      toast({
-        title: "Error",
-        description: "There was an issue processing video completion. You can continue watching.",
-        variant: "destructive"
-      });
-      // Still allow navigation to next video even if there was an error
     }
   }, [currentLecture, studentCurrentCourseProgress, markLectureAsViewed, toast]);
 
-
-
   async function handleRewatchCourse() {
     try {
-      console.log('Resetting course progress...');
       const response = await resetCourseProgressService(
         auth?.user?._id,
         studentCurrentCourseProgress?.courseDetails?._id
       );
-
-      console.log('Reset course response:', response);
 
       if (response?.success) {
         setCurrentLecture(null);
@@ -260,7 +216,6 @@ function StudentViewCourseProgressPage() {
         setIsCourseCompleted(false);
         setShowCertificateSidebar(false);
         fetchCurrentCourseProgress();
-        
         toast({
           title: "Course Reset",
           description: "Course progress has been reset. You can start over!",
@@ -286,22 +241,13 @@ function StudentViewCourseProgressPage() {
   async function handleDownloadCertificate() {
     try {
       setIsCertificateDownloading(true);
-      console.log('Attempting certificate download...');
-      console.log('Course completed status:', isCourseCompleted);
-      console.log('Course details:', studentCurrentCourseProgress?.courseDetails);
-      
-      // Server will automatically handle progress creation and completion detection
-      // No need to manually sync progress here
-      
+
       const res = await downloadCertificateService(
         auth?.user?._id,
         studentCurrentCourseProgress?.courseDetails?._id
       );
-      
-      console.log('Certificate download response:', res);
-      
+
       if (res.status === 200) {
-        // Validate content-type to ensure we received a PDF, not an error JSON
         const contentType = res.headers?.["content-type"] || "";
         const isPdf = contentType.includes("application/pdf");
         const blob = new Blob([res.data], { type: isPdf ? "application/pdf" : contentType || "application/octet-stream" });

@@ -231,9 +231,7 @@ export async function fetchStudentAnalyticsService(userId) {
 
 export async function fetchInstructorAnalyticsService(instructorId) {
   try {
-    console.log('Fetching analytics for instructor:', instructorId);
     const { data } = await axiosInstance.get(`/instructor/analytics/get/${instructorId}`);
-    console.log('Analytics service response:', data);
     return data;
   } catch (error) {
     console.error('Error fetching instructor analytics:', error);
