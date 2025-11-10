@@ -238,71 +238,76 @@ function StudentViewCommonHeader() {
         </div>
 
         {/* Mobile search & nav */}
-        <div className="md:hidden pb-3 sm:pb-4 flex flex-col gap-2 sm:gap-3">
-          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <Button
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
-              onClick={() => navigate("/home")}
-            >
-              Home
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
-              onClick={() => navigate("/courses")}
-            >
-              Explore
-            </Button>
-            {auth?.authenticate && (
-              <Button
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
-                onClick={() => navigate("/student-courses")}
-              >
-                My Courses
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
-              onClick={() => navigate("/about")}
-            >
-              About
-            </Button>
-            {auth?.authenticate && (
-              <Button
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
-                onClick={() => navigate("/feedback-support")}
-              >
-                Support
-              </Button>
-            )}
-          </div>
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center gap-2"
-          >
-            <div className="relative flex-1">
-              <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-              <input
-                type="search"
-                aria-label="Search courses"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search courses..."
-                className="w-full h-8 sm:h-10 pl-7 sm:pl-10 pr-3 sm:pr-4 rounded-md border border-gray-300 bg-white text-xs sm:text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="h-8 sm:h-10 px-3 sm:px-4 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-200 text-xs sm:text-sm"
-            >
-              Search
-            </Button>
-          </form>
-        </div>
+       
+        {/* Mobile search & nav */}
+<div className="md:hidden pb-3 sm:pb-4 flex flex-col gap-2 sm:gap-3">
+  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+    <Button
+      variant="ghost"
+      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+      onClick={() => navigate("/home")}
+    >
+      Home
+    </Button>
+    <Button
+      variant="ghost"
+      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+      onClick={() => navigate("/courses")}
+    >
+      Explore
+    </Button>
+    {auth?.authenticate && (
+      <Button
+        variant="ghost"
+        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+        onClick={() => navigate("/student-courses")}
+      >
+        My Courses
+      </Button>
+    )}
+    
+    {auth?.authenticate && (
+      <Button
+        variant="ghost"
+        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+        onClick={() => navigate("/feedback-support")}
+      >
+        Support
+      </Button>
+    )}
+
+    {/* About button - visible to all users */}
+    <Button
+      variant="ghost"
+      className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-2 sm:px-3 py-2 rounded-md transition-colors duration-200 text-xs sm:text-sm"
+      onClick={() => navigate("/about")}
+    >
+      About
+    </Button>
+  </div>
+  <form
+    onSubmit={handleSearchSubmit}
+    className="flex items-center gap-2"
+  >
+    <div className="relative flex-1">
+      <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+      <input
+        type="search"
+        aria-label="Search courses"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search courses..."
+        className="w-full h-8 sm:h-10 pl-7 sm:pl-10 pr-3 sm:pr-4 rounded-md border border-gray-300 bg-white text-xs sm:text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
+      />
+    </div>
+    <Button
+      type="submit"
+      className="h-8 sm:h-10 px-3 sm:px-4 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-200 text-xs sm:text-sm"
+    >
+      Search
+    </Button>
+  </form>
+</div>
       </div>
     </header>
   );
