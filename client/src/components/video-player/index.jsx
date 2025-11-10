@@ -20,6 +20,7 @@ function VideoPlayer({
   height = "100%",
   url,
   onVideoEnded = () => {},
+  autoplay = true,
 }) {
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
@@ -179,24 +180,25 @@ function VideoPlayer({
   useEffect(() => {
     setPlayed(0);
     setCurrentTime(0);
-    console.log("Video URL changed, resetting progress to 0");
-    // Auto-play on new URL (when a lecture is selected)
-    if (url) {
+    // Auto-play on new URL only if autoplay prop is true
+    if (url && autoplay) {
       setPlaying(true);
+    } else if (url && !autoplay) {
+      setPlaying(false);
     }
-  }, [url]);
+  }, [url, autoplay]);
 
-  // Auto-resume when coming back online
+  // Auto-resume when coming back online (only if autoplay was enabled)
   useEffect(() => {
     if (isOffline) {
       // Force buffering UI and pause playback when offline
       setIsBuffering(true);
       setPlaying(false);
-    } else if (url) {
+    } else if (url && autoplay) {
       setIsBuffering(false);
       setPlaying(true);
     }
-  }, [isOffline, url]);
+  }, [isOffline, url, autoplay]);
 
   return (
     <div
@@ -357,6 +359,7 @@ VideoPlayer.propTypes = {
   height: PropTypes.string,
   url: PropTypes.string,
   onVideoEnded: PropTypes.func,
+  autoplay: PropTypes.bool,
 };
 
 export default VideoPlayer;

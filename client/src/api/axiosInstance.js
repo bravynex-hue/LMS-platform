@@ -154,6 +154,7 @@ axiosInstance.interceptors.response.use(
     const isSecureContact = /\/secure\/contact($|\?)/.test(url);
     const isAuthEndpoint = isAuthLogin || isAuthRegister || isAuthForgot || isSecureContact;
     const isMediaUpload = /\/media\/(upload|bulk-upload)/.test(url);
+    const isMediaDelete = /\/media\/delete\//.test(url);
     const isNotifyContact = /\/notify\/contact-admin($|\?|\/)/.test(url);
     const isVideoProgress = /\/course-progress\//.test(url) || /\/student\/course/.test(url);
     const isCourseRelated = /\/course\//.test(url) || /\/student\//.test(url);
@@ -176,7 +177,7 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
       }
       
-      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
+      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isMediaDelete && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
         // Only clear token and redirect for non-course related endpoints
         tokenManager.removeToken();
         toast({ title: "Session expired", description: "Please login again to continue" });
@@ -185,8 +186,8 @@ axiosInstance.interceptors.response.use(
         }
       } else if (isAuthLogin) {
         // For login failures, do not redirect or clear input; allow caller to handle toast
-      } else if (isVideoProgress || isCourseRelated || isInstructorCourse || isStudentOrder || isSecureInstructor || isAdminEndpoint || isFeedbackEndpoint) {
-        console.warn("Course/instructor/admin/feedback-related request failed:", message);
+      } else if (isVideoProgress || isCourseRelated || isInstructorCourse || isStudentOrder || isSecureInstructor || isAdminEndpoint || isFeedbackEndpoint || isMediaDelete) {
+        console.warn("Course/instructor/admin/feedback/media-related request failed:", message);
       }
     }
     // CSRF errors - clear token and retry (but not for auth endpoints)
@@ -198,8 +199,8 @@ axiosInstance.interceptors.response.use(
       lastFetchTime = 0;
       retryCount = 0;
       
-      // Don't show CSRF error for auth endpoints, course-related requests, media uploads, instructor course, secure instructor, student order, admin, or feedback endpoints
-      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
+      // Don't show CSRF error for auth endpoints, course-related requests, media uploads, media deletes, instructor course, secure instructor, student order, admin, or feedback endpoints
+      if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isMediaDelete && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
         toast({ 
           title: "Security error", 
           description: "Please refresh the page and try again",

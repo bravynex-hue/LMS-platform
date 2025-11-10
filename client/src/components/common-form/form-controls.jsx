@@ -115,7 +115,7 @@ function FormControls({ formControls = [], formData, setFormData }) {
             <SelectTrigger className="w-full">
               <SelectValue placeholder={getControlItem.label} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" sideOffset={5}>
               {getControlItem.options && getControlItem.options.length > 0
                 ? getControlItem.options.map((optionItem) => (
                     <SelectItem key={optionItem.id} value={optionItem.id}>

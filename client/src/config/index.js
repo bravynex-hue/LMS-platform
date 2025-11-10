@@ -67,12 +67,8 @@ export const languageOptions = [
   { id: "spanish", label: "Spanish" },
   { id: "french", label: "French" },
   { id: "german", label: "German" },
-  { id: "chinese", label: "Chinese" },
-  { id: "japanese", label: "Japanese" },
-  { id: "korean", label: "Korean" },
-  { id: "portuguese", label: "Portuguese" },
   { id: "arabic", label: "Arabic" },
-  { id: "russian", label: "Russian" },
+  { id: "malayalam", label: "Malayalam" },
 ];
 
 export const courseLevelOptions = [
@@ -82,34 +78,21 @@ export const courseLevelOptions = [
 ];
 
 export const courseCategories = [
-  { id: "web-development", label: "Web Development" },
-  { id: "backend-development", label: "Backend Development" },
-  { id: "frontend-development", label: "Frontend Development" },
-  { id: "fullstack-development", label: "Full Stack Development" },
+  // Engineering & Technology
+  { id: "vlsi", label: "VLSI" },
+  { id: "python-programming", label: "Introduction to Python" },
+  { id: "embedded-software", label: "Embedded Software" },
   { id: "data-science", label: "Data Science" },
-  { id: "machine-learning", label: "Machine Learning" },
-  { id: "artificial-intelligence", label: "Artificial Intelligence" },
-  { id: "cloud-computing", label: "Cloud Computing" },
-  { id: "cyber-security", label: "Cyber Security" },
-  { id: "network-security", label: "Network Security" },
   { id: "devops", label: "DevOps" },
-  { id: "database-management", label: "Database Management" },
-  { id: "blockchain", label: "Blockchain" },
-  { id: "mobile-development", label: "Mobile Development" },
-  { id: "ios-development", label: "iOS Development" },
-  { id: "android-development", label: "Android Development" },
-  { id: "game-development", label: "Game Development" },
-  { id: "software-engineering", label: "Software Engineering" },
-  { id: "digital-marketing", label: "Digital Marketing" },
-  { id: "seo", label: "SEO" },
-  { id: "graphic-design", label: "Graphic Design" },
-  { id: "ui-ux-design", label: "UI/UX Design" },
-  { id: "product-management", label: "Product Management" },
-  { id: "project-management", label: "Project Management" },
- 
- 
-];
+  { id: "cyber-security", label: "Cyber Security" },
+  { id: "frontend-development", label: "Front End Development" },
+  { id: "fullstack-development", label: "Full Stack Development" },
 
+  { id: "ai-data-engineer", label: "AI Data Engineer" },
+  { id: "web-development", label: "Web Development" },
+  { id: "basic-cpp-programming", label: "Basic C++ Programming" },
+  { id: "cloud-computing", label: "Cloud Computing" },
+];
 
 export const courseLandingPageFormControls = [
   {
@@ -190,14 +173,9 @@ export const courseLandingInitialFormData = {
   objectives: "",
   welcomeMessage: "",
   image: "",
-  // Settings defaults
-  completionPercentage: 95,
   sequentialAccess: true,
   // Certificate defaults (optional)
   certificateEnabled: false,
-  certificateTemplateUrl: "",
-  certificateIssuer: "Chief Executive Officer",
-  certificateOrganization: "BRAVYNEX ENGINEERING",
   certificateGradeEnabled: false,
   certificateCourseName: "",
   certificateFrom: "BRAVYNEX ENGINEERING",

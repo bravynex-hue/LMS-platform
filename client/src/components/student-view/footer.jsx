@@ -126,13 +126,13 @@ function Footer() {
             Cultivating success together.
           </p>
           <div className="flex items-center gap-3 mt-4 text-gray-600 dark:text-gray-300">
-            <MapPin className="h-4 w-4" />
-            <span>India • Remote-first</span>
+            <MapPin className="h-5 w-6" />
+            <span>First Floor-113, Paradise Building, Padil, Mangalore</span>
           </div>
           <div className="flex items-center gap-3 mt-2 text-gray-600 dark:text-gray-300">
             <Phone className="h-4 w-4" />
-            <a href="tel:+916366718852" className="hover:underline">
-              +91 6366 718 852
+            <a href="tel:+919019659246" className="hover:underline">
+              +91 9019 659 246
             </a>
           </div>
           <div className="flex items-center gap-3 mt-2 text-gray-600 dark:text-gray-300">

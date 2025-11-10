@@ -1,4 +1,3 @@
-
 import MediaProgressbar from "@/components/media-progress-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +7,11 @@ import { Switch } from "@/components/ui/switch";
 import VideoPlayer from "@/components/video-player";
 import { courseCurriculumInitialFormData } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
-import {
-  mediaDeleteService,
-} from "@/services";
+import { mediaDeleteService } from "@/services";
 import uploadService from "@/services/uploadService";
-import { Upload, Trash2, Video, ArrowLeft } from "lucide-react"; // Added ArrowLeft icon
-import { useContext, useRef, useLayoutEffect, useState } from "react";
-import gsap from "gsap";
-import { useNavigate } from "react-router-dom"; // Imported useNavigate
+import { Upload, Trash2, Video, ArrowLeft } from "lucide-react";
+import { useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 function CourseCurriculum() {
   const {
@@ -28,56 +24,8 @@ function CourseCurriculum() {
   } = useContext(InstructorContext);
 
   const bulkUploadInputRef = useRef(null);
-  const lectureRefs = useRef([]);
   const uploadedFileKeysRef = useRef(new Set());
-  const navigate = useNavigate(); // Initialized useNavigate
-
-  // Refs for GSAP animations
-  const cardRef = useRef(null);
-  const titleRef = useRef(null);
-  const bulkUploadBtnRef = useRef(null);
-  const addLectureBtnRef = useRef(null);
-
-  // GSAP animation for initial load and new lecture items
-  const [previousLength, setPreviousLength] = useState(0);
-  
-  useLayoutEffect(() => {
-    // Initial card and header animation
-    gsap.fromTo(cardRef.current, 
-      { opacity: 0, y: 20 }, 
-      { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
-    );
-    gsap.fromTo(titleRef.current, 
-      { opacity: 0, x: -20 }, 
-      { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.2 }
-    );
-    gsap.fromTo(bulkUploadBtnRef.current, 
-      { opacity: 0, x: 20 }, 
-      { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.3 }
-    );
-    gsap.fromTo(addLectureBtnRef.current, 
-      { opacity: 0, x: 20 }, 
-      { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", delay: 0.4 }
-    );
-
-    const currentLength = courseCurriculumFormData.length;
-    
-    // Only animate if new items were added (not when searching/filtering)
-    if (currentLength > previousLength) {
-      const newItems = lectureRefs.current.slice(previousLength);
-      newItems.forEach((el, index) => {
-        if (el) {
-          gsap.fromTo(
-            el,
-            { opacity: 0, y: 30, scale: 0.95 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power2.out", delay: index * 0.05 + 0.5 } // Added delay for sequential appearance
-          );
-        }
-      });
-    }
-    
-    setPreviousLength(currentLength);
-  }, [courseCurriculumFormData.length, previousLength]); // Added dependencies to satisfy linter
+  const navigate = useNavigate();
 
   function handleNewLecture() {
     setCourseCurriculumFormData([
@@ -120,8 +68,8 @@ function CourseCurriculum() {
       }
 
       // Validate file type
-      if (!selectedFile.type.startsWith('video/')) {
-        alert('Please select a valid video file.');
+      if (!selectedFile.type.startsWith("video/")) {
+        alert("Please select a valid video file.");
         return;
       }
 
@@ -131,13 +79,13 @@ function CourseCurriculum() {
       try {
         setMediaUploadProgress(true);
         setMediaUploadProgressPercentage(0);
-        
+
         // Use enhanced upload service with better error handling
         const response = await uploadService.uploadFile(
           videoFormData,
           setMediaUploadProgressPercentage
         );
-        
+
         if (response.success) {
           let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
           cpyCourseCurriculumFormData[currentIndex] = {
@@ -149,22 +97,24 @@ function CourseCurriculum() {
           setMediaUploadProgress(false);
           setMediaUploadProgressPercentage(0);
         } else {
-          alert('Upload failed. Please try again.');
+          alert("Upload failed. Please try again.");
         }
       } catch (error) {
-        console.log('Upload error:', error);
-        if (error?.message?.includes('token')) {
-          alert('Authentication issue. Please refresh the page and try again.');
-        } else if (error?.code === 'ECONNABORTED') {
-          alert('Upload timeout. Please try again with a smaller file or check your internet connection.');
+        console.log("Upload error:", error);
+        if (error?.message?.includes("token")) {
+          alert("Authentication issue. Please refresh the page and try again.");
+        } else if (error?.code === "ECONNABORTED") {
+          alert(
+            "Upload timeout. Please try again with a smaller file or check your internet connection."
+          );
         } else {
-          alert(`Upload failed: ${error?.message || 'Please try again.'}`);
+          alert(`Upload failed: ${error?.message || "Please try again."}`);
         }
       } finally {
         setMediaUploadProgress(false);
         setMediaUploadProgressPercentage(0);
         // Reset the file input
-        event.target.value = '';
+        event.target.value = "";
       }
     }
   }
@@ -223,24 +173,28 @@ function CourseCurriculum() {
     }
     if (unique.length === 0) {
       // nothing new to upload
-      event.target.value = '';
+      event.target.value = "";
       return;
     }
-    
+
     // Validate files before upload
     const maxSize = 2 * 1024 * 1024 * 1024; // 2GB per file
-    const invalidFiles = selectedFiles.filter(file => 
-      file.size > maxSize || !file.type.startsWith('video/')
+    const invalidFiles = selectedFiles.filter(
+      (file) => file.size > maxSize || !file.type.startsWith("video/")
     );
-    
+
     if (invalidFiles.length > 0) {
-      alert(`Some files are invalid. Please ensure all files are videos under 2GB.`);
+      alert(
+        `Some files are invalid. Please ensure all files are videos under 2GB.`
+      );
       return;
     }
 
     // Helper to append uploaded results to curriculum
     const appendUploaded = (uploadedArray, sourceFiles = []) => {
-      let cpy = areAllCourseCurriculumFormDataObjectsEmpty(courseCurriculumFormData)
+      let cpy = areAllCourseCurriculumFormDataObjectsEmpty(
+        courseCurriculumFormData
+      )
         ? []
         : [...courseCurriculumFormData];
       cpy = [
@@ -275,20 +229,29 @@ function CourseCurriculum() {
         const form = new FormData();
         batch.forEach((f) => form.append("files", f));
         try {
-          const res = await uploadService.uploadBulkFiles(form, setMediaUploadProgressPercentage);
+          const res = await uploadService.uploadBulkFiles(
+            form,
+            setMediaUploadProgressPercentage
+          );
           const uploadedList = res?.uploaded || res?.data || [];
           if (Array.isArray(uploadedList) && uploadedList.length) {
             appendUploaded(uploadedList, batch);
           } else if (Array.isArray(res?.failed) && res.failed.length) {
-            console.warn('Some files failed in batch', res.failed);
+            console.warn("Some files failed in batch", res.failed);
           }
         } catch (bulkErr) {
           // Fallback: upload one by one for this batch (handles 503/gateway issues)
-          console.warn('Bulk batch failed, falling back to single uploads', bulkErr?.message);
+          console.warn(
+            "Bulk batch failed, falling back to single uploads",
+            bulkErr?.message
+          );
           for (const fileItem of batch) {
             const singleForm = new FormData();
             singleForm.append("file", fileItem);
-            const singleRes = await uploadService.uploadFile(singleForm, setMediaUploadProgressPercentage);
+            const singleRes = await uploadService.uploadFile(
+              singleForm,
+              setMediaUploadProgressPercentage
+            );
             if (singleRes?.success) {
               appendUploaded([singleRes?.data], [fileItem]);
             }
@@ -299,34 +262,19 @@ function CourseCurriculum() {
       setMediaUploadProgress(false);
       setMediaUploadProgressPercentage(0);
     } catch (error) {
-      console.log('Bulk upload error:', error);
-      alert(`Bulk upload failed: ${error?.message || 'Please try again.'}`);
+      console.log("Bulk upload error:", error);
+      alert(`Bulk upload failed: ${error?.message || "Please try again."}`);
     } finally {
       setMediaUploadProgress(false);
       setMediaUploadProgressPercentage(0);
-      event.target.value = '';
+      event.target.value = "";
     }
   }
 
   async function handleDeleteLecture(currentIndex) {
-    const lectureToDelete = lectureRefs.current[currentIndex];
-    const performLocalRemoval = () => {
-      let cpy = [...courseCurriculumFormData];
-      cpy = cpy.filter((_, index) => index !== currentIndex);
-      setCourseCurriculumFormData(cpy);
-    };
-
-    const removeWithAnimation = async () => {
-      if (lectureToDelete) {
-        await gsap.to(lectureToDelete, {
-          opacity: 0,
-          x: -50,
-          duration: 0.4,
-          ease: "power3.in",
-        });
-      }
-      performLocalRemoval();
-    };
+    if (!window.confirm("Are you sure you want to delete this lecture?")) {
+      return;
+    }
 
     try {
       const cpy = [...courseCurriculumFormData];
@@ -334,33 +282,48 @@ function CourseCurriculum() {
 
       // If there is an uploaded media, try to delete it server-side first
       if (publicId && publicId.trim() !== "") {
-        const response = await mediaDeleteService(publicId);
-        if (!response?.success) {
-          console.warn("Media delete failed; removing lecture locally anyway.");
+        try {
+          const response = await mediaDeleteService(publicId);
+          if (!response?.success) {
+            console.warn("Media delete response unsuccessful, but continuing with local removal.");
+          }
+        } catch (mediaError) {
+          // Catch media deletion errors separately to prevent session issues
+          console.warn("Media delete service error (continuing anyway):", mediaError);
+          // Don't throw - just continue with local removal
         }
       }
+
+      // Always remove the lecture from form data, regardless of server-side deletion result
+      const updatedData = courseCurriculumFormData.filter(
+        (_, index) => index !== currentIndex
+      );
+      setCourseCurriculumFormData(updatedData);
     } catch (e) {
-      console.warn("Error during media deletion:", e);
-    } finally {
-      await removeWithAnimation();
+      console.error("Error during lecture deletion:", e);
+      // Even if there's an error, try to remove it locally
+      const updatedData = courseCurriculumFormData.filter(
+        (_, index) => index !== currentIndex
+      );
+      setCourseCurriculumFormData(updatedData);
     }
   }
 
   return (
-    
-    <Card ref={cardRef} className="shadow-lg rounded-xl overflow-hidden"> {/* Enhanced card styling */}
-    
-      <CardHeader className="flex flex-row items-center justify-between p-6 bg-gray-50 border-b border-gray-200">
-        <div className="flex items-center gap-3"> {/* Added a div to group back button and title */}
+    <Card className="shadow-lg rounded-xl overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+            className="text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <CardTitle ref={titleRef} className="text-2xl font-bold text-gray-800">Create Course Curriculum</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-800">
+            Create Course Curriculum
+          </CardTitle>
         </div>
         <div className="flex space-x-3">
           <Input
@@ -373,25 +336,21 @@ function CourseCurriculum() {
             onChange={handleMediaBulkUpload}
           />
           <Button
-            ref={bulkUploadBtnRef} // Added ref
-            // Changed from as="label" and htmlFor to onClick
             onClick={handleOpenBulkUploadDialog}
             variant="outline"
-            className="cursor-pointer flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-50 transition-colors duration-200"
+            className="cursor-pointer flex items-center gap-2 gray-600 border-gray-600 hover:bg-gray-50"
           >
             <Upload className="h-5 w-5" />
             Bulk Upload
           </Button>
           <Button
-            ref={addLectureBtnRef} // Added ref
             disabled={mediaUploadProgress}
             onClick={handleNewLecture}
-            className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 flex items-center gap-2"
+            className="bg-gray-600 hover:bg-gray-700 text-white flex items-center gap-2"
           >
             <Video className="h-5 w-5" />
             Add Lecture
           </Button>
-         
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -405,17 +364,19 @@ function CourseCurriculum() {
           {courseCurriculumFormData.map((curriculumItem, index) => (
             <div
               key={index}
-              ref={(el) => (lectureRefs.current[index] = el)}
-              className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm hover:shadow-md transition-all duration-200 ease-in-out" // Enhanced lecture item styling
+              className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
             >
               <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-                <h3 className="font-semibold text-lg text-gray-700 min-w-[100px]">Lecture {index + 1}</h3>
+                <h3 className="font-semibold text-lg text-gray-700 min-w-[120px]">
+                  Lecture {index + 1}
+                </h3>
                 <Input
                   name={`title-${index + 1}`}
                   placeholder="Enter lecture title"
-                  className="flex-grow max-w-md border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="flex-grow border-gray-300 focus:border-gray-600 focus:ring-gray-600"
                   onChange={(event) => handleCourseTitleChange(event, index)}
                   value={courseCurriculumFormData[index]?.title}
+                  autoComplete="off"
                 />
                 <div className="flex items-center space-x-2 ml-auto">
                   <Switch
@@ -424,31 +385,38 @@ function CourseCurriculum() {
                     }
                     checked={courseCurriculumFormData[index]?.freePreview}
                     id={`freePreview-${index + 1}`}
-                    className="data-[state=checked]:bg-blue-600"
+                    className="data-[state=checked]:bg-gray-600"
                   />
-                  <Label htmlFor={`freePreview-${index + 1}`} className="text-gray-600">
+                  <Label
+                    htmlFor={`freePreview-${index + 1}`}
+                    className="text-gray-600"
+                  >
                     Free Preview
                   </Label>
                 </div>
               </div>
               <div className="mt-4">
                 {courseCurriculumFormData[index]?.videoUrl ? (
-                  <div className="flex flex-col md:flex-row gap-4 items-center">
-                    <VideoPlayer
-                      url={courseCurriculumFormData[index]?.videoUrl}
-                      width="450px"
-                      height="200px"
-                    />
-                    <div className="flex flex-col gap-2">
+                  <div className="flex flex-col md:flex-row gap-4 items-start">
+                    <div className="w-full md:w-[450px]">
+                      <VideoPlayer
+                        url={courseCurriculumFormData[index]?.videoUrl}
+                        width="100%"
+                        height="200px"
+                        autoplay={false}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-3 w-full md:w-auto">
                       <Button
                         onClick={() => handleReplaceVideo(index)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white transition-colors duration-200 flex items-center gap-2"
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white flex items-center justify-center gap-2 w-full md:w-auto"
                       >
+                        <Upload className="h-4 w-4" />
                         Replace Video
                       </Button>
                       <Button
                         onClick={() => handleDeleteLecture(index)}
-                        className="bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 flex items-center gap-2"
+                        className="bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2 w-full md:w-auto"
                       >
                         <Trash2 className="h-4 w-4" />
                         Delete Lecture
@@ -456,16 +424,18 @@ function CourseCurriculum() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 p-4 border border-dashed border-gray-300 rounded-md bg-gray-50">
+                  <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors  ">
                     <Input
                       type="file"
                       accept="video/*"
                       onChange={(event) =>
                         handleSingleLectureUpload(event, index)
                       }
-                      className="flex-grow border-none shadow-none file:text-blue-600 file:bg-transparent file:border-none file:hover:bg-blue-50 file:transition-colors file:duration-200"
+                      className="w-full border-none shadow-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-600  file:text-white hover:file:bg-gray-700 file:cursor-pointer"
                     />
-                    <span className="text-gray-500 text-sm">Upload a video for this lecture</span>
+                    <p className="text-gray-500 text-sm mt-3 text-center">
+                      Upload a video for this lecture (Max 2GB)
+                    </p>
                   </div>
                 )}
               </div>
