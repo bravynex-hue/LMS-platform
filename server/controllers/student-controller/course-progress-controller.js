@@ -324,7 +324,7 @@ const generateCompletionCertificate = async (req, res) => {
     const studentNameToPrint = approval.studentName || user.userName || user.userEmail || userId;
     const fatherNameToPrint = approval.studentFatherName || user.guardianName || user.guardianDetails || "";
     const courseNameToPrint = approval.courseTitle || course.certificateCourseName || course.title;
-    const printedGrade = approval.grade || course.defaultCertificateGrade || "A";
+    const printedGrade = approval.grade || course.defaultCertificateGrade || "A+";
     const studentIdToPrint = user.studentId || `BRX-STU-${userId.substring(userId.length - 4)}`; // Use custom studentId or fallback
 
     const certificateId = randomBytes(8).toString("hex").toUpperCase();

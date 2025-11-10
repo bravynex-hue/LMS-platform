@@ -23,13 +23,6 @@ export const signUpFormControls = [
     componentType: "input",
   },
   {
-    name: "dob",
-    label: "Date of Birth",
-    placeholder: "Select your date of birth",
-    type: "date",
-    componentType: "input",
-  },
-  {
     name: "guardianName",
     label: "Guardian Name",
     placeholder: "Enter guardian name",
@@ -66,7 +59,6 @@ export const initialSignUpFormData = {
   userName: "",
   userEmail: "",
   password: "",
-  dob: "",
   guardianName: "",
 };
 
@@ -209,7 +201,7 @@ export const courseLandingInitialFormData = {
   certificateGradeEnabled: false,
   certificateCourseName: "",
   certificateFrom: "BRAVYNEX ENGINEERING",
-  defaultCertificateGrade: "A",
+  defaultCertificateGrade: "A+",
 };
 
 export const courseCurriculumInitialFormData = [
