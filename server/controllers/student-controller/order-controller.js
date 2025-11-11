@@ -5,6 +5,83 @@ const Course = require("../../models/Course");
 const StudentCourses = require("../../models/StudentCourses");
 const { getIO } = require("../../socket");
 
+// Helper function to enroll student after payment
+async function enrollStudentAfterPayment(order) {
+  try {
+    console.log("📚 Enrolling student after payment:", order.userId, "in course:", order.courseId);
+    
+    // Update StudentCourses collection
+    const studentCourses = await StudentCourses.findOne({
+      userId: order.userId,
+    });
+
+    if (studentCourses) {
+      // Check if course already exists to avoid duplicates
+      const courseExists = studentCourses.courses.some(c => c.courseId === order.courseId);
+      if (!courseExists) {
+        studentCourses.courses.push({
+          courseId: order.courseId,
+          title: order.courseTitle,
+          instructorId: order.instructorId,
+          instructorName: order.instructorName,
+          dateOfPurchase: order.orderDate || new Date(),
+          courseImage: order.courseImage,
+        });
+        await studentCourses.save();
+        console.log("✅ Added course to existing StudentCourses record");
+      } else {
+        console.log("ℹ️ Course already exists in StudentCourses");
+      }
+    } else {
+      const newStudentCourses = new StudentCourses({
+        userId: order.userId,
+        courses: [
+          {
+            courseId: order.courseId,
+            title: order.courseTitle,
+            instructorId: order.instructorId,
+            instructorName: order.instructorName,
+            dateOfPurchase: order.orderDate || new Date(),
+            courseImage: order.courseImage,
+          },
+        ],
+      });
+      await newStudentCourses.save();
+      console.log("✅ Created new StudentCourses record");
+    }
+
+    // Update course students array
+    await Course.findByIdAndUpdate(order.courseId, {
+      $addToSet: {
+        students: {
+          studentId: order.userId,
+          studentName: order.userName,
+          studentEmail: order.userEmail,
+          paidAmount: order.coursePricing,
+          dateOfEnrollment: new Date(),
+        },
+      },
+    });
+    console.log("✅ Added student to course.students array");
+
+    // Emit real-time revenue update via Socket.IO
+    try {
+      const io = getIO();
+      io.emit("revenue-update", {
+        courseId: order.courseId,
+        amount: order.coursePricing,
+        studentName: order.userName,
+      });
+    } catch (socketError) {
+      console.warn("Socket.IO emission failed:", socketError.message);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("❌ Error enrolling student:", error);
+    throw error;
+  }
+}
 
 const createOrder = async (req, res) => {
   try {
@@ -24,6 +101,7 @@ const createOrder = async (req, res) => {
       courseTitle,
       courseId,
       coursePricing,
+      isTestMode, // Add test mode flag
     } = req.body;
 
     // Validate required fields
@@ -72,6 +150,32 @@ const createOrder = async (req, res) => {
           coursePricing,
         });
         await newOrder.save();
+
+        // Handle test mode - automatically complete the payment
+        if (isTestMode) {
+          console.log("🧪 Test mode detected - auto-completing payment");
+          
+          // Update order to paid status
+          newOrder.paymentStatus = "paid";
+          newOrder.orderStatus = "confirmed";
+          newOrder.paymentId = `test_${Date.now()}`;
+          newOrder.payerId = `test_payer_${userId}`;
+          await newOrder.save();
+
+          // Auto-enroll student
+          await enrollStudentAfterPayment(newOrder);
+
+          return res.status(201).json({
+            success: true,
+            message: "Test payment completed successfully",
+            data: {
+              orderId: newOrder._id,
+              paymentStatus: "paid",
+              orderStatus: "confirmed",
+              testMode: true
+            }
+          });
+        }
 
         return res.status(201).json({
           success: true,
@@ -126,68 +230,8 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
 
     await order.save();
 
-    //update out student course model
-    const studentCourses = await StudentCourses.findOne({
-      userId: order.userId,
-    });
-
-    if (studentCourses) {
-      studentCourses.courses.push({
-        courseId: order.courseId,
-        title: order.courseTitle,
-        instructorId: order.instructorId,
-        instructorName: order.instructorName,
-        dateOfPurchase: order.orderDate || new Date(),
-        courseImage: order.courseImage,
-      });
-
-      await studentCourses.save();
-    } else {
-      const newStudentCourses = new StudentCourses({
-        userId: order.userId,
-        courses: [
-          {
-            courseId: order.courseId,
-            title: order.courseTitle,
-            instructorId: order.instructorId,
-            instructorName: order.instructorName,
-            dateOfPurchase: order.orderDate || new Date(),
-            courseImage: order.courseImage,
-          },
-        ],
-      });
-
-      await newStudentCourses.save();
-    }
-
-    //update the course schema students
-    await Course.findByIdAndUpdate(order.courseId, {
-      $addToSet: {
-        students: {
-          studentId: order.userId,
-          studentName: order.userName,
-          studentEmail: order.userEmail,
-          paidAmount: order.coursePricing,
-        },
-      },
-    });
-
-    // Emit real-time revenue update via Socket.IO
-    try {
-      const io = getIO();
-      io.emit("revenue-update", {
-        instructorId: order.instructorId,
-        orderId: order._id,
-        studentName: order.userName,
-        courseTitle: order.courseTitle,
-        revenue: order.coursePricing,
-        timestamp: new Date(),
-      });
-      console.log(`Revenue update emitted for instructor ${order.instructorId}`);
-    } catch (socketError) {
-      console.error("Failed to emit revenue update:", socketError);
-      // Don't fail the request if socket emission fails
-    }
+    // Enroll student using helper function
+    await enrollStudentAfterPayment(order);
 
     res.status(200).json({
       success: true,
@@ -203,4 +247,7 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, capturePaymentAndFinalizeOrder };
+module.exports = {
+  createOrder,
+  capturePaymentAndFinalizeOrder,
+};
