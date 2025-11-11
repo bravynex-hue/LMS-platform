@@ -16,13 +16,17 @@ const CertificateApprovalSchema = new mongoose.Schema(
     studentFatherName: { type: String },
     customStudentId: { type: String }, // Custom student ID format (BRX-STU-XXXX)
     courseTitle: { type: String },
-    grade: { type: String, default: "A" },
+    grade: { type: String, default: "A+" },
   },
   { timestamps: true }
 );
 
-CertificateApprovalSchema.index({ courseId: 1, studentId: 1 }, { unique: true });
+CertificateApprovalSchema.index(
+  { courseId: 1, studentId: 1 },
+  { unique: true }
+);
 
-module.exports = mongoose.model("CertificateApproval", CertificateApprovalSchema);
-
-
+module.exports = mongoose.model(
+  "CertificateApproval",
+  CertificateApprovalSchema
+);

@@ -238,8 +238,23 @@ function StudentViewCourseProgressPage() {
     }
   }
 
-  async function handleDownloadCertificate() {
+  const handleDownloadCertificate = useCallback(async (event) => {
+    console.log('Certificate download clicked', { isCertificateDownloading, event });
+    
+    // Prevent event bubbling and multiple clicks
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // Prevent multiple simultaneous downloads
+    if (isCertificateDownloading) {
+      console.log('Download already in progress, ignoring click');
+      return;
+    }
+    
     try {
+      console.log('Starting certificate download...');
       setIsCertificateDownloading(true);
 
       const res = await downloadCertificateService(
@@ -328,7 +343,7 @@ function StudentViewCourseProgressPage() {
     } finally {
       setIsCertificateDownloading(false);
     }
-  }
+  }, [isCertificateDownloading, auth?.user?._id, studentCurrentCourseProgress?.courseDetails?._id, toast]);
 
   useEffect(() => {
     fetchCurrentCourseProgress();
@@ -393,7 +408,16 @@ function StudentViewCourseProgressPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Certificate button removed as per new policy */}
+          {isCourseCompleted && (
+            <Button 
+              onClick={() => setShowCertificateSidebar(!showCertificateSidebar)}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+              size="sm"
+            >
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Certificate</span>
+            </Button>
+          )}
           <Button 
             onClick={() => setIsSideBarOpen(!isSideBarOpen)}
             className="bg-gray-600 hover:bg-gray-700 text-white"
@@ -608,10 +632,10 @@ function StudentViewCourseProgressPage() {
                         'Recently'}
                     </p>
                   </div>
-{/*                   
                   {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
                     <Button
-                      onClick={handleDownloadCertificate}
+                      type="button"
+                      onClick={(e) => handleDownloadCertificate(e)}
                       disabled={isCertificateDownloading}
                       className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center w-full mb-2 sm:mb-3 text-sm sm:text-base py-3 sm:py-4 touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
                     >
@@ -632,12 +656,12 @@ function StudentViewCourseProgressPage() {
                         Certificate generation is disabled for this course
                       </p>
                     </div>
-                  )} */}
+                  )}
                   
                   <Button
                     onClick={handleRewatchCourse}
                     variant="outline"
-                    className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-3 sm:py-3 w-full touch-manipulation"
+                    className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-3 touch-manipulation"
                   >
                     <Play className="h-4 w-4 mr-2" /> Rewatch Course
                   </Button>
@@ -713,9 +737,10 @@ function StudentViewCourseProgressPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4 sm:mt-6 flex flex-col space-y-3 sm:space-y-3">
-              {/* {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
+              {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
                 <Button
-                  onClick={handleDownloadCertificate}
+                  type="button"
+                  onClick={(e) => handleDownloadCertificate(e)}
                   disabled={isCertificateDownloading}
                   className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center py-3 sm:py-3 text-sm sm:text-base w-full touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
                 >
@@ -735,7 +760,7 @@ function StudentViewCourseProgressPage() {
                     Certificate generation is disabled for this course
                   </p>
                 </div>
-              )} */}
+              )}
               <Button
                 onClick={handleRewatchCourse}
                 variant="outline"

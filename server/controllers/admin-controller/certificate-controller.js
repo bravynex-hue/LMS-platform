@@ -201,7 +201,7 @@ const approveCertificateRequest = async (req, res) => {
     certificate.studentFatherName = student.guardianName || student.guardianDetails;
     certificate.customStudentId = student.studentId;
     certificate.courseTitle = course.certificateCourseName || course.title;
-    certificate.grade = grade || certificate.grade || "A";
+    certificate.grade = grade || certificate.grade || "A+";
     certificate.notes = notes || certificate.notes;
     
     await certificate.save();

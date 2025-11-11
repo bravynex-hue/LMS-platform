@@ -8,6 +8,7 @@ const { randomBytes } = require("crypto");
 const path = require("path");
 const fs = require("fs");
 const QRCode = require("qrcode");
+const { generateUniqueStudentId } = require("../../helpers/studentIdGenerator");
 
 
 //mark current lecture as viewed
@@ -325,7 +326,14 @@ const generateCompletionCertificate = async (req, res) => {
     const fatherNameToPrint = approval.studentFatherName || user.guardianName || user.guardianDetails || "";
     const courseNameToPrint = approval.courseTitle || course.certificateCourseName || course.title;
     const printedGrade = approval.grade || course.defaultCertificateGrade || "A+";
-    const studentIdToPrint = user.studentId || `BRX-STU-${userId.substring(userId.length - 4)}`; // Use custom studentId or fallback
+    // Generate proper numeric student ID if user doesn't have one
+    let studentIdToPrint = user.studentId;
+    if (!studentIdToPrint) {
+      // Generate a proper numeric student ID and save it to the user
+      studentIdToPrint = await generateUniqueStudentId();
+      user.studentId = studentIdToPrint;
+      await user.save();
+    }
 
     const certificateId = randomBytes(8).toString("hex").toUpperCase();
     const issuedOn = new Date(progress.completionDate || Date.now()).toDateString();
