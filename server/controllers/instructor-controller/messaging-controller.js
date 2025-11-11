@@ -33,13 +33,28 @@ const getCourseStudents = async (req, res) => {
     
     // 1. Students directly enrolled in course.students array
     const directStudents = course.students || [];
-    directStudents.forEach(s => enrolledStudentIds.add(s.studentId));
+    console.log("Direct students in course.students:", directStudents.length);
+    directStudents.forEach(s => {
+      console.log("Adding direct student:", s.studentId);
+      enrolledStudentIds.add(s.studentId);
+    });
     
     // 2. Students who purchased the course
+    console.log("Searching for purchased courses with courseId:", courseId);
+    
+    // Debug: Check all StudentCourses records
+    const allStudentCourses = await StudentCourses.find({});
+    console.log("Total StudentCourses records in database:", allStudentCourses.length);
+    if (allStudentCourses.length > 0) {
+      console.log("Sample StudentCourses record:", JSON.stringify(allStudentCourses[0], null, 2));
+    }
+    
     const purchasedCourses = await StudentCourses.find({
       'courses.courseId': courseId
     });
+    console.log("Found purchased courses:", purchasedCourses.length);
     purchasedCourses.forEach(studentCourse => {
+      console.log("Adding purchased student:", studentCourse.userId);
       enrolledStudentIds.add(studentCourse.userId);
     });
     
@@ -47,6 +62,7 @@ const getCourseStudents = async (req, res) => {
     // Instead, we'll rely on direct enrollment and purchases
     
     console.log("Total enrolled students found:", enrolledStudentIds.size);
+    console.log("Enrolled student IDs:", Array.from(enrolledStudentIds));
     
     // Fetch user data for all enrolled students
     const users = await User.find({ 
