@@ -113,14 +113,34 @@ const getCurrentCourseProgress = async (req, res) => {
   try {
     const { userId, courseId } = req.params;
 
-    const studentPurchasedCourses = await StudentCourses.findOne({ userId });
+    // Get course details to check if it's free
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found",
+      });
+    }
 
+    // Check if course is free (pricing = 0 or null)
+    const isFreeOrNoPricing = !course.pricing || course.pricing === 0;
+
+    // Check if student purchased the course
+    const studentPurchasedCourses = await StudentCourses.findOne({ userId });
     const isCurrentCoursePurchasedByCurrentUserOrNot =
       studentPurchasedCourses?.courses?.findIndex(
         (item) => item.courseId === courseId
       ) > -1;
 
-    if (!isCurrentCoursePurchasedByCurrentUserOrNot) {
+    // Check if student is directly enrolled in the course
+    const isStudentEnrolledInCourse = course.students?.some(
+      (student) => student.studentId === userId
+    );
+
+    // Allow access if: course is free, student purchased it, or student is enrolled
+    const hasAccess = isFreeOrNoPricing || isCurrentCoursePurchasedByCurrentUserOrNot || isStudentEnrolledInCourse;
+
+    if (!hasAccess) {
       return res.status(200).json({
         success: true,
         data: {
@@ -139,13 +159,7 @@ const getCurrentCourseProgress = async (req, res) => {
       !currentUserCourseProgress ||
       currentUserCourseProgress?.lecturesProgress?.length === 0
     ) {
-      const course = await Course.findById(courseId);
-      if (!course) {
-        return res.status(404).json({
-          success: false,
-          message: "Course not found",
-        });
-      }
+      // Course already fetched above, no need to fetch again
 
       return res.status(200).json({
         success: true,
@@ -546,9 +560,13 @@ const generateCompletionCertificate = async (req, res) => {
     // Generate and place QR code that links to public certificate verification
     try {
       // Build verification URL with certificate ID
-      const frontendBase = process.env.CLIENT_URL || "http://localhost:5173";
+      // Handle multiple URLs in CLIENT_URL (take the first one for QR code)
+      const clientUrls = process.env.CLIENT_URL || "http://localhost:5173";
+      const frontendBase = clientUrls.split(',')[0].trim();
       const verificationPath = `/verify-certificate/${certificateId}`;
       const qrTargetUrl = `${frontendBase}${verificationPath}`;
+      
+      console.log('QR Code URL:', qrTargetUrl);
 
       const qrDataUrl = await QRCode.toDataURL(qrTargetUrl, {
         errorCorrectionLevel: "H",

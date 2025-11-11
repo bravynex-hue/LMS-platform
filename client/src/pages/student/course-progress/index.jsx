@@ -359,20 +359,7 @@ function StudentViewCourseProgressPage() {
   return (
     <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
       {showConfetti && <Confetti />}
-      
-      
-      {/* Video Completion Notification */}
-      {/* {showVideoCompleteNotification && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-green-600 text-white p-4 sm:p-6 rounded-lg shadow-2xl border-2 border-green-400 animate-pulse mx-2 sm:mx-4 max-w-[90vw] sm:max-w-md">
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <Check className="h-6 w-6 sm:h-8 sm:w-8 text-green-200 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm sm:text-lg font-bold">Video Completed!</h3>
-              <p className="text-xs sm:text-sm text-green-100 truncate">{completedVideoTitle}</p>
-            </div>
-          </div>
-        </div>
-      )} */}
+  
       
       {/* Header */}
       <div className="flex items-center justify-between p-3 sm:p-4 bg-[#1c1d1f] border-b border-gray-700">

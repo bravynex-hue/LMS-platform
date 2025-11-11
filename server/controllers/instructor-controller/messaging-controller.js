@@ -1,6 +1,7 @@
 const Message = require("../../models/Message");
 const Course = require("../../models/Course");
 const User = require("../../models/User");
+const StudentCourses = require("../../models/StudentCourses");
 const { emitNewMessage } = require("../../socket");
 
 // Get students enrolled in a course
@@ -27,31 +28,49 @@ const getCourseStudents = async (req, res) => {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
 
-    // Get enrolled students
-    const students = course.students || [];
-    console.log("Returning students:", students.length);
-    console.log("Sample student data:", students[0]);
+    // Get enrolled students from multiple sources
+    const enrolledStudentIds = new Set();
     
-    // Fetch actual user data for students who don't have names
-    const studentIds = students.map(s => s.studentId);
-    const users = await User.find({ _id: { $in: studentIds } }).select('userName userEmail');
+    // 1. Students directly enrolled in course.students array
+    const directStudents = course.students || [];
+    directStudents.forEach(s => enrolledStudentIds.add(s.studentId));
     
-    // Create a map of userId to user data
-    const userMap = {};
-    users.forEach(u => {
-      userMap[u._id.toString()] = u;
+    // 2. Students who purchased the course
+    const purchasedCourses = await StudentCourses.find({
+      'courses.courseId': courseId
     });
+    purchasedCourses.forEach(studentCourse => {
+      enrolledStudentIds.add(studentCourse.userId);
+    });
+    
+    // 3. For free courses, we could potentially include all users, but that's not practical
+    // Instead, we'll rely on direct enrollment and purchases
+    
+    console.log("Total enrolled students found:", enrolledStudentIds.size);
+    
+    // Fetch user data for all enrolled students
+    const users = await User.find({ 
+      _id: { $in: Array.from(enrolledStudentIds) },
+      role: 'user' // Only include students, not instructors/admins
+    }).select('userName userEmail');
+    
+    // Create student data combining direct enrollment info with user data
+    const studentData = users.map(user => {
+      // Check if student has direct enrollment data
+      const directStudent = directStudents.find(s => s.studentId === user._id.toString());
+      
+      return {
+        studentId: user._id.toString(),
+        studentName: directStudent?.studentName || user.userName || "Student",
+        studentEmail: directStudent?.studentEmail || user.userEmail || "",
+      };
+    });
+    
+    console.log("Returning students:", studentData.length);
     
     res.status(200).json({ 
       success: true, 
-      data: students.map(s => {
-        const user = userMap[s.studentId];
-        return {
-          studentId: s.studentId,
-          studentName: s.studentName || user?.userName || "Student",
-          studentEmail: s.studentEmail || user?.userEmail || "",
-        };
-      })
+      data: studentData
     });
   } catch (error) {
     console.error("getCourseStudents error:", error);
@@ -79,15 +98,34 @@ const sendMessage = async (req, res) => {
       return res.status(403).json({ success: false, message: "Not authorized" });
     }
 
-    // Find recipient student
-    const student = course.students.find(s => s.studentId === recipientId);
-    if (!student) {
+    // Check if recipient is enrolled in the course (comprehensive check)
+    let isStudentEnrolled = false;
+    let recipientName = "Student";
+    
+    // 1. Check direct enrollment
+    const directStudent = course.students?.find(s => s.studentId === recipientId);
+    if (directStudent) {
+      isStudentEnrolled = true;
+      recipientName = directStudent.studentName;
+    }
+    
+    // 2. Check purchase records if not found in direct enrollment
+    if (!isStudentEnrolled) {
+      const purchasedCourse = await StudentCourses.findOne({
+        userId: recipientId,
+        'courses.courseId': courseId
+      });
+      if (purchasedCourse) {
+        isStudentEnrolled = true;
+      }
+    }
+    
+    if (!isStudentEnrolled) {
       return res.status(404).json({ success: false, message: "Student not found in course" });
     }
 
-    // Get student name from User model if not in course.students
-    let recipientName = student.studentName;
-    if (!recipientName) {
+    // Get student name from User model if not available
+    if (!recipientName || recipientName === "Student") {
       const user = await User.findById(recipientId).select('userName userEmail');
       recipientName = user?.userName || user?.userEmail || "Student";
     }
