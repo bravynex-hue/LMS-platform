@@ -67,10 +67,10 @@ function AuthPage() {
     <div className="min-h-screen bg-white">
       <div className="grid grid-cols-1 lg:grid-cols-2">
         {/* Left Panel - Reference Matching Design */}
-        <div className="hidden lg:flex items-center justify-center border-r border-gray-200">
+        <div className="hidden lg:flex items-center justify-center border-r ">
           <div className="max-w-xl w-full px-8">
             {/* Learning Card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-10 shadow-sm flex items-center gap-8">
+            <div className="bg-white border border-gray-300 rounded-2xl p-10 shadow-sm flex items-center gap-8">
               <div className="w-48 h-48 rounded-2xl border border-gray-300 flex items-center justify-center shrink-0">
                 <div className="w-28 h-28 rounded-full border-2 border-gray-300 flex items-center justify-center">
                   <Users className="w-12 h-12 text-gray-700" />
@@ -240,7 +240,7 @@ function AuthPage() {
                       handleSubmit={handleRegisterUser}
                     />
 
-                    <div className="text-center pt-2">
+                    {/* <div className="text-center pt-2">
                       <p className="text-xs text-gray-500">
                         By signing up, you agree to our{" "}
                         <Link to="/terms" className="text-gray-700 hover:text-gray-900">
@@ -251,7 +251,7 @@ function AuthPage() {
                           Privacy Policy
                         </Link>
                       </p>
-                    </div>
+                    </div> */}
 
                     <div className="text-center pt-2">
                       <span className="text-sm text-gray-600">Already have an account? </span>
