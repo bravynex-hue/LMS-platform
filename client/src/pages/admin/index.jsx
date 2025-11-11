@@ -24,7 +24,7 @@ import {
   Users,
   BookOpen,
   MessageSquare,
-  DollarSign,
+  IndianRupee,
   Award,
 } from "lucide-react";
 import { gsap } from "gsap";
@@ -373,7 +373,7 @@ function AdminDashboardpage() {
                       currentView === "payments" ? "bg-gray-200" : "bg-gray-100"
                     }`}
                   >
-                    <DollarSign
+                    <IndianRupee
                       className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                         currentView === "payments"
                           ? "text-gray-700"

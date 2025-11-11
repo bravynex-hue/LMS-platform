@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  DollarSign, 
+  IndianRupee, 
   TrendingUp, 
   TrendingDown, 
   BarChart3, 
@@ -10,7 +10,8 @@ import {
   BookOpen,
   Target,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Filter
 } from "lucide-react";
 import PropTypes from "prop-types";
 import { useState, useMemo, useEffect, useContext } from "react";
@@ -19,8 +20,14 @@ import { fetchInstructorAnalyticsService } from "@/services";
 
 function RevenueAnalysis({ listOfCourses = [] }) {
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+  const [dateFilter, setDateFilter] = useState("all");
   const { auth } = useContext(AuthContext);
   const [analytics, setAnalytics] = useState(null);
+  
+  // Helper function to format currency in INR
+  const formatINR = (amount) => {
+    return `₹${Number(amount).toLocaleString('en-IN')}`;
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -80,9 +87,9 @@ function RevenueAnalysis({ listOfCourses = [] }) {
   const kpiCards = [
     {
       title: "Total Revenue",
-      value: `$${revenueData.totalRevenue.toLocaleString()}`,
+      value: formatINR(revenueData.totalRevenue),
       change: revenueGrowth,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-green-50",
       iconColor: "text-green-600"
@@ -98,7 +105,7 @@ function RevenueAnalysis({ listOfCourses = [] }) {
     },
     {
       title: "Avg Revenue/Student",
-      value: `$${revenueData.averageRevenuePerStudent.toFixed(2)}`,
+      value: formatINR(revenueData.averageRevenuePerStudent),
       change: 5.2,
       icon: Target,
       color: "from-purple-500 to-purple-600",
@@ -149,7 +156,7 @@ function RevenueAnalysis({ listOfCourses = [] }) {
             <div key={index} className="space-y-1">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-700">{item.month}</span>
-                <span className="text-sm font-bold text-gray-900">${(item.revenue || 0).toLocaleString()}</span>
+                <span className="text-sm font-bold text-gray-900">{formatINR(item.revenue || 0)}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
@@ -215,7 +222,7 @@ function RevenueAnalysis({ listOfCourses = [] }) {
                   <span className="text-sm font-medium text-gray-700">{category}</span>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold text-gray-900">${revenue.toLocaleString()}</div>
+                  <div className="text-sm font-bold text-gray-900">{formatINR(revenue)}</div>
                   <div className="text-xs text-gray-500">{percentage.toFixed(1)}%</div>
                 </div>
               </div>
@@ -236,17 +243,35 @@ function RevenueAnalysis({ listOfCourses = [] }) {
             <h1 className="text-3xl font-bold text-gray-900">Revenue Analysis</h1>
             <p className="text-gray-600 mt-2">Comprehensive insights into your course revenue and performance</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-gray-500" />
-            <select 
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-              <option value="yearly">Yearly</option>
-            </select>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <select 
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <select 
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -351,11 +376,11 @@ function RevenueAnalysis({ listOfCourses = [] }) {
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900">{course.title}</h4>
-                          <p className="text-sm text-gray-600">{course.students} students • ${course.price}</p>
+                          <p className="text-sm text-gray-600">{course.students} students • {formatINR(course.price)}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900">${course.revenue.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-gray-900">{formatINR(course.revenue)}</div>
                         <div className="text-sm text-gray-500">Revenue</div>
                       </div>
                     </div>
@@ -429,7 +454,7 @@ function RevenueAnalysis({ listOfCourses = [] }) {
               <CardContent>
                 <div className="text-center py-8">
                   <div className="text-4xl font-bold text-green-600 mb-2">
-                    ${revenueData.averageRevenuePerStudent.toFixed(2)}
+                    {formatINR(revenueData.averageRevenuePerStudent)}
                   </div>
                   <p className="text-gray-600">Average Revenue per Student</p>
                   <div className="mt-4 bg-green-50 rounded-lg p-4">

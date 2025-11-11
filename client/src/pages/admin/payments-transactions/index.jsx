@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Search, Download, DollarSign, Calendar } from "lucide-react";
+import { Search, Download, IndianRupee, Calendar, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getAllTransactionsService, exportTransactionsReportService } from "@/services";
 
@@ -20,6 +20,12 @@ function PaymentsTransactionsPage() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+  
+  // Helper function to format currency in INR
+  const formatINR = (amount) => {
+    return `₹${Number(amount).toLocaleString('en-IN')}`;
+  };
 
   useEffect(() => {
     loadTransactions();
@@ -157,8 +163,8 @@ function PaymentsTransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-1">
-              <DollarSign className="w-5 h-5 text-green-500" />
-              ${totalRevenue.toLocaleString()}
+              <IndianRupee className="w-5 h-5 text-green-500" />
+              {formatINR(totalRevenue)}
             </div>
           </CardContent>
         </Card>
@@ -194,6 +200,21 @@ function PaymentsTransactionsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <Select value={dateFilter} onValueChange={setDateFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="year">This Year</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full sm:w-[200px]">
@@ -248,7 +269,7 @@ function PaymentsTransactionsPage() {
                       </TableCell>
                       <TableCell>{transaction.itemName}</TableCell>
                       <TableCell className="font-medium">
-                        ${transaction.amount}
+                        {formatINR(transaction.amount)}
                       </TableCell>
                       <TableCell>{getStatusBadge(transaction.status)}</TableCell>
                       <TableCell>

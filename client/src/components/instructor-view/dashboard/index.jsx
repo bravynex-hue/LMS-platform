@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { 
-  DollarSign, Users, BookOpen, Award, TrendingUp, Eye
+  IndianRupee, Users, BookOpen, Award, TrendingUp, Eye, Calendar, Filter
 } from "lucide-react";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
@@ -12,6 +13,13 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function InstructorDashboard({ listOfCourses = [] }) {
   // Separate pagination for courses and students
@@ -21,6 +29,14 @@ function InstructorDashboard({ listOfCourses = [] }) {
   const [visibleCourses, setVisibleCourses] = useState(INITIAL_ROWS_COURSES);
   const [visibleStudents, setVisibleStudents] = useState(INITIAL_ROWS_STUDENTS);
   const canLoadMoreCourses = (listOfCourses?.length || 0) > visibleCourses;
+  
+  // Date filtering state
+  const [dateFilter, setDateFilter] = useState("all");
+  
+  // Helper function to format currency in INR
+  const formatINR = (amount) => {
+    return `₹${Number(amount).toLocaleString('en-IN')}`;
+  };
   // Reset counts when data changes
   useEffect(() => { 
     setVisibleCourses(INITIAL_ROWS_COURSES);
@@ -120,22 +136,22 @@ function InstructorDashboard({ listOfCourses = [] }) {
       description: "Published courses"
     },
     { 
-      icon: DollarSign, 
+      icon: IndianRupee, 
       label: "Total Revenue", 
-      value: `$${totals.totalProfit.toLocaleString()}`,
-      color: "from-gray-600 to-gray-800",
-      bgColor: "bg-gray-100",
-      iconColor: "text-gray-700",
+      value: formatINR(totals.totalProfit),
+      color: "from-green-600 to-green-800",
+      bgColor: "bg-green-100",
+      iconColor: "text-green-700",
       trend: "+18%",
       description: "This month"
     },
     { 
       icon: Award, 
       label: "Avg. Revenue / Course", 
-      value: `$${listOfCourses.length ? Math.round(totals.totalProfit / listOfCourses.length).toLocaleString() : 0}`,
-      color: "from-gray-600 to-gray-800",
-      bgColor: "bg-gray-100",
-      iconColor: "text-gray-700",
+      value: formatINR(listOfCourses.length ? Math.round(totals.totalProfit / listOfCourses.length) : 0),
+      color: "from-purple-600 to-purple-800",
+      bgColor: "bg-purple-100",
+      iconColor: "text-purple-700",
       trend: "+8%",
       description: "Per course"
     },
@@ -143,6 +159,29 @@ function InstructorDashboard({ listOfCourses = [] }) {
 
   return (
     <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 lg:space-y-8">
+      {/* Date Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white p-4 rounded-lg border shadow-sm">
+        <div className="flex items-center gap-3">
+          <Calendar className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Revenue Dashboard</h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="year">This Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
         {kpis.map((item, index) => (
@@ -217,7 +256,7 @@ function InstructorDashboard({ listOfCourses = [] }) {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-bold text-green-600 text-xs sm:text-sm">${(c.students?.length || 0) * c.pricing}</span>
+                        <span className="font-bold text-green-600 text-xs sm:text-sm">{formatINR((c.students?.length || 0) * c.pricing)}</span>
                       </TableCell>
                     </TableRow>
                   ))}

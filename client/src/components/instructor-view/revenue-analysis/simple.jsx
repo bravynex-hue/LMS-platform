@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, BookOpen, TrendingUp } from "lucide-react";
+import { IndianRupee, Users, BookOpen, TrendingUp } from "lucide-react";
 import PropTypes from "prop-types";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "@/context/auth-context";
@@ -55,12 +55,12 @@ function SimpleRevenueAnalysis({ listOfCourses = [] }) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="p-3 rounded-xl bg-green-50">
-                <DollarSign className="h-6 w-6 text-green-600" />
+                <IndianRupee className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="text-2xl font-bold text-gray-900 mb-1">${totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">₹{totalRevenue.toLocaleString('en-IN')}</div>
             <p className="text-sm text-gray-600">Total Revenue</p>
           </CardContent>
         </Card>
@@ -110,12 +110,12 @@ function SimpleRevenueAnalysis({ listOfCourses = [] }) {
                   <div>
                     <h4 className="font-semibold text-gray-900">{course.title || "Untitled Course"}</h4>
                     <p className="text-sm text-gray-600">
-                      {course.students?.length || 0} students • ${course.pricing || 0}
+                      {course.students?.length || 0} students • ₹{(course.pricing || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-gray-900">
-                      ${((course.students?.length || 0) * (course.pricing || 0)).toLocaleString()}
+                      ₹{((course.students?.length || 0) * (course.pricing || 0)).toLocaleString('en-IN')}
                     </div>
                     <div className="text-sm text-gray-500">Revenue</div>
                   </div>

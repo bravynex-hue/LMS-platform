@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  DollarSign, 
+  IndianRupee, 
   TrendingUp, 
   BarChart3, 
   Calendar,
@@ -38,6 +38,11 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
   const { auth } = useContext(AuthContext);
   const { socket, connected } = useSocket();
   const [selectedPeriod, setSelectedPeriod] = useState("daily");
+  
+  // Helper function to format currency in INR
+  const formatINR = (amount) => {
+    return `₹${Number(amount).toLocaleString('en-IN')}`;
+  };
   const [realTimeData] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [liveStats, setLiveStats] = useState({
@@ -248,14 +253,14 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
   const kpiCards = [
     {
       title: "Total Revenue",
-      value: `$${revenueData.totalRevenue.toLocaleString()}`,
+      value: formatINR(revenueData.totalRevenue),
       change: 12.5,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "from-green-500 to-emerald-600",
       bgColor: "bg-green-50",
       iconColor: "text-green-600",
       isLive: true,
-      liveValue: `+$${liveStats.todayRevenue} today`
+      liveValue: `+${formatINR(liveStats.todayRevenue)} today`
     },
     {
       title: "Total Students",
@@ -270,7 +275,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
     },
     {
       title: "Avg Revenue/Student",
-      value: `$${revenueData.averageRevenuePerStudent.toFixed(2)}`,
+      value: formatINR(revenueData.averageRevenuePerStudent),
       change: 5.2,
       icon: Target,
       color: "from-purple-500 to-purple-600",
@@ -338,7 +343,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                   New Enrollment: {liveStats.lastEnrollment.studentName}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Enrolled in {liveStats.lastEnrollment.courseTitle} • +${liveStats.lastEnrollment.revenue}
+                  Enrolled in {liveStats.lastEnrollment.courseTitle} • +{formatINR(liveStats.lastEnrollment.revenue)}
                 </p>
               </div>
               <div className="text-right">
@@ -430,7 +435,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                     <XAxis dataKey={selectedPeriod === 'hourly' ? 'hour' : (selectedPeriod === 'monthly' ? 'month' : 'day')} />
                     <YAxis />
                     <Tooltip 
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
+                      formatter={(value) => [formatINR(Number(value)), 'Revenue']}
                       labelFormatter={(label) => `${selectedPeriod === 'hourly' ? 'Hour' : (selectedPeriod === 'monthly' ? 'Month' : 'Day')}: ${label}`}
                     />
                     <Area 
@@ -488,7 +493,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip 
                     formatter={(value, seriesName) => [
-                      seriesName === 'revenue' ? `$${Number(value).toLocaleString()}` : Number(value),
+                      seriesName === 'revenue' ? formatINR(Number(value)) : Number(value),
                       seriesName === 'revenue' ? 'Revenue' : 'Students'
                     ]}
                     labelFormatter={(label) => `Day: ${label}`}
@@ -500,7 +505,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                     dataKey="revenue" 
                     stroke="#3B82F6" 
                     strokeWidth={3}
-                    name="Revenue ($)"
+                    name="Revenue (₹)"
                   />
                   <Line 
                     yAxisId="right" 
@@ -535,7 +540,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                           <XAxis type="number" />
                           <YAxis dataKey="title" type="category" width={120} />
                           <Tooltip 
-                            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
+                            formatter={(value) => [formatINR(Number(value)), 'Revenue']}
                             labelFormatter={(label) => `Course: ${label}`}
                           />
                           <Bar dataKey="revenue" fill="#8B5CF6" />
@@ -551,11 +556,11 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                           </div>
                           <div>
                             <h4 className="font-semibold text-gray-900">{course.title}</h4>
-                            <p className="text-sm text-gray-600">{course.students} students • ${course.price}</p>
+                            <p className="text-sm text-gray-600">{course.students} students • {formatINR(course.price)}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-gray-900">${course.revenue.toLocaleString()}</div>
+                          <div className="text-lg font-bold text-gray-900">{formatINR(course.revenue)}</div>
                           <div className="text-sm text-gray-500">Revenue</div>
                         </div>
                       </div>
@@ -597,7 +602,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                         <p className="text-sm text-gray-600">Enrolled in {event.courseTitle}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-green-600">+${event.revenue}</p>
+                        <p className="font-bold text-green-600">+{formatINR(event.revenue)}</p>
                         <p className="text-xs text-gray-500">
                           {event.timestamp.toLocaleTimeString()}
                         </p>
@@ -627,7 +632,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
                 <div className="space-y-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-600 mb-2">
-                      ${liveStats.todayRevenue.toLocaleString()}
+                      {formatINR(liveStats.todayRevenue)}
                     </div>
                     <p className="text-gray-600">Today&apos;s Revenue</p>
                   </div>
