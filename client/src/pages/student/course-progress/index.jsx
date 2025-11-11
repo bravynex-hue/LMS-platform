@@ -241,10 +241,11 @@ function StudentViewCourseProgressPage() {
   const handleDownloadCertificate = useCallback(async (event) => {
     console.log('Certificate download clicked', { isCertificateDownloading, event });
     
-    // Prevent event bubbling and multiple clicks
+    // Prevent event bubbling and multiple clicks - more aggressive approach
     if (event) {
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
     }
     
     // Prevent multiple simultaneous downloads
@@ -253,9 +254,14 @@ function StudentViewCourseProgressPage() {
       return;
     }
     
+    // Immediate state update to prevent double clicks
+    setIsCertificateDownloading(true);
+    
+    // Add a small delay to ensure UI updates
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     try {
       console.log('Starting certificate download...');
-      setIsCertificateDownloading(true);
 
       const res = await downloadCertificateService(
         auth?.user?._id,
@@ -622,7 +628,8 @@ function StudentViewCourseProgressPage() {
                   {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
                     <Button
                       type="button"
-                      onClick={(e) => handleDownloadCertificate(e)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={handleDownloadCertificate}
                       disabled={isCertificateDownloading}
                       className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center w-full mb-2 sm:mb-3 text-sm sm:text-base py-3 sm:py-4 touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
                     >
@@ -727,7 +734,8 @@ function StudentViewCourseProgressPage() {
               {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
                 <Button
                   type="button"
-                  onClick={(e) => handleDownloadCertificate(e)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleDownloadCertificate}
                   disabled={isCertificateDownloading}
                   className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center py-3 sm:py-3 text-sm sm:text-base w-full touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
                 >

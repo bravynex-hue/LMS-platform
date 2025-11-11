@@ -271,9 +271,9 @@ function StudentViewCourseDetailsPage() {
                       {studentViewCourseDetails?.objectives
                         .split(",")
                         .map((objective, index) => (
-                          <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0 mt-1" />
-                            <span className="text-gray-700 text-sm sm:text-base">{objective}</span>
+                          <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                            <span className="text-gray-700 text-sm sm:text-base leading-relaxed">{objective}</span>
                           </div>
                         ))}
                     </div>
