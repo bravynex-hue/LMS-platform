@@ -13,12 +13,16 @@ import {
   courseLandingInitialFormData,
 } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
-import { Delete, Edit, Plus, BookOpen, Users, DollarSign, AlertTriangle } from "lucide-react";
+import { Delete, Edit, Plus, BookOpen, Users, IndianRupee, AlertTriangle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { deleteCourseService } from "@/services";
 
+// Helper function to format currency in INR
+const formatINR = (amount) => {
+  return `₹${Number(amount).toLocaleString('en-IN')}`;
+};
 
 function InstructorCourses({ listOfCourses }) {
   const navigate = useNavigate();
@@ -161,9 +165,9 @@ function InstructorCourses({ listOfCourses }) {
                       </TableCell>
                       <TableCell className="text-center py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <DollarSign className="w-5 h-5 text-gray-700" />
+                          <IndianRupee className="w-5 h-5 text-gray-700" />
                           <span className="font-bold text-gray-900 text-lg">
-                            ${(course?.students?.length || 0) * (course?.pricing || 0)}
+                            {formatINR((course?.students?.length || 0) * (course?.pricing || 0))}
                           </span>
                         </div>
                       </TableCell>

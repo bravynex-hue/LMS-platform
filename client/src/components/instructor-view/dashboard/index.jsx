@@ -45,10 +45,10 @@ function InstructorDashboard({ listOfCourses = [] }) {
     
     return courses.filter(course => {
       // Check for different possible date fields
-      const dateField = course.createdAt || course.date || course.created_at;
+      const dateField = course.createdAt || course.date || course.created_at || course.updatedAt;
       if (!dateField) {
-        console.log('Course missing date field:', course.title, 'Available fields:', Object.keys(course));
-        return false;
+        // Include courses without dates for admin dashboard
+        return true;
       }
       const courseDate = new Date(dateField);
       
@@ -93,22 +93,92 @@ function InstructorDashboard({ listOfCourses = [] }) {
   }, [dateFilter]);
   // Use useMemo to recalculate totals when listOfCourses or dateFilter changes
   const totals = useMemo(() => {
-    // Apply date filtering to courses
+    // Apply date filtering to courses first
     const filteredCourses = filterCoursesByDate(listOfCourses, dateFilter);
     
     const { totalStudents, totalProfit, studentList } = filteredCourses.reduce(
       (acc, course) => {
-        const studentCount = course.students.length;
-        acc.totalStudents += studentCount;
-        acc.totalProfit += course.pricing * studentCount;
+        const studentCount = course.students?.length || 0;
+        const coursePrice = course.pricing || 0;
+        
+        // Only count students whose enrollment date matches the filter
+        const filteredStudents = course.students?.filter(student => {
+          if (dateFilter === 'all') return true;
+          
+          try {
+            // Get enrollment date with proper fallback
+            const enrollmentDate = student.enrolledAt 
+              ? new Date(student.enrolledAt) 
+              : course.createdAt 
+                ? new Date(course.createdAt) 
+                : null;
+            
+            if (!enrollmentDate) return false;
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // Reset time components for accurate comparison
+            enrollmentDate.setHours(0, 0, 0, 0);
+            
+            switch (dateFilter) {
+              case 'today': {
+                // Today: from 00:00:00 of current day
+                const startOfToday = new Date(today);
+                return enrollmentDate.getTime() === startOfToday.getTime();
+              }
+                
+              case 'week': {
+                // This week: from Monday 00:00:00 to Sunday 23:59:59.999
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Get Monday
+                startOfWeek.setHours(0, 0, 0, 0);
+                
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6); // Get Sunday
+                endOfWeek.setHours(23, 59, 59, 999);
+                
+                return enrollmentDate >= startOfWeek && enrollmentDate <= endOfWeek;
+              }
+                
+              case 'month': {
+                // This month: from 1st 00:00:00 to last day 23:59:59.999
+                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+                
+                return enrollmentDate >= startOfMonth && enrollmentDate <= endOfMonth;
+              }
+                
+              case 'year': {
+                // This year: January 1st 00:00:00 to December 31st 23:59:59.999
+                const startOfYear = new Date(today.getFullYear(), 0, 1);
+                const endOfYear = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999);
+                
+                return enrollmentDate >= startOfYear && enrollmentDate <= endOfYear;
+              }
+              
+              default:
+                return true;
+            }
+          } catch (error) {
+            // If there's any error with date parsing, exclude this student
+            console.warn('Date parsing error for student:', student, error);
+            return false;
+          }
+        }) || [];
 
-        course.students.forEach((student) => {
+        const filteredStudentCount = filteredStudents.length;
+        acc.totalStudents += filteredStudentCount;
+        acc.totalProfit += coursePrice * filteredStudentCount;
+
+        filteredStudents.forEach((student) => {
           acc.studentList.push({
             courseTitle: course.title,
             courseId: course._id,
-            studentName: student.studentName,
-            studentEmail: student.studentEmail,
-            studentId: student.studentId,
+            studentName: student.studentName || 'Unknown Student',
+            studentEmail: student.studentEmail || 'No email',
+            studentId: student.studentId || student._id,
+            enrolledAt: student.enrolledAt || course.createdAt
           });
         });
 
@@ -122,8 +192,8 @@ function InstructorDashboard({ listOfCourses = [] }) {
     );
 
     return {
-      totalProfit,
       totalStudents,
+      totalProfit,
       studentList,
     };
   }, [listOfCourses, dateFilter]);

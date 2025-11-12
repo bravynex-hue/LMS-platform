@@ -53,15 +53,20 @@ function InternshipTasksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.user?._id]);
 
+
   async function loadInstructorCourses() {
     if (!auth?.user?._id) return;
     try {
       const res = await fetchInstructorCourseListService();
-      if (res?.success) {
-        setInstructorCourses(res.data || []);
+      if (res?.success && res.data) {
+        const coursesArray = Array.isArray(res.data) ? res.data : [res.data];
+        setInstructorCourses(coursesArray);
+      } else {
+        setInstructorCourses([]);
       }
     } catch (error) {
       console.error("Error loading courses:", error);
+      setInstructorCourses([]);
     }
   }
 
@@ -336,10 +341,16 @@ function InternshipTasksPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {instructorCourses.map((course) => {
-                    console.log('Course data:', course);
+                    let displayName = course.title || course.name || course.courseName || course.courseTitle;
+                    
+                    // If still no name, create a more descriptive fallback
+                    if (!displayName || displayName.trim() === '') {
+                      displayName = `Course ${course._id?.slice(-4) || 'Unknown'}`;
+                    }
+                    
                     return (
                       <SelectItem key={course._id} value={course._id}>
-                        {course.title || course.name || `Course ${course._id?.slice(-4) || 'Unknown'}`}
+                        <span className="font-medium">{displayName}</span>
                       </SelectItem>
                     );
                   })}
