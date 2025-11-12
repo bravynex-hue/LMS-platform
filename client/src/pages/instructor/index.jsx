@@ -37,13 +37,32 @@ function InstructorDashboardpage() {
   const mainContentRef = useRef(null); // Ref for the main content
   const navigate = useNavigate();
 
-  const { logout } = useContext(AuthContext);
+  const { logout, auth } = useContext(AuthContext);
   const { instructorCoursesList, setInstructorCoursesList } =
     useContext(InstructorContext);
 
+  // Debug: Log auth context
+  useEffect(() => {
+    console.log("🔍 Auth context in instructor dashboard:", auth);
+  }, [auth]);
+
   const fetchAllCourses = useCallback(async () => {
-    const response = await fetchInstructorCourseListService();
-    if (response?.success) setInstructorCoursesList(response?.data);
+    try {
+      console.log("🔄 Fetching instructor courses...");
+      const response = await fetchInstructorCourseListService();
+      console.log("📡 API Response:", response);
+      
+      if (response?.success) {
+        console.log("✅ Courses received:", response.data);
+        setInstructorCoursesList(response?.data);
+      } else {
+        console.error("❌ API call failed:", response);
+        setInstructorCoursesList([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching courses:", error);
+      setInstructorCoursesList([]);
+    }
   }, [setInstructorCoursesList]);
 
   useEffect(() => {

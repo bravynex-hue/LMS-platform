@@ -8,7 +8,7 @@ import PaymentsTransactionsPage from "@/pages/admin/payments-transactions";
 import CertificatesManagementPage from "@/pages/admin/certificates-management";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
-import { fetchInstructorCourseListService } from "@/services";
+import { getAllAdminCoursesService } from "@/services";
 import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import {
   Search,
@@ -45,8 +45,22 @@ function AdminDashboardpage() {
     useContext(InstructorContext);
 
   const fetchAllCourses = useCallback(async () => {
-    const response = await fetchInstructorCourseListService();
-    if (response?.success) setInstructorCoursesList(response?.data);
+    try {
+      console.log("🔄 Admin fetching all courses...");
+      const response = await getAllAdminCoursesService();
+      console.log("📡 Admin API Response:", response);
+      
+      if (response?.success) {
+        console.log("✅ Admin courses received:", response.data);
+        setInstructorCoursesList(response?.data);
+      } else {
+        console.error("❌ Admin API call failed:", response);
+        setInstructorCoursesList([]);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching admin courses:", error);
+      setInstructorCoursesList([]);
+    }
   }, [setInstructorCoursesList]);
 
   useEffect(() => {

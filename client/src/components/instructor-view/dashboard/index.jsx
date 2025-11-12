@@ -22,6 +22,24 @@ import {
 } from "@/components/ui/select";
 
 function InstructorDashboard({ listOfCourses = [] }) {
+  // Debug: Log the courses data to see what we're receiving
+  useEffect(() => {
+    console.log("📊 Dashboard received courses:", listOfCourses);
+    if (listOfCourses.length > 0) {
+      console.log("👥 First course students:", listOfCourses[0].students);
+      listOfCourses.forEach((course, index) => {
+        if (course.students && course.students.length > 0) {
+          console.log(`Course ${index + 1} (${course.title}) students:`, course.students.map(s => ({
+            id: s.studentId,
+            name: s.studentName || s.userName,
+            email: s.studentEmail || s.userEmail,
+            enrollmentDate: s.enrollmentDate
+          })));
+        }
+      });
+    }
+  }, [listOfCourses]);
+
   // Separate pagination for courses and students
   const INITIAL_ROWS_COURSES = 5;
   const INITIAL_ROWS_STUDENTS = 5;
@@ -37,40 +55,45 @@ function InstructorDashboard({ listOfCourses = [] }) {
     return `₹${Number(amount).toLocaleString('en-IN')}`;
   };
 
-  // Helper function to filter courses by date
+  // Helper function to filter courses by enrollment date
   const filterCoursesByDate = (courses, filter) => {
     if (filter === "all") return courses;
     
     const now = new Date();
     
     return courses.filter(course => {
-      // Check for different possible date fields
-      const dateField = course.createdAt || course.date || course.created_at || course.updatedAt;
-      if (!dateField) {
-        // Include courses without dates for admin dashboard
-        return true;
+      // For date filtering, check if course has students enrolled in the selected time period
+      if (!course.students || course.students.length === 0) {
+        return false; // No students enrolled, so exclude from filtered results
       }
-      const courseDate = new Date(dateField);
       
-      switch (filter) {
-        case "today":
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          return courseDate >= today;
-        case "week":
-          const weekAgo = new Date();
-          weekAgo.setDate(now.getDate() - 7);
-          return courseDate >= weekAgo;
-        case "month":
-          const monthAgo = new Date();
-          monthAgo.setMonth(now.getMonth() - 1);
-          return courseDate >= monthAgo;
-        case "year":
-          const yearAgo = new Date();
-          yearAgo.setFullYear(now.getFullYear() - 1);
-          return courseDate >= yearAgo;
-        default:
-          return true;
-      }
+      // Check if any student was enrolled in the selected time period
+      const hasStudentsInPeriod = course.students.some(student => {
+        const enrollmentDate = student.enrollmentDate ? new Date(student.enrollmentDate) : null;
+        if (!enrollmentDate) return false;
+        
+        switch (filter) {
+          case "today":
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            return enrollmentDate >= today;
+          case "week":
+            const weekAgo = new Date();
+            weekAgo.setDate(now.getDate() - 7);
+            return enrollmentDate >= weekAgo;
+          case "month":
+            const monthAgo = new Date();
+            monthAgo.setMonth(now.getMonth() - 1);
+            return enrollmentDate >= monthAgo;
+          case "year":
+            const yearAgo = new Date();
+            yearAgo.setFullYear(now.getFullYear() - 1);
+            return enrollmentDate >= yearAgo;
+          default:
+            return true;
+        }
+      });
+      
+      return hasStudentsInPeriod;
     });
   };
 
@@ -93,21 +116,54 @@ function InstructorDashboard({ listOfCourses = [] }) {
   }, [dateFilter]);
   // Use useMemo to recalculate totals when listOfCourses or dateFilter changes
   const totals = useMemo(() => {
-    // For admin dashboard, show all courses but with current data
-    // Date filter will be used for analytics, not for hiding courses
-    const { totalStudents, totalProfit, studentList } = listOfCourses.reduce(
+    // Apply date filtering to get relevant courses and students
+    const coursesToAnalyze = dateFilter === "all" ? listOfCourses : filterCoursesByDate(listOfCourses, dateFilter);
+    
+    const { totalStudents, totalProfit, studentList } = coursesToAnalyze.reduce(
       (acc, course) => {
-        const studentCount = course.students.length;
+        // Filter students by enrollment date if date filter is applied
+        let studentsToCount = course.students || [];
+        
+        if (dateFilter !== "all") {
+          const now = new Date();
+          studentsToCount = course.students.filter(student => {
+            const enrollmentDate = student.enrollmentDate ? new Date(student.enrollmentDate) : null;
+            if (!enrollmentDate) return false;
+            
+            switch (dateFilter) {
+              case "today":
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                return enrollmentDate >= today;
+              case "week":
+                const weekAgo = new Date();
+                weekAgo.setDate(now.getDate() - 7);
+                return enrollmentDate >= weekAgo;
+              case "month":
+                const monthAgo = new Date();
+                monthAgo.setMonth(now.getMonth() - 1);
+                return enrollmentDate >= monthAgo;
+              case "year":
+                const yearAgo = new Date();
+                yearAgo.setFullYear(now.getFullYear() - 1);
+                return enrollmentDate >= yearAgo;
+              default:
+                return true;
+            }
+          });
+        }
+
+        const studentCount = studentsToCount.length;
         acc.totalStudents += studentCount;
         acc.totalProfit += course.pricing * studentCount;
 
-        course.students.forEach((student) => {
+        studentsToCount.forEach((student) => {
           acc.studentList.push({
             courseTitle: course.title,
             courseId: course._id,
-            studentName: student.studentName,
-            studentEmail: student.studentEmail,
+            studentName: student.studentName || student.userName || "",
+            studentEmail: student.studentEmail || student.userEmail || "",
             studentId: student.studentId,
+            enrollmentDate: student.enrollmentDate,
           });
         });
 
@@ -125,7 +181,7 @@ function InstructorDashboard({ listOfCourses = [] }) {
       totalProfit,
       studentList,
     };
-  }, [listOfCourses]);
+  }, [listOfCourses, dateFilter]);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [recentActions, setRecentActions] = useState([]);

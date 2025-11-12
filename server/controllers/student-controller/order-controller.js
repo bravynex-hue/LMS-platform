@@ -10,6 +10,19 @@ async function enrollStudentAfterPayment(order) {
   try {
     console.log("📚 Enrolling student after payment:", order.userId, "in course:", order.courseId);
     
+    // Fetch user details from User model since Order model doesn't store userName/userEmail
+    const User = require("../../models/User");
+    const user = await User.findById(order.userId).select('userName userEmail');
+    
+    if (!user) {
+      throw new Error(`User not found with ID: ${order.userId}`);
+    }
+    
+    const studentName = user.userName || "";
+    const studentEmail = user.userEmail || "";
+    
+    console.log("👤 Student details:", { studentName, studentEmail });
+    
     // Update StudentCourses collection
     const studentCourses = await StudentCourses.findOne({
       userId: order.userId,
@@ -50,19 +63,19 @@ async function enrollStudentAfterPayment(order) {
       console.log("✅ Created new StudentCourses record");
     }
 
-    // Update course students array
+    // Update course students array with fetched user data
     await Course.findByIdAndUpdate(order.courseId, {
       $addToSet: {
         students: {
           studentId: order.userId,
-          studentName: order.userName,
-          studentEmail: order.userEmail,
+          studentName: studentName,
+          studentEmail: studentEmail,
           paidAmount: order.coursePricing,
-          dateOfEnrollment: new Date(),
+          enrollmentDate: new Date(),
         },
       },
     });
-    console.log("✅ Added student to course.students array");
+    console.log("✅ Added student to course.students array with name:", studentName);
 
     // Emit real-time revenue update via Socket.IO
     try {
@@ -70,7 +83,8 @@ async function enrollStudentAfterPayment(order) {
       io.emit("revenue-update", {
         courseId: order.courseId,
         amount: order.coursePricing,
-        studentName: order.userName,
+        studentName: studentName,
+        instructorId: order.instructorId,
       });
     } catch (socketError) {
       console.warn("Socket.IO emission failed:", socketError.message);

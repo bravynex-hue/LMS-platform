@@ -33,7 +33,127 @@ const addNewCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
   try {
-    const coursesList = await Course.find({});
+    // Get instructor ID from authenticated user
+    const instructorId = req.user?._id || req.user?.id;
+    
+    console.log("🔍 Debug instructor course fetch:");
+    console.log("- req.user:", req.user);
+    console.log("- instructorId extracted:", instructorId);
+    
+    if (!instructorId) {
+      console.error("❌ No instructor ID found in request");
+      return res.status(401).json({
+        success: false,
+        message: "Instructor ID not found in request",
+      });
+    }
+
+    // First, let's see all courses to debug
+    const allCourses = await Course.find({}).select('title instructorId instructorName');
+    console.log("🔍 All courses in database:", allCourses.map(c => ({
+      title: c.title,
+      instructorId: c.instructorId,
+      instructorName: c.instructorName
+    })));
+
+    // Filter courses by instructor ID (try both ObjectId and string matching)
+    console.log("🔍 Searching for courses with instructorId:", instructorId);
+    let coursesList = await Course.find({ instructorId });
+    console.log("📚 Found courses with ObjectId match:", coursesList.length);
+    
+    // If no courses found with ObjectId, try string matching
+    if (coursesList.length === 0) {
+      console.log("⚠️ No courses found with ObjectId, trying string match...");
+      coursesList = await Course.find({ instructorId: instructorId.toString() });
+      console.log("📚 Found courses with string match:", coursesList.length);
+    }
+    
+    // If still no courses, log for debugging but don't return all courses
+    if (coursesList.length === 0) {
+      console.log("⚠️ No courses found for instructor:", instructorId);
+      console.log("Available instructorIds in database:", allCourses.map(c => c.instructorId));
+    }
+
+    // Populate student details for each course and fix missing names
+    for (let course of coursesList) {
+      if (course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.studentId).filter(Boolean);
+        
+        if (studentIds.length > 0) {
+          const users = await User.find({ _id: { $in: studentIds } }).select('userName userEmail studentId createdAt');
+          const userMap = {};
+          users.forEach(user => {
+            userMap[user._id.toString()] = {
+              userName: user.userName,
+              userEmail: user.userEmail,
+              studentId: user.studentId,
+              enrollmentDate: user.createdAt // Use user creation date as fallback
+            };
+          });
+
+          // Track if we need to update the course document
+          let needsUpdate = false;
+          const updatedStudents = [];
+
+          // Enrich students array with user details and enrollment dates
+          course.students.forEach(student => {
+            const userInfo = userMap[student.studentId];
+            if (userInfo) {
+              const updatedStudent = {
+                ...student.toObject ? student.toObject() : student,
+                studentName: student.studentName || userInfo.userName || "",
+                studentEmail: student.studentEmail || userInfo.userEmail || "",
+                userName: userInfo.userName || "",
+                userEmail: userInfo.userEmail || "",
+                enrollmentDate: student.enrollmentDate || userInfo.enrollmentDate || new Date(),
+              };
+              
+              // Check if we need to update missing data in database
+              if (!student.studentName && userInfo.userName) {
+                needsUpdate = true;
+                console.log(`🔄 Updating missing student name for ${userInfo.userName} in course ${course.title}`);
+              }
+              if (!student.studentEmail && userInfo.userEmail) {
+                needsUpdate = true;
+                console.log(`🔄 Updating missing student email for ${userInfo.userEmail} in course ${course.title}`);
+              }
+              if (!student.enrollmentDate) {
+                needsUpdate = true;
+                console.log(`🔄 Adding missing enrollment date for ${userInfo.userName} in course ${course.title}`);
+              }
+              
+              updatedStudents.push(updatedStudent);
+            } else {
+              updatedStudents.push({
+                ...student.toObject ? student.toObject() : student,
+                enrollmentDate: student.enrollmentDate || new Date(),
+              });
+            }
+          });
+
+          // Update course document if needed
+          if (needsUpdate) {
+            try {
+              await Course.findByIdAndUpdate(course._id, {
+                students: updatedStudents.map(s => ({
+                  studentId: s.studentId,
+                  studentName: s.studentName || s.userName || "",
+                  studentEmail: s.studentEmail || s.userEmail || "",
+                  paidAmount: s.paidAmount || "",
+                  enrollmentDate: s.enrollmentDate || new Date(),
+                }))
+              });
+              console.log(`✅ Updated course ${course.title} with missing student data`);
+            } catch (updateError) {
+              console.error(`❌ Failed to update course ${course.title}:`, updateError);
+            }
+          }
+
+          // Set the enriched students data for response
+          course.students = updatedStudents;
+        }
+      }
+    }
 
     res.status(200).json({
       success: true,
