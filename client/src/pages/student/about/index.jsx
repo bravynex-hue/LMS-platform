@@ -12,7 +12,7 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-500 text-white py-20">
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-5xl font-bold mb-4">About the Company</h1>
           <div className="w-24 h-1 bg-yellow-500"></div>
@@ -193,7 +193,7 @@ function AboutPage() {
       </section>
 
         {/* Vision & Mission Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20 mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
           {/* Vision */}
           <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-shadow">
             <div className="flex items-center gap-3 mb-4">
@@ -234,7 +234,7 @@ function AboutPage() {
           </p>
         </div>
 
-     
+        {/* Offered Services Section */}
         <div className="bg-white rounded-lg shadow-lg p-10 mb-20 border border-gray-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
