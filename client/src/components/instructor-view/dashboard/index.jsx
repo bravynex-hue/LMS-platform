@@ -105,6 +105,12 @@ function InstructorDashboard({ listOfCourses = [] }) {
         const filteredStudents = course.students?.filter(student => {
           if (dateFilter === 'all') return true;
           
+          // Debug logging to see student data structure
+          if (dateFilter === 'today') {
+            console.log('Student data:', student);
+            console.log('Course data:', { title: course.title, createdAt: course.createdAt });
+          }
+          
           try {
             // Get enrollment date with proper fallback
             const enrollmentDate = student.enrolledAt 
@@ -113,7 +119,12 @@ function InstructorDashboard({ listOfCourses = [] }) {
                 ? new Date(course.createdAt) 
                 : null;
             
-            if (!enrollmentDate) return false;
+            if (!enrollmentDate) {
+              console.log('No enrollment date found for student:', student);
+              return false;
+            }
+            
+            console.log('Original enrollment date:', enrollmentDate);
             
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -123,9 +134,18 @@ function InstructorDashboard({ listOfCourses = [] }) {
             
             switch (dateFilter) {
               case 'today': {
-                // Today: from 00:00:00 of current day
+                // Today: from 00:00:00 of current day to 23:59:59.999
                 const startOfToday = new Date(today);
-                return enrollmentDate.getTime() === startOfToday.getTime();
+                const endOfToday = new Date(today);
+                endOfToday.setHours(23, 59, 59, 999);
+                
+                console.log('Today filter - Start:', startOfToday, 'End:', endOfToday);
+                console.log('Enrollment date normalized:', enrollmentDate);
+                
+                const isToday = enrollmentDate >= startOfToday && enrollmentDate <= endOfToday;
+                console.log('Is today enrollment?', isToday);
+                
+                return isToday;
               }
                 
               case 'week': {
