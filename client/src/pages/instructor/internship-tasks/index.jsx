@@ -335,11 +335,14 @@ function InternshipTasksPage() {
                   <SelectValue placeholder="Select a course" />
                 </SelectTrigger>
                 <SelectContent>
-                  {instructorCourses.map((course) => (
-                    <SelectItem key={course._id} value={course._id}>
-                      {course.title}
-                    </SelectItem>
-                  ))}
+                  {instructorCourses.map((course) => {
+                    console.log('Course data:', course);
+                    return (
+                      <SelectItem key={course._id} value={course._id}>
+                        {course.title || course.name || `Course ${course._id?.slice(-4) || 'Unknown'}`}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               {selectedProgramId && (
@@ -501,15 +504,17 @@ function InternshipTasksPage() {
                   {tasks.map((task) => (
                     <TableRow key={task._id}>
                       <TableCell>
-                        <div>
-                          {task.phase && (
-                            <div className="text-xs font-semibold text-orange-600 mb-1">
+                        <div className="space-y-1">
+                          {task.phase && task.phase.trim() && (
+                            <div className="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded">
                               {task.phase}
                             </div>
                           )}
-                          <div className="font-medium">{task.title}</div>
-                          {task.description && (
-                            <div className="text-sm text-gray-500 mt-1">
+                          <div className="font-medium text-gray-900">
+                            {(task.title && task.title.trim()) ? task.title : 'New Task'}
+                          </div>
+                          {task.description && task.description.trim() && (
+                            <div className="text-sm text-gray-600 mt-1">
                               {task.description.length > 50
                                 ? `${task.description.substring(0, 50)}...`
                                 : task.description}
@@ -523,7 +528,7 @@ function InternshipTasksPage() {
                             task.type
                           )}`}
                         >
-                          {task.type}
+                          {task.type || 'task'}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -532,13 +537,18 @@ function InternshipTasksPage() {
                             task.priority
                           )}`}
                         >
-                          {task.priority}
+                          {task.priority || 'medium'}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4 text-gray-500" />
-                          <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                          <span>
+                            {task.dueDate 
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : 'No due date'
+                            }
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(task.status)}</TableCell>

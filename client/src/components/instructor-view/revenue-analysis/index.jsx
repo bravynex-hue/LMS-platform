@@ -29,6 +29,43 @@ function RevenueAnalysis({ listOfCourses = [] }) {
     return `₹${Number(amount).toLocaleString('en-IN')}`;
   };
 
+  // Helper function to filter courses by date
+  const filterCoursesByDate = (courses, filter) => {
+    if (filter === "all") return courses;
+    
+    const now = new Date();
+    
+    return courses.filter(course => {
+      // Check for different possible date fields
+      const dateField = course.createdAt || course.date || course.created_at;
+      if (!dateField) {
+        console.log('Course missing date field:', course.title, 'Available fields:', Object.keys(course));
+        return false;
+      }
+      const courseDate = new Date(dateField);
+      
+      switch (filter) {
+        case "today":
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          return courseDate >= today;
+        case "week":
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
+          return courseDate >= weekAgo;
+        case "month":
+          const monthAgo = new Date();
+          monthAgo.setMonth(now.getMonth() - 1);
+          return courseDate >= monthAgo;
+        case "year":
+          const yearAgo = new Date();
+          yearAgo.setFullYear(now.getFullYear() - 1);
+          return courseDate >= yearAgo;
+        default:
+          return true;
+      }
+    });
+  };
+
   useEffect(() => {
     let mounted = true;
     async function load() {
@@ -42,7 +79,11 @@ function RevenueAnalysis({ listOfCourses = [] }) {
   }, [auth?.user?._id]);
 
   const revenueData = useMemo(() => {
-    if (analytics) {
+    // Apply date filtering to courses first
+    const filteredCourses = filterCoursesByDate(listOfCourses, dateFilter);
+    
+    if (analytics && dateFilter === "all") {
+      // Use analytics data only when no date filter is applied
       const totals = analytics.totals || {};
       const categoryRevenue = (analytics.categoryData || []).reduce((acc, item) => {
         acc[item.name] = { revenue: item.value, students: item.students || 0, courses: item.courses || 0 };
@@ -58,17 +99,59 @@ function RevenueAnalysis({ listOfCourses = [] }) {
         categoryRevenue,
       };
     }
-    // fallback
+    
+    // Calculate from filtered courses when date filter is applied or no analytics
+    const courseRevenue = filteredCourses.map(course => ({
+      id: course._id,
+      title: course.title,
+      students: course.students?.length || 0,
+      price: course.pricing || 0,
+      revenue: (course.students?.length || 0) * (course.pricing || 0),
+      category: course.category || "General"
+    }));
+    
+    const totalRevenue = courseRevenue.reduce((sum, c) => sum + c.revenue, 0);
+    const totalStudents = courseRevenue.reduce((sum, c) => sum + c.students, 0);
+    const averageRevenuePerStudent = totalStudents > 0 ? totalRevenue / totalStudents : 0;
+    
+    // Generate monthly data based on filtered courses
+    const now = new Date();
+    const monthlyData = [];
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = monthDate.toLocaleString('en-US', { month: 'short' });
+      
+      // For filtered data, show revenue in current month only
+      const isCurrentMonth = i === 0;
+      monthlyData.push({
+        month: monthName,
+        revenue: isCurrentMonth ? totalRevenue : 0,
+        students: isCurrentMonth ? totalStudents : 0,
+      });
+    }
+    
+    // Category revenue calculation
+    const categoryRevenue = {};
+    courseRevenue.forEach(course => {
+      const category = course.category || "General";
+      if (!categoryRevenue[category]) {
+        categoryRevenue[category] = { revenue: 0, students: 0, courses: 0 };
+      }
+      categoryRevenue[category].revenue += course.revenue;
+      categoryRevenue[category].students += course.students;
+      categoryRevenue[category].courses += 1;
+    });
+    
     return {
-      totalRevenue: 0,
-      totalStudents: 0,
-      averageRevenuePerStudent: 0,
-      courseRevenue: [],
-      monthlyData: [],
-      coursePerformance: [],
-      categoryRevenue: {},
+      totalRevenue,
+      totalStudents,
+      averageRevenuePerStudent,
+      courseRevenue: courseRevenue.slice(0, 5),
+      monthlyData,
+      coursePerformance: courseRevenue.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
+      categoryRevenue,
     };
-  }, [analytics]);
+  }, [analytics, listOfCourses, dateFilter]);
 
   // Calculate growth rates
   const currentMonthRevenue = revenueData.monthlyData?.[revenueData.monthlyData.length - 1]?.revenue || 0;

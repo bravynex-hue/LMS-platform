@@ -27,6 +27,7 @@ function PaymentsTransactionsPage() {
     return `₹${Number(amount).toLocaleString('en-IN')}`;
   };
 
+
   useEffect(() => {
     loadTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,10 +134,42 @@ function PaymentsTransactionsPage() {
       transaction.studentEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       transaction.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "all" || transaction.type === typeFilter;
-    return matchesSearch && matchesType;
+    
+    // Apply date filtering
+    let matchesDate = true;
+    if (dateFilter !== "all" && transaction.date) {
+      const now = new Date();
+      const transactionDate = new Date(transaction.date);
+      
+      switch (dateFilter) {
+        case "today":
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          matchesDate = transactionDate >= today;
+          break;
+        case "week":
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
+          matchesDate = transactionDate >= weekAgo;
+          break;
+        case "month":
+          const monthAgo = new Date();
+          monthAgo.setMonth(now.getMonth() - 1);
+          matchesDate = transactionDate >= monthAgo;
+          break;
+        case "year":
+          const yearAgo = new Date();
+          yearAgo.setFullYear(now.getFullYear() - 1);
+          matchesDate = transactionDate >= yearAgo;
+          break;
+        default:
+          matchesDate = true;
+      }
+    }
+    
+    return matchesSearch && matchesType && matchesDate;
   });
 
-  const totalRevenue = summary.totalRevenue || transactions
+  const totalRevenue = summary.totalRevenue || filteredTransactions
     .filter((t) => t.status === "completed")
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
@@ -173,7 +206,7 @@ function PaymentsTransactionsPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Total Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.totalTransactions || transactions.length}</div>
+            <div className="text-2xl font-bold">{filteredTransactions.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -182,7 +215,7 @@ function PaymentsTransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {summary.completedTransactions || transactions.filter((t) => t.status === "completed").length}
+              {filteredTransactions.filter((t) => t.status === "completed").length}
             </div>
           </CardContent>
         </Card>
@@ -223,7 +256,6 @@ function PaymentsTransactionsPage() {
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="course">Course Purchase</SelectItem>
-                <SelectItem value="internship">Internship Enrollment</SelectItem>
               </SelectContent>
             </Select>
           </div>

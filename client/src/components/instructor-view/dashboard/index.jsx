@@ -5,7 +5,7 @@ import {
   IndianRupee, Users, BookOpen, Award, TrendingUp, Eye, Calendar, Filter
 } from "lucide-react";
 import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getCurrentCourseProgressService } from "@/services";
 import { 
   Dialog,
@@ -28,7 +28,6 @@ function InstructorDashboard({ listOfCourses = [] }) {
   const ROWS_CHUNK = 5;
   const [visibleCourses, setVisibleCourses] = useState(INITIAL_ROWS_COURSES);
   const [visibleStudents, setVisibleStudents] = useState(INITIAL_ROWS_STUDENTS);
-  const canLoadMoreCourses = (listOfCourses?.length || 0) > visibleCourses;
   
   // Date filtering state
   const [dateFilter, setDateFilter] = useState("all");
@@ -37,13 +36,67 @@ function InstructorDashboard({ listOfCourses = [] }) {
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString('en-IN')}`;
   };
+
+  // Helper function to filter courses by date
+  const filterCoursesByDate = (courses, filter) => {
+    if (filter === "all") return courses;
+    
+    const now = new Date();
+    
+    return courses.filter(course => {
+      // Check for different possible date fields
+      const dateField = course.createdAt || course.date || course.created_at;
+      if (!dateField) {
+        console.log('Course missing date field:', course.title, 'Available fields:', Object.keys(course));
+        return false;
+      }
+      const courseDate = new Date(dateField);
+      
+      switch (filter) {
+        case "today":
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          return courseDate >= today;
+        case "week":
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
+          return courseDate >= weekAgo;
+        case "month":
+          const monthAgo = new Date();
+          monthAgo.setMonth(now.getMonth() - 1);
+          return courseDate >= monthAgo;
+        case "year":
+          const yearAgo = new Date();
+          yearAgo.setFullYear(now.getFullYear() - 1);
+          return courseDate >= yearAgo;
+        default:
+          return true;
+      }
+    });
+  };
+
+  // Calculate if we can load more courses based on filtered results
+  const filteredCoursesCount = useMemo(() => 
+    filterCoursesByDate(listOfCourses, dateFilter).length, 
+    [listOfCourses, dateFilter]
+  );
+  const canLoadMoreCourses = filteredCoursesCount > visibleCourses;
+
   // Reset counts when data changes
   useEffect(() => { 
     setVisibleCourses(INITIAL_ROWS_COURSES);
     setVisibleStudents(INITIAL_ROWS_STUDENTS);
   }, [listOfCourses]);
-  function calculateTotalStudentsAndProfit() {
-    const { totalStudents, totalProfit, studentList } = listOfCourses.reduce(
+
+  // Reset visible courses when date filter changes
+  useEffect(() => {
+    setVisibleCourses(INITIAL_ROWS_COURSES);
+  }, [dateFilter]);
+  // Use useMemo to recalculate totals when listOfCourses or dateFilter changes
+  const totals = useMemo(() => {
+    // Apply date filtering to courses
+    const filteredCourses = filterCoursesByDate(listOfCourses, dateFilter);
+    
+    const { totalStudents, totalProfit, studentList } = filteredCourses.reduce(
       (acc, course) => {
         const studentCount = course.students.length;
         acc.totalStudents += studentCount;
@@ -73,9 +126,7 @@ function InstructorDashboard({ listOfCourses = [] }) {
       totalStudents,
       studentList,
     };
-  }
-
-  const totals = calculateTotalStudentsAndProfit();
+  }, [listOfCourses, dateFilter]);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [actionsLoading, setActionsLoading] = useState(false);
   const [recentActions, setRecentActions] = useState([]);
@@ -239,7 +290,7 @@ function InstructorDashboard({ listOfCourses = [] }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {listOfCourses.slice(0, visibleCourses).map((c) => (
+                  {filterCoursesByDate(listOfCourses, dateFilter).slice(0, visibleCourses).map((c) => (
                     <TableRow key={c._id} className="hover:bg-gray-50 transition-colors">
                       <TableCell className="font-medium text-gray-900">
                         <div className="flex items-center gap-2 sm:gap-3">

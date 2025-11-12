@@ -12,7 +12,8 @@ import {
   ArrowDownRight,
   Clock,
   Zap,
-  Activity
+  Activity,
+  Filter
 } from "lucide-react";
 import PropTypes from "prop-types";
 import { useState, useMemo, useEffect, useContext } from "react";
@@ -43,6 +44,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString('en-IN')}`;
   };
+
   const [realTimeData] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [liveStats, setLiveStats] = useState({
@@ -154,7 +156,7 @@ function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
 
   // Calculate revenue data
   const revenueData = useMemo(() => {
-    // Use analytics data if available
+    // Use analytics data when available (no date filtering in real-time component)
     if (analytics && analytics.totals) {
       const totals = analytics.totals || {};
       return {
