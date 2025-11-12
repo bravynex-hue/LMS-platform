@@ -408,11 +408,19 @@ function InstructorDashboard({ listOfCourses = [] }) {
                   <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Course Name</TableHead>
                     <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Student Name</TableHead>
+                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Enrolled</TableHead>
                     <TableHead className="font-semibold text-gray-700 text-center text-xs sm:text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {totals.studentList.slice(0, visibleStudents).map((s, i) => (
+                  {totals.studentList
+                    .sort((a, b) => {
+                      // Sort by enrollment date (most recent first)
+                      const dateA = a.enrollmentDate ? new Date(a.enrollmentDate) : new Date(0);
+                      const dateB = b.enrollmentDate ? new Date(b.enrollmentDate) : new Date(0);
+                      return dateB - dateA;
+                    })
+                    .slice(0, visibleStudents).map((s, i) => (
                     <TableRow key={`${s.studentEmail}-${i}`} className="hover:bg-gray-50 transition-colors">
                       <TableCell className="font-medium text-gray-900">
                         <div className="flex items-center gap-2 sm:gap-3">
@@ -431,6 +439,13 @@ function InstructorDashboard({ listOfCourses = [] }) {
                           </div>
                           <span className="text-xs sm:text-sm truncate">{s.studentName}</span>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm text-gray-600">
+                        {s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        }) : 'N/A'}
                       </TableCell>
                       <TableCell className="text-center">
                         <button 
