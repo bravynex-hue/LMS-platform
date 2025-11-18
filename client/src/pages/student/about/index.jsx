@@ -12,15 +12,15 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20 px-6 lg:px-12">
+        <div className="w-full">
           <h1 className="text-5xl font-bold mb-4">About the Company</h1>
           <div className="w-24 h-1 bg-yellow-500"></div>
         </div>
       </div>
       
 
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="w-full px-6 lg:px-12 py-16">
         {/* About the Company Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
           <div>
@@ -118,8 +118,8 @@ function AboutPage() {
         </div>
 
       {/* Expert Trainers Section - Black Background */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-black">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 lg:px-12 py-16 bg-black">
+        <div className="w-full">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Text Content */}
             <div className="flex-1 text-white pr-0 lg:pr-8">
@@ -143,8 +143,8 @@ function AboutPage() {
       </section>
 
       {/* Student Success Stories Section - White Background */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 lg:px-12 py-16 bg-white border-t border-gray-200">
+        <div className="w-full">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Image */}
             <div className="lg:flex-shrink-0">
@@ -168,8 +168,8 @@ function AboutPage() {
       </section>
 
       {/* Services Overview Section - Black Background */}
-      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-black">
-        <div className="max-w-7xl mx-auto">
+      <section className="px-6 lg:px-12 py-16 bg-black">
+        <div className="w-full">
           <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Text Content */}
             <div className="flex-1 text-white pr-0 lg:pr-8">
@@ -193,7 +193,7 @@ function AboutPage() {
       </section>
 
         {/* Vision & Mission Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20 mt-10">
           {/* Vision */}
           <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-shadow">
             <div className="flex items-center gap-3 mb-4">
@@ -222,7 +222,7 @@ function AboutPage() {
         </div>
 
         {/* Our Goals Section */}
-        <div className="bg-white rounded-lg shadow-lg p-10 mb-20 border border-gray-200 hover:shadow-xl transition-shadow">
+        {/* <div className="bg-white rounded-lg shadow-lg p-10 mb-20 border border-gray-200 hover:shadow-xl transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
               <Target className="h-6 w-6 text-yellow-600" />
@@ -232,7 +232,7 @@ function AboutPage() {
           <p className="text-gray-700 leading-relaxed">
             Our goals are to deliver high-quality solutions that meet customer needs, enhance satisfaction through reliable support and service, and drive innovation to support continuous growth and success.
           </p>
-        </div>
+        </div> */}
 
         {/* Offered Services Section */}
         <div className="bg-white rounded-lg shadow-lg p-10 mb-20 border border-gray-200">

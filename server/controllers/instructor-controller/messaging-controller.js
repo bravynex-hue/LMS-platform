@@ -1,8 +1,5 @@
 const Message = require("../../models/Message");
 const Course = require("../../models/Course");
-const User = require("../../models/User");
-const StudentCourses = require("../../models/StudentCourses");
-const { emitNewMessage } = require("../../socket");
 
 // Get students enrolled in a course
 const getCourseStudents = async (req, res) => {
@@ -17,7 +14,9 @@ const getCourseStudents = async (req, res) => {
     const course = await Course.findById(courseId);
     if (!course) {
       console.log("Course not found");
-      return res.status(404).json({ success: false, message: "Course not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
 
     console.log("Course instructor ID:", course.instructorId);
@@ -25,72 +24,30 @@ const getCourseStudents = async (req, res) => {
 
     if (course.instructorId !== instructorId) {
       console.log("Authorization failed - instructor mismatch");
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
-    // Get enrolled students from multiple sources
-    const enrolledStudentIds = new Set();
-    
-    // 1. Students directly enrolled in course.students array
-    const directStudents = course.students || [];
-    console.log("Direct students in course.students:", directStudents.length);
-    directStudents.forEach(s => {
-      console.log("Adding direct student:", s.studentId);
-      enrolledStudentIds.add(s.studentId);
-    });
-    
-    // 2. Students who purchased the course
-    console.log("Searching for purchased courses with courseId:", courseId);
-    
-    // Debug: Check all StudentCourses records
-    const allStudentCourses = await StudentCourses.find({});
-    console.log("Total StudentCourses records in database:", allStudentCourses.length);
-    if (allStudentCourses.length > 0) {
-      console.log("Sample StudentCourses record:", JSON.stringify(allStudentCourses[0], null, 2));
-    }
-    
-    const purchasedCourses = await StudentCourses.find({
-      'courses.courseId': courseId
-    });
-    console.log("Found purchased courses:", purchasedCourses.length);
-    purchasedCourses.forEach(studentCourse => {
-      console.log("Adding purchased student:", studentCourse.userId);
-      enrolledStudentIds.add(studentCourse.userId);
-    });
-    
-    // 3. For free courses, we could potentially include all users, but that's not practical
-    // Instead, we'll rely on direct enrollment and purchases
-    
-    console.log("Total enrolled students found:", enrolledStudentIds.size);
-    console.log("Enrolled student IDs:", Array.from(enrolledStudentIds));
-    
-    // Fetch user data for all enrolled students
-    const users = await User.find({ 
-      _id: { $in: Array.from(enrolledStudentIds) },
-      role: 'user' // Only include students, not instructors/admins
-    }).select('userName userEmail');
-    
-    // Create student data combining direct enrollment info with user data
-    const studentData = users.map(user => {
-      // Check if student has direct enrollment data
-      const directStudent = directStudents.find(s => s.studentId === user._id.toString());
-      
-      return {
-        studentId: user._id.toString(),
-        studentName: directStudent?.studentName || user.userName || "Student",
-        studentEmail: directStudent?.studentEmail || user.userEmail || "",
-      };
-    });
-    
-    console.log("Returning students:", studentData.length);
-    
-    res.status(200).json({ 
-      success: true, 
-      data: studentData
+    // Get enrolled students
+    const students = course.students || [];
+    console.log("Returning students:", students.length);
+    console.log("Sample student data:", students[0]);
+    console.log("sample student data:");
+
+    res.status(200).json({
+      success: true,
+      data: students.map((s) => ({
+        studentId: s.studentId,
+        studentName: s.studentName || s.name || "Student",
+        studentEmail: s.studentEmail || s.email || "",
+      })),
     });
   } catch (error) {
     console.error("getCourseStudents error:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch students" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch students" });
   }
 };
 
@@ -102,48 +59,26 @@ const sendMessage = async (req, res) => {
     const instructorName = req.user?.userName || req.user?.userEmail;
 
     if (!courseId || !recipientId || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Course, recipient, and message are required" 
+      return res.status(400).json({
+        success: false,
+        message: "Course, recipient, and message are required",
       });
     }
 
     // Verify instructor owns the course
     const course = await Course.findById(courseId);
     if (!course || course.instructorId !== instructorId) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
-    // Check if recipient is enrolled in the course (comprehensive check)
-    let isStudentEnrolled = false;
-    let recipientName = "Student";
-    
-    // 1. Check direct enrollment
-    const directStudent = course.students?.find(s => s.studentId === recipientId);
-    if (directStudent) {
-      isStudentEnrolled = true;
-      recipientName = directStudent.studentName;
-    }
-    
-    // 2. Check purchase records if not found in direct enrollment
-    if (!isStudentEnrolled) {
-      const purchasedCourse = await StudentCourses.findOne({
-        userId: recipientId,
-        'courses.courseId': courseId
-      });
-      if (purchasedCourse) {
-        isStudentEnrolled = true;
-      }
-    }
-    
-    if (!isStudentEnrolled) {
-      return res.status(404).json({ success: false, message: "Student not found in course" });
-    }
-
-    // Get student name from User model if not available
-    if (!recipientName || recipientName === "Student") {
-      const user = await User.findById(recipientId).select('userName userEmail');
-      recipientName = user?.userName || user?.userEmail || "Student";
+    // Find recipient student
+    const student = course.students.find((s) => s.studentId === recipientId);
+    if (!student) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found in course" });
     }
 
     // Create message
@@ -153,19 +88,16 @@ const sendMessage = async (req, res) => {
       senderName: instructorName,
       senderRole: "instructor",
       recipientId,
-      recipientName,
+      recipientName: student.studentName,
       recipientRole: "student",
       subject,
       message,
     });
 
-    // Emit message via WebSocket
-    emitNewMessage(courseId, newMessage);
-
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: "Message sent successfully",
-      data: newMessage 
+      data: newMessage,
     });
   } catch (error) {
     console.error("sendMessage error:", error);
@@ -182,7 +114,9 @@ const getConversation = async (req, res) => {
     // Verify instructor owns the course
     const course = await Course.findById(courseId);
     if (!course || course.instructorId !== instructorId) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
     // Get all messages between instructor and student for this course
@@ -190,8 +124,8 @@ const getConversation = async (req, res) => {
       courseId,
       $or: [
         { senderId: instructorId, recipientId: studentId },
-        { senderId: studentId, recipientId: instructorId }
-      ]
+        { senderId: studentId, recipientId: instructorId },
+      ],
     }).sort({ createdAt: 1 });
 
     // Mark messages from student as read
@@ -200,18 +134,20 @@ const getConversation = async (req, res) => {
         courseId,
         senderId: studentId,
         recipientId: instructorId,
-        isRead: false
+        isRead: false,
       },
       {
         isRead: true,
-        readAt: new Date()
+        readAt: new Date(),
       }
     );
 
     res.status(200).json({ success: true, data: messages });
   } catch (error) {
     console.error("getConversation error:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch conversation" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch conversation" });
   }
 };
 
@@ -222,29 +158,28 @@ const getAllConversations = async (req, res) => {
 
     // Get all messages where instructor is sender or recipient
     const messages = await Message.find({
-      $or: [
-        { senderId: instructorId },
-        { recipientId: instructorId }
-      ]
+      $or: [{ senderId: instructorId }, { recipientId: instructorId }],
     }).sort({ createdAt: -1 });
 
     // Group by student and course
     const conversationsMap = {};
-    messages.forEach(msg => {
-      const studentId = msg.senderId === instructorId ? msg.recipientId : msg.senderId;
+    messages.forEach((msg) => {
+      const studentId =
+        msg.senderId === instructorId ? msg.recipientId : msg.senderId;
       const key = `${msg.courseId}-${studentId}`;
-      
+
       if (!conversationsMap[key]) {
         conversationsMap[key] = {
           courseId: msg.courseId,
           studentId,
-          studentName: msg.senderId === instructorId ? msg.recipientName : msg.senderName,
+          studentName:
+            msg.senderId === instructorId ? msg.recipientName : msg.senderName,
           lastMessage: msg.message,
           lastMessageAt: msg.createdAt,
           unreadCount: 0,
         };
       }
-      
+
       // Count unread messages from student
       if (msg.recipientId === instructorId && !msg.isRead) {
         conversationsMap[key].unreadCount++;
@@ -256,11 +191,12 @@ const getAllConversations = async (req, res) => {
     res.status(200).json({ success: true, data: conversations });
   } catch (error) {
     console.error("getAllConversations error:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch conversations" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch conversations" });
   }
 };
 
-// Clear conversation with a student
 const clearConversation = async (req, res) => {
   try {
     const { courseId, studentId } = req.params;
@@ -269,26 +205,26 @@ const clearConversation = async (req, res) => {
     // Verify instructor owns the course
     const course = await Course.findById(courseId);
     if (!course || course.instructorId !== instructorId) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
     }
 
-    // Delete all messages in this conversation
-    const result = await Message.deleteMany({
+    // Delete all messages between instructor and student for this course
+    await Message.deleteMany({
       courseId,
       $or: [
         { senderId: instructorId, recipientId: studentId },
-        { senderId: studentId, recipientId: instructorId }
-      ]
+        { senderId: studentId, recipientId: instructorId },
+      ],
     });
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Conversation cleared successfully",
-      deletedCount: result.deletedCount
-    });
+    res.status(200).json({ success: true, message: "Conversation cleared" });
   } catch (error) {
     console.error("clearConversation error:", error);
-    res.status(500).json({ success: false, message: "Failed to clear conversation" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to clear conversation" });
   }
 };
 
