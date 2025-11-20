@@ -7,6 +7,8 @@ const verifyCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;
 
+    console.log('Received certificateId for verification:', certificateId);
+
     if (!certificateId) {
       return res.status(400).json({
         success: false,
@@ -15,7 +17,11 @@ const verifyCertificate = async (req, res) => {
     }
 
     // Find certificate approval by certificate ID
-    const approval = await CertificateApproval.findOne({ certificateId });
+    const approval = await CertificateApproval.findOne({
+      certificateId: new RegExp(`^${certificateId.trim()}$`, "i"), // case-insensitive exact match
+    });
+
+    console.log('CertificateApproval query result:', approval);
 
     if (!approval) {
       return res.status(404).json({

@@ -204,6 +204,7 @@ const approveCertificateRequest = async (req, res) => {
     certificate.grade = grade || certificate.grade || "A+";
     certificate.notes = notes || certificate.notes;
     
+    console.log(`Generated Certificate ID: ${certificateId} for CertificateApproval ID: ${certificate._id}`);
     await certificate.save();
     
     res.status(200).json({
