@@ -17,9 +17,7 @@ const verifyCertificate = async (req, res) => {
     }
 
     // Find certificate approval by certificate ID
-    const approval = await CertificateApproval.findOne({
-      certificateId: new RegExp(`^${certificateId.trim()}$`, "i"), // case-insensitive exact match
-    });
+    const approval = await CertificateApproval.findOne({ certificateId });
 
     console.log('CertificateApproval query result:', approval);
 

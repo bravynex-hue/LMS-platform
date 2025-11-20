@@ -46,7 +46,8 @@ const UserSchema = new mongoose.Schema({
   studentId: {
     type: String,
     unique: true,
-    trim: true,
+    sparse: true, // Only enforce uniqueness for non-null values
+    trim: true
   },
   dob: {
     type: Date,
@@ -159,7 +160,7 @@ const UserSchema = new mongoose.Schema({
 // Optimized indexes for performance and security
 UserSchema.index({ userEmail: 1 }, { unique: true }); // Unique index for faster lookups
 UserSchema.index({ userName: 1 }, { unique: true }); // Unique index for faster lookups
-UserSchema.index({ studentId: 1 }, { unique: true }); // Unique index for student IDs
+UserSchema.index({ studentId: 1 }, { unique: true, sparse: true }); // Unique index for student IDs
 UserSchema.index({ passwordResetExpires: 1 }, { expireAfterSeconds: 0, sparse: true });
 UserSchema.index({ emailVerificationExpires: 1 }, { expireAfterSeconds: 0, sparse: true });
 UserSchema.index({ accountLockedUntil: 1 }, { sparse: true }); // Sparse index - only for locked accounts

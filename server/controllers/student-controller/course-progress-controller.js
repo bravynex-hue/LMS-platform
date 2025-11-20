@@ -349,23 +349,19 @@ const generateCompletionCertificate = async (req, res) => {
       await user.save();
     }
 
-    let certificateIdToUse = approval.certificateId;
-
-    // If no certificateId is present in the approval record, generate a new one (fallback)
-    if (!certificateIdToUse) {
-      const newCertificateId = randomBytes(8).toString("hex").toUpperCase();
-      approval.certificateId = newCertificateId; // Save the newly generated ID to the approval record
-      await approval.save();
-      certificateIdToUse = newCertificateId;
-    }
-
+    const certificateId = randomBytes(8).toString("hex").toUpperCase();
     const issuedOn = new Date(progress.completionDate || Date.now()).toDateString();
+
+    // Save certificateId and customStudentId to approval record for verification
+    approval.certificateId = certificateId;
+    approval.customStudentId = studentIdToPrint;
+    await approval.save();
 
     console.log('Generating certificate for:', {
       userName: studentNameToPrint,
       courseTitle: courseNameToPrint,
       studentId: studentIdToPrint,
-      certificateId: certificateIdToUse,
+      certificateId,
       issuedOn
     });
 
@@ -555,7 +551,7 @@ const generateCompletionCertificate = async (req, res) => {
     renderTextWithFallback(printedFrom, textPositions.institution);
 
     // Certificate ID and Issue Date
-    renderTextWithFallback(certificateIdToUse, textPositions.certificateId);
+    renderTextWithFallback(certificateId, textPositions.certificateId);
     renderTextWithFallback(issuedOn, textPositions.issueDate);
     
     // Restore coordinate system after all text rendering
@@ -567,7 +563,7 @@ const generateCompletionCertificate = async (req, res) => {
       // Handle multiple URLs in CLIENT_URL (take the first one for QR code)
       const clientUrls = process.env.CLIENT_URL || "http://localhost:5173";
       const frontendBase = clientUrls.split(',')[0].trim();
-      const verificationPath = `/verify-certificate/${certificateIdToUse}`;
+      const verificationPath = `/verify-certificate/${certificateId}`;
       const qrTargetUrl = `${frontendBase}${verificationPath}`;
       
       console.log('QR Code URL:', qrTargetUrl);
