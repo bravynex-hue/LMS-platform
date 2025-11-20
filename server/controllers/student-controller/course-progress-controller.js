@@ -235,7 +235,7 @@ const generateCompletionCertificate = async (req, res) => {
 
     console.log(`Certificate generation requested for userId: ${userId}, courseId: ${courseId}`);
 
-    const progress = await CourseProgress.findOne({ userId, courseId });
+    let progress = await CourseProgress.findOne({ userId, courseId });
     console.log(`Progress found:`, progress ? { completed: progress.completed, lecturesCount: progress.lecturesProgress?.length } : 'No progress found');
     
     const course = await Course.findById(courseId);
@@ -324,11 +324,17 @@ const generateCompletionCertificate = async (req, res) => {
     // Require explicit instructor/admin approval before generating certificate
     const CertificateApproval = require("../../models/CertificateApproval");
     const approval = await CertificateApproval.findOne({ courseId, studentId: userId, revoked: { $ne: true } });
-    if (!approval) {
-      return res.status(403).json({ success: false, message: "Certificate not enabled for this student. Please contact your instructor." });
+
+    // IMPORTANT: Ensure approval exists AND has a certificateId
+    if (!approval || !approval.certificateId) {
+      console.error(`CertificateApproval record found: ${!!approval}, certificateId present: ${!!approval?.certificateId}`);
+      return res.status(403).json({
+        success: false,
+        message: "Certificate not approved or Certificate ID is missing. Please contact your instructor."
+      });
     }
-    
-    console.log('Certificate generation proceeding...');
+
+    console.log('Certificate generation proceeding with stored ID...');
 
     const user = await User.findById(userId);
     if (!user) {
@@ -340,24 +346,12 @@ const generateCompletionCertificate = async (req, res) => {
     const fatherNameToPrint = approval.studentFatherName || user.guardianName || user.guardianDetails || "";
     const courseNameToPrint = approval.courseTitle || course.certificateCourseName || course.title;
     const printedGrade = approval.grade || course.defaultCertificateGrade || "A+";
-    // Generate proper numeric student ID if user doesn't have one
-    let studentIdToPrint = user.studentId;
-    if (!studentIdToPrint) {
-      // Generate a proper numeric student ID and save it to the user
-      studentIdToPrint = await generateUniqueStudentId();
-      user.studentId = studentIdToPrint;
-      await user.save();
-    }
 
-    let certificateIdToUse = approval.certificateId;
+    // Use the approved custom student ID if available, otherwise fallback to user's studentId
+    const studentIdToPrint = approval.customStudentId || user.studentId;
 
-    // If no certificateId is present in the approval record, generate a new one (fallback)
-    if (!certificateIdToUse) {
-      const newCertificateId = randomBytes(8).toString("hex").toUpperCase();
-      approval.certificateId = newCertificateId; // Save the newly generated ID to the approval record
-      await approval.save();
-      certificateIdToUse = newCertificateId;
-    }
+    // The certificate ID MUST come from the approval record
+    const certificateIdToUse = approval.certificateId; // This is the key change to ensure consistency
 
     const issuedOn = new Date(progress.completionDate || Date.now()).toDateString();
 
@@ -365,7 +359,7 @@ const generateCompletionCertificate = async (req, res) => {
       userName: studentNameToPrint,
       courseTitle: courseNameToPrint,
       studentId: studentIdToPrint,
-      certificateId: certificateIdToUse,
+      certificateId: certificateIdToUse, // Ensure this is the ID from the approval record
       issuedOn
     });
 
