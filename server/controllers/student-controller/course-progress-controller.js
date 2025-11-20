@@ -235,7 +235,7 @@ const generateCompletionCertificate = async (req, res) => {
 
     console.log(`Certificate generation requested for userId: ${userId}, courseId: ${courseId}`);
 
-    let progress = await CourseProgress.findOne({ userId, courseId });
+    const progress = await CourseProgress.findOne({ userId, courseId });
     console.log(`Progress found:`, progress ? { completed: progress.completed, lecturesCount: progress.lecturesProgress?.length } : 'No progress found');
     
     const course = await Course.findById(courseId);
