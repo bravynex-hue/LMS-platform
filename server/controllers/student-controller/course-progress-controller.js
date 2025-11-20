@@ -349,11 +349,14 @@ const generateCompletionCertificate = async (req, res) => {
       await user.save();
     }
 
-    const certificateId = randomBytes(8).toString("hex").toUpperCase();
+    let certificateId = approval.certificateId;
+    if (!certificateId) {
+      certificateId = randomBytes(8).toString("hex").toUpperCase();
+      approval.certificateId = certificateId;
+    }
     const issuedOn = new Date(progress.completionDate || Date.now()).toDateString();
 
     // Save certificateId and customStudentId to approval record for verification
-    approval.certificateId = certificateId;
     approval.customStudentId = studentIdToPrint;
     await approval.save();
 
