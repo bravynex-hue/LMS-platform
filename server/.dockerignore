@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+build-script.js
+# Exclude client folder if it exists inside server during dev
+../client
