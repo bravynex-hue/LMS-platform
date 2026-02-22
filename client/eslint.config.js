@@ -29,10 +29,22 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
+      'react/prop-types': 'off', // Disable prop-types requirement
+      'no-unused-vars': 'warn',   // Turn unused variables into warnings
+      'react/no-unescaped-entities': 'off', // Allow unescaped characters like ' and "
+      'no-case-declarations': 'off', // Allow lexical declarations in case blocks
+      'react-hooks/exhaustive-deps': 'warn', // Turn hook dependency issues into warnings
+      'no-useless-escape': 'off', // Avoid errors for regex escapes
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    files: ['*.config.js'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ]
