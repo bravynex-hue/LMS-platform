@@ -4,8 +4,7 @@ import {
   Menu, 
   ChevronLeft, 
   Search, 
-  Bell,
-  Settings
+  Bell
 } from "lucide-react";
 import { AuthContext } from "@/context/auth-context";
 import { useNavigate } from "react-router-dom";
