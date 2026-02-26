@@ -16,6 +16,7 @@ function CommunicationPage() {
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [students, setStudents] = useState([]);
+  const [studentSearch, setStudentSearch] = useState("");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -124,6 +125,15 @@ function CommunicationPage() {
     }
   }
 
+  const filteredStudents = students.filter((student) => {
+    if (!studentSearch.trim()) return true;
+    const term = studentSearch.toLowerCase();
+    return (
+      student.studentName?.toLowerCase().includes(term) ||
+      student.studentEmail?.toLowerCase().includes(term)
+    );
+  });
+
   async function loadConversation() {
     if (!selectedCourseId || !selectedStudentId) return;
     try {
@@ -231,13 +241,19 @@ function CommunicationPage() {
 
             <div className="space-y-4">
               <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 px-1">Enrolled Subjects</label>
+              <Input
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                placeholder="Search by name or email..."
+                className="h-9 bg-white/5 border-white/10 text-[11px] text-gray-200 rounded-xl px-3 placeholder:text-gray-600 focus-visible:ring-blue-500/40 focus-visible:border-blue-500/60"
+              />
               <div className="space-y-2">
                  {loading ? (
                     <div className="text-center py-6 text-[10px] font-black text-gray-600 animate-pulse">Scanning Nodes...</div>
-                 ) : students.length === 0 ? (
+                 ) : filteredStudents.length === 0 ? (
                     <div className="text-center py-6 text-[10px] font-black text-gray-600 italic">No Active Transmissions</div>
                  ) : (
-                    students.map((student) => (
+                    filteredStudents.map((student) => (
                        <button
                           key={student.studentId}
                           onClick={() => setSelectedStudentId(student.studentId)}
@@ -272,14 +288,22 @@ function CommunicationPage() {
                 <h3 className="text-sm font-black text-white italic tracking-widest uppercase">
                   Data Stream Terminal
                 </h3>
-                {selectedStudentId && (
-                   <div className="flex items-center gap-2 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                        Node: {students.find((s) => s.studentId === selectedStudentId)?.studentName || "Linked Student"}
-                      </span>
-                   </div>
-                )}
+                <div className="flex items-center flex-wrap gap-2 mt-1">
+                  <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.18em] ${
+                    connected ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/5" : "border-gray-600 text-gray-500 bg-black/20"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-400 animate-pulse" : "bg-gray-500"}`} />
+                    <span>{connected ? "Socket Online" : "Socket Offline"}</span>
+                  </div>
+                  <div className="px-2 py-1 rounded-full border border-white/10 bg-black/40 text-[9px] font-black uppercase tracking-[0.18em] text-gray-400 max-w-[220px] truncate">
+                    {selectedStudentId
+                      ? `To: ${
+                          students.find((s) => s.studentId === selectedStudentId)?.studentName ||
+                          "Linked Student"
+                        }`
+                      : "Select a student to start"}
+                  </div>
+                </div>
               </div>
             </div>
             {selectedStudentId && messages.length > 0 && (
@@ -371,7 +395,7 @@ function CommunicationPage() {
                           handleTyping();
                         }}
                         onBlur={handleStopTyping}
-                        placeholder="Push data to stream..."
+                        placeholder={selectedStudentId ? "Type a message to your student..." : "Select a student to start messaging"}
                         className="flex-1 bg-transparent border-none text-white focus:ring-0 resize-none py-3 px-4 min-h-[50px] max-h-[150px] font-medium placeholder-gray-700 custom-scrollbar"
                         rows={1}
                         onKeyDown={(e) => {
@@ -383,7 +407,7 @@ function CommunicationPage() {
                       />
                       <Button 
                         type="submit" 
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || !selectedStudentId}
                         className="h-10 w-10 p-0 bg-white text-black hover:bg-gray-200 rounded-xl shadow-xl shadow-white/5 flex-shrink-0 mb-1 transition-all active:scale-90 disabled:opacity-20"
                       >
                         <Send className="w-4 h-4" />
