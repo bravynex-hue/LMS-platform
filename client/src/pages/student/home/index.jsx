@@ -107,21 +107,21 @@ const FEATURES = [
 const TESTIMONIALS = [
   {
     name: "Arjun Mehta",
-    role: "Full Stack Engineer @ TCS",
+    role: "Full Stack Engineer",
     text: "Bravynex's internship transformed how I think about code. Real projects, real mentors — I had an offer within 3 months of completing the program.",
     avatar: "AM",
     color: "#3b82f6",
   },
   {
     name: "Priya Sharma",
-    role: "Data Scientist @ Infosys",
+    role: "Data Scientist ",
     text: "The VLSI and Data Science tracks were genuinely industry-level. Nothing else online came close to this depth.",
     avatar: "PS",
     color: "#a855f7",
   },
   {
     name: "Rahul Nair",
-    role: "DevOps Engineer @ Wipro",
+    role: "DevOps Engineer",
     text: "From zero cloud experience to designing CI/CD pipelines in 8 weeks. The mentorship quality here is unmatched.",
     avatar: "RN",
     color: "#06b6d4",
