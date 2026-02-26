@@ -51,31 +51,6 @@ const SOCIAL_LINKS = [
 ];
 
 function Footer() {
-  const [contactForm, setContactForm] = useState({
-    fromName: "", fromEmail: "", phoneNumber: "",
-    course: "", segment: "", institution: "", message: "",
-  });
-  const [sending, setSending] = useState(false);
-  const [statusMsg, setStatusMsg] = useState("");
-
-  async function handleContactSubmit(e) {
-    e.preventDefault();
-    setStatusMsg("");
-    setSending(true);
-    try {
-      const formData = {
-        ...contactForm,
-        subject: "Website contact form submission",
-      };
-      const res = await contactAdminService(formData);
-      setStatusMsg(res?.success ? "Message sent successfully." : res?.message || "Failed to send.");
-      if (res?.success) setContactForm({ fromName: "", fromEmail: "", phoneNumber: "", course: "", segment: "", institution: "", message: "" });
-    } catch (err) {
-      setStatusMsg(err?.message || "Failed to send.");
-    } finally {
-      setSending(false);
-    }
-  }
 
   return (
     <footer className="relative mt-0 overflow-hidden"
@@ -165,7 +140,7 @@ function Footer() {
                 onMouseLeave={(e) => { 
                   e.currentTarget.style.color = "#94a3b8"; 
                   e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; 
-                  e.currentTarget.style.background = "rgba(255,255,255,0.03)"; 
+                  e.currentTarget.style.background = "rgba(255,255,255,0.03)";
                 }}
               >
                 <Icon className="w-3.5 h-3.5" />
