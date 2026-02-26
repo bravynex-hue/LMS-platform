@@ -62,34 +62,16 @@ function StudentViewCommonHeader() {
           {/* ── Logo ─────────────────────────────── */}
           <Link
             to="/home"
-            className="flex items-center gap-2.5 flex-shrink-0 group"
+            className="flex items-center flex-shrink-0 gap-2"
             aria-label="BRAVYNEX Home"
           >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
-              style={{
-                background: "linear-gradient(135deg, #3b82f6, #a855f7)",
-                boxShadow: "0 0 15px rgba(59,130,246,0.35)",
-              }}
-            >
-              <Zap className="w-5 h-5 text-white fill-white" />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span
-                className="text-lg font-black tracking-tighter"
-                style={{
-                  background: "linear-gradient(90deg, #60a5fa, #c084fc)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                BRAVYNEX
-              </span>
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase opacity-60" style={{ color: "#94a3b8" }}>
-                Engineering
-              </span>
-            </div>
+            {/* the new branded logo image should be placed at public/images/logo.png or similar */}
+            <img
+              src="/images/logo.png"
+              alt="Bravynex Engineering"
+              className="h-12 w-auto object-contain"
+              style={{ maxHeight: '48px', maxWidth: '200px' }}
+            />
           </Link>
 
           {/* ── Desktop Nav ──────────────────────── */}

@@ -75,20 +75,23 @@ function AuthPage() {
         {/* Branding overlay */}
         <div className="relative z-10 flex flex-col h-full p-10">
           {/* Logo */}
-          <a href="/home" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #a855f7)" }}>
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-black"
-              style={{
-                background: "linear-gradient(90deg, #60a5fa, #c084fc)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              }}>
-              BRAVYNEX
-            </span>
-          </a>
-
+        <a
+          href="/home"
+          className="flex items-center w-full"
+          style={{ maxWidth: '300px', position: 'relative' }}
+        >
+          <img
+            src="/images/logo.png"
+            alt="Bravynex Engineering"
+            className="w-full h-auto object-contain"
+            style={{
+              maxHeight: '80px',
+              animation: 'slideLeft 4s ease-in-out infinite'
+            }}
+          />
+          {/* small inline keyframes to slide left-right */}
+          <style>{`@keyframes slideLeft { 0%,100%{transform:translateX(0);}50%{transform:translateX(-15px);} }`}</style>
+        </a>
           {/* Bottom copy */}
           <div className="mt-auto">
             <h2 className="text-4xl font-black leading-tight mb-3"
@@ -130,19 +133,15 @@ function AuthPage() {
         <div className="absolute top-0 inset-x-0 h-px"
           style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)" }} />
 
-        {/* Mobile logo */}
-        <a href="/home" className="flex items-center gap-2 mb-8 lg:hidden">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #3b82f6, #a855f7)" }}>
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-black text-base"
-            style={{
-              background: "linear-gradient(90deg, #60a5fa, #c084fc)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            }}>
-            BRAVYNEX
-          </span>
+        {/* Mobile logo (larger) */}
+        <a href="/home" className="flex items-center mb-8 lg:hidden"
+           style={{ position: 'relative' }}>
+          <img
+            src="/images/logo.png"
+            alt="Bravynex Engineering"
+            className="h-16 w-full object-contain"
+            style={{ maxHeight: '100px', animation: 'slideLeft 4s ease-in-out infinite' }}
+          />
         </a>
 
         <div className="w-full max-w-sm">

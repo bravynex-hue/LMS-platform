@@ -471,14 +471,6 @@ function StudentHomePage() {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-20 pb-24">
           <div className="max-w-xl lg:max-w-2xl">
 
-            {/* Badge
-            <div className="hero-badge-anim mb-5">
-              <span className="section-badge">
-                <Sparkles className="w-3 h-3" style={{ color: "#60a5fa" }} />
-                #1 Engineering Internship Platform
-              </span>
-            </div> */}
-
             {/* Main heading */}
             <h1 className="hero-title text-[2.75rem] sm:text-6xl lg:text-7xl font-black leading-[1.1] sm:leading-[1.04] tracking-tight mb-6">
               <span style={{ color: "#f0f9ff" }}>Master </span>
