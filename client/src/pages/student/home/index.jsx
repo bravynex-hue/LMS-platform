@@ -468,7 +468,7 @@ function StudentHomePage() {
         </div>
 
         {/* Hero copy — left side */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-20 pb-24">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 sm:-ml-8 lg:px-12 lg:-ml-5 pt-20 pb-24">
           <div className="max-w-xl lg:max-w-2xl">
 
             {/* Main heading */}
