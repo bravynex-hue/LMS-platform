@@ -7,8 +7,8 @@ import UnauthorizedPage from "./pages/not-found/unauthorized";
 import InstructorDashboardpage from "./pages/instructor";
 import AdminDashboardpage from "./pages/admin";
 import InstructorLiveSessionsPage from "./pages/instructor/live-sessions";
-// import InstructorInternshipsPage from "./pages/instructor/internships";
-import AddNewCoursePage from "./pages/instructor/add-new-course";
+
+import AddNewCoursePage from "./pages/instructor/add-new-course/index";
 import StudentViewCommonLayout from "./components/student-view/common-layout";
 import StudentHomePage from "./pages/student/home";
 import StudentViewCoursesPage from "./pages/student/courses";
@@ -19,13 +19,13 @@ import StudentViewCourseProgressPage from "./pages/student/course-progress";
 import StudentLiveSessionsPage from "./pages/student/live-sessions";
 import LearnPage from "./pages/student/learn";
 import AboutPage from "./pages/student/about";
-import StudentAnalyticsPage from "./pages/student/analytics";
+
 import StudentFeedbackSupportPage from "./pages/student/feedback-support";
 import AnimationProvider from "./context/animation-context";
 import InstructorCertificatesPage from "./pages/instructor/certificates";
 import InstructorQuizEditorPage from "./pages/instructor/quiz-editor";
 import CertificateVerificationPage from "./pages/public/certificate-verification";
-import SliderManagementPage from "./pages/instructor/slider-management";
+
 import { AuthContext } from "./context/auth-context";
 import { SpinnerFullPage } from "./components/ui/spinner";
 
@@ -98,14 +98,7 @@ function App() {
             </InstructorRouteGuard>
           }
         />
-        {/* <Route
-          path="/instructor/internships"
-          element={
-            <InstructorRouteGuard>
-              <InstructorInternshipsPage />
-            </InstructorRouteGuard>
-          }
-        /> */}
+
         <Route
           path="/instructor/create-new-course"
           element={
@@ -138,14 +131,7 @@ function App() {
             </InstructorRouteGuard>
           }
         />
-        <Route
-          path="/instructor/slider-management"
-          element={
-            <InstructorRouteGuard>
-              <SliderManagementPage />
-            </InstructorRouteGuard>
-          }
-        />
+
 
         {/* Student Routes - Mixed Public and Protected */}
         <Route path="/" element={<StudentViewCommonLayout />}>
@@ -180,14 +166,7 @@ function App() {
               </StudentRouteGuard>
             }
           />
-          <Route
-            path="analytics"
-            element={
-              <StudentRouteGuard>
-                <StudentAnalyticsPage />
-              </StudentRouteGuard>
-            }
-          />
+
           <Route
             path="course-progress/:id"
             element={

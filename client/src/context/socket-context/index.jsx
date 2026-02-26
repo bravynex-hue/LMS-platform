@@ -22,12 +22,10 @@ export const SocketProvider = ({ children }) => {
     });
 
     socketInstance.on("connect", () => {
-      console.log("✅ Socket connected:", socketInstance.id);
       setConnected(true);
     });
 
     socketInstance.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
       setConnected(false);
     });
 

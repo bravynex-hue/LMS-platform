@@ -54,7 +54,6 @@ async function ensureCsrfToken() {
         csrfToken = res.data.csrfToken;
         lastFetchTime = now;
         retryCount = 0;
-        console.log('CSRF token refreshed successfully');
         return csrfToken;
       } else {
         throw new Error('Invalid CSRF token response');

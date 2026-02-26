@@ -102,7 +102,6 @@ export default function AuthProvider({ children }) {
     setIsLoggingIn(true);
     try {
       const data = await loginService(signInFormData);
-      console.log("Login response:", data);
 
       if (data.success) {
         // Store token in session storage
@@ -120,7 +119,6 @@ export default function AuthProvider({ children }) {
         // Clear form data
         setSignInFormData(initialSignInFormData);
         
-        console.log("✅ Login successful! User:", data.data.user);
         toast({ title: "Login successful", description: `Welcome back, ${data.data.user.userName || "student"}!` });
         
         // Redirect based on user role immediately
@@ -228,7 +226,6 @@ export default function AuthProvider({ children }) {
     
     // Use React Router navigation instead of window.location.href
     // This will be handled by the RouteGuard component
-    console.log("✅ Logout successful");
   }
 
   function handleTabChange(tab) {
@@ -336,12 +333,7 @@ export default function AuthProvider({ children }) {
       }}
     >
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mb-4"></div>
-            <p className="text-sm text-gray-600">Loading...</p>
-          </div>
-        </div>
+        <SpinnerFullPage message="Initializing Bravynex App..." />
       ) : children}
     </AuthContext.Provider>
   );

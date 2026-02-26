@@ -7,8 +7,6 @@ const verifyCertificate = async (req, res) => {
   try {
     const { certificateId } = req.params;
 
-    console.log('Received certificateId for verification:', certificateId);
-
     if (!certificateId) {
       return res.status(400).json({
         success: false,

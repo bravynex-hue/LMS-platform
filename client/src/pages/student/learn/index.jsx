@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, Send, X, Trash2 } from "lucide-react";
+import { Card, CardHeader, CardContent, CardTitle, CardFooter } from "@/components/ui/card";
+import { MessageCircle, Send, X, Trash2, CheckCircle, Download, Award } from "lucide-react";
 import { fetchStudentViewCourseDetailsService, listProgramSessionsStudentService, downloadCertificateService, joinLiveSessionService, checkCertificateEligibilityService, getStudentQuizForCourseService, submitStudentQuizAnswersService, getStudentInternshipTasksService, submitInternshipTaskService, sendMessageToInstructorService, getConversationWithInstructorService, clearConversationService } from "@/services";
 import { useAuth } from "@/context/auth-context";
 import { useSocket } from "@/context/socket-context";
@@ -336,371 +337,535 @@ function LearnPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-semibold">{course?.title || "Course"}</h1>
-            <p className="text-xs text-gray-600">Learn, attend live, and earn your certificate.</p>
+    <div className="min-h-screen bg-[#020617] text-[#f0f9ff] selection:bg-blue-500/30">
+      {/* Background Decor */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse italic" />
+      </div>
+
+      <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-8 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight uppercase italic break-words">
+                {course?.title || <span className="opacity-50">SECURE_NODE</span>}
+              </h1>
+            </div>
+            <p className="text-gray-400 font-medium text-sm ml-4.5">
+              Live Interactive Architecture & Knowledge Acquisition Terminal
+            </p>
           </div>
-          <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate(-1)}
+            className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl h-11 px-6 font-bold transition-all"
+          >
+            ← RETREAT
+          </Button>
         </div>
 
-        <div className="flex items-center gap-2 border-b mb-4 overflow-x-auto">
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 p-1.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
           {tabs.map(t => (
             <button
               key={t.key}
               type="button"
               onClick={() => setActiveTab(t.key)}
-              className={`px-3 py-2 text-sm border-b-2 ${activeTab === t.key ? 'border-black text-black' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
-            >{t.label}</button>
+              className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 whitespace-nowrap ${
+                activeTab === t.key 
+                  ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' 
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+              }`}
+            >
+              {t.label}
+            </button>
           ))}
         </div>
 
-        {activeTab === "overview" && (
-          <div className="bg-white border rounded-xl p-5 shadow-sm">
-            <h3 className="font-semibold mb-2">About this course</h3>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{course?.description || "No description provided."}</p>
-          </div>
-        )}
+        {/* Main Content Area */}
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {activeTab === "overview" && (
+            <Card className="glass-card border-white/5 overflow-hidden">
+              <CardHeader className="border-b border-white/5 px-8 py-6">
+                <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-blue-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                  Program Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap font-medium">
+                    {course?.description || "Awaiting intelligence briefing..."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {activeTab === "live" && (
-          <div className="bg-white border rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Upcoming Sessions</h3>
-            </div>
-            {sessions.length === 0 ? (
-              <p className="text-sm text-gray-600">No sessions scheduled yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {sessions.map(s => (
-                  <div key={s._id} className="p-3 border rounded-lg flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{s.topic}</p>
-                      <p className="text-xs text-gray-600">{new Date(s.startTime).toLocaleString()}</p>
-                    </div>
-                    {s.meetingLink && (
-                      <Button size="sm" onClick={() => handleJoin(s)}>Join</Button>
-                    )}
+          {activeTab === "live" && (
+            <Card className="glass-card border-white/5">
+              <CardHeader className="border-b border-white/5 px-8 py-6 flex flex-row items-center justify-between">
+                <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  Active Uplinks
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-8">
+                {sessions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No active signals detected.</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "recorded" && (
-          <div className="bg-white border rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Recorded Videos</h3>
-              <Button onClick={() => navigate(`/course-progress/${id}`)}>Open Course Player</Button>
-            </div>
-            {Array.isArray(course?.curriculum) && course.curriculum.length > 0 ? (
-              <ul className="grid sm:grid-cols-2 gap-2">
-                {course.curriculum.map((lec, idx) => (
-                  <li key={idx} className="text-sm text-gray-800 border rounded p-2 flex items-center justify-between">
-                    <span className="truncate mr-3">{lec.title}</span>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/course-progress/${id}`)}>Watch</Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-600">No videos found.</p>
-            )}
-          </div>
-        )}
-
-        {activeTab === "assignments" && (
-          <div className="bg-white border rounded-xl p-5 shadow-sm space-y-6">
-            {/* Internship Tasks Section */}
-            <div>
-              <h3 className="font-semibold mb-3 text-lg">Internship Tasks</h3>
-              {loadingTasks ? (
-                <p className="text-sm text-gray-600">Loading tasks...</p>
-              ) : internshipTasks.length === 0 ? (
-                <p className="text-sm text-gray-600">No tasks assigned yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {internshipTasks.map((task) => (
-                    <div key={task._id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          {task.phase && <span className="text-xs font-semibold text-orange-600">{task.phase}</span>}
-                          <h4 className="font-medium">{task.title}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                ) : (
+                  <div className="grid gap-4">
+                    {sessions.map(s => (
+                      <div key={s._id} className="p-6 bg-white/[0.03] border border-white/5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group hover:border-emerald-500/30 transition-all">
+                        <div className="space-y-1">
+                          <p className="font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{s.topic}</p>
+                          <p className="text-xs text-gray-500 font-bold">{new Date(s.startTime).toLocaleString()}</p>
                         </div>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                          {task.priority}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center mt-3">
-                        <span className="text-xs text-gray-500">
-                          Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No deadline'}
-                        </span>
-                        {task.hasSubmitted ? (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">
-                            ✓ Submitted
-                          </span>
-                        ) : (
-                          <Button size="sm" onClick={() => {
-                            setSelectedTask(task);
-                            setShowTaskSubmitDialog(true);
-                          }}>
-                            Submit Work
+                        {s.meetingLink && (
+                          <Button 
+                            onClick={() => handleJoin(s)}
+                            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black uppercase tracking-tighter h-10 px-6"
+                          >
+                            Establish Link
                           </Button>
                         )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-            {/* Quiz Section */}
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-3 text-lg">Quiz</h3>
-              {!quiz ? (
-                <p className="text-sm text-gray-600">No quiz available.</p>
-              ) : mySubmission ? (
-                <div className="text-sm">
-                  <p className="mb-2">You have submitted this quiz.</p>
-                  <p className="font-semibold">Score: {mySubmission.score} / 10</p>
-                  <p className="text-xs text-gray-600">You can review questions above once released by instructor.</p>
-                </div>
-              ) : (
-              <div className="space-y-4">
-                <h4 className="font-medium">{quiz.title || "Course Quiz"}</h4>
-                <ol className="space-y-3 list-decimal pl-5">
-                  {quiz.questions.map((q, idx) => (
-                    <li key={idx} className="space-y-2">
-                      <div className="font-medium">{q.questionText}</div>
-                      <div className="grid sm:grid-cols-2 gap-2">
-                        {q.options.map((opt, oIdx) => (
-                          <label key={oIdx} className={`border rounded p-2 flex items-center gap-2 cursor-pointer ${answers[idx] === oIdx ? 'border-black' : ''}`}>
-                            <input
-                              type="radio"
-                              name={`q-${idx}`}
-                              checked={answers[idx] === oIdx}
-                              onChange={() => setAnswers(prev => prev.map((a, i) => i === idx ? oIdx : a))}
-                            />
-                            <span className="text-sm">{opt}</span>
-                          </label>
-                        ))}
+          {activeTab === "recorded" && (
+            <Card className="glass-card border-white/5">
+              <CardHeader className="border-b border-white/5 px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-blue-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                  Visual Archives
+                </CardTitle>
+                <Button 
+                  onClick={() => navigate(`/course-progress/${id}`)}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-tighter h-10 px-6 shadow-lg shadow-blue-500/20"
+                >
+                  Initialize Player
+                </Button>
+              </CardHeader>
+              <CardContent className="p-8">
+                {Array.isArray(course?.curriculum) && course.curriculum.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {course.curriculum.map((lec, idx) => (
+                      <div key={idx} className="p-5 bg-white/[0.03] border border-white/5 rounded-2xl flex items-center justify-between group hover:border-blue-500/30 transition-all">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-[10px] font-black text-blue-400 border border-blue-500/20">
+                            {idx + 1}
+                          </div>
+                          <span className="truncate text-sm font-bold text-gray-300 group-hover:text-white transition-colors">{lec.title}</span>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => navigate(`/course-progress/${id}`)}
+                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 font-bold uppercase tracking-tighter text-xs"
+                        >
+                          Watch
+                        </Button>
                       </div>
-                    </li>
-                  ))}
-                </ol>
-                <div className="flex justify-end">
-                  <Button
-                    disabled={submittingQuiz || answers.some(a => a === null)}
-                    onClick={async () => {
-                      try {
-                        setSubmittingQuiz(true);
-                        const resp = await submitStudentQuizAnswersService(id, {
-                          studentId: auth?.user?._id,
-                          studentName: auth?.user?.name,
-                          answers,
-                        });
-                        if (resp?.success) {
-                          setMySubmission({ score: resp.data?.score });
-                        } else {
-                          alert(resp?.message || "Failed to submit");
-                        }
-                      } catch (e) {
-                        alert(e.message || "Failed to submit");
-                      } finally {
-                        setSubmittingQuiz(false);
-                      }
-                    }}
-                  >{submittingQuiz ? "Submitting..." : "Submit Quiz"}</Button>
-                </div>
-              </div>
-              )}
-            </div>
-          </div>
-        )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Archives currently offline.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-        {activeTab === "certificate" && (
-          <div className="bg-white border rounded-xl p-5 shadow-sm">
-            <h3 className="font-semibold mb-3">Certificate</h3>
-            <p className="text-sm text-gray-700 mb-3">If enabled by your instructor and you have completed the course, you can download your certificate below.</p>
-            <div className="flex items-center gap-3">
-              <Button onClick={handleDownloadCertificate} disabled={!eligible || downloading}>
-                {downloading ? 'Preparing...' : 'Download Certificate'}
-              </Button>
-              {!eligibilityChecked ? (
-                <span className="text-xs text-gray-500">Checking eligibility…</span>
-              ) : !eligible ? (
-                <span className="text-xs text-gray-500">Your instructor/admin has not enabled your certificate yet.</span>
-              ) : null}
+          {activeTab === "assignments" && (
+            <div className="space-y-6">
+              {/* Internship Tasks Section */}
+              <Card className="glass-card border-white/5">
+                <CardHeader className="border-b border-white/5 px-8 py-6">
+                  <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-orange-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)]" />
+                    Neural Tasks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  {loadingTasks ? (
+                    <div className="flex justify-center py-12">
+                      <div className="w-8 h-8 border-2 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+                    </div>
+                  ) : internshipTasks.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No directives assigned.</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4">
+                      {internshipTasks.map((task) => (
+                        <div key={task._id} className="p-6 bg-white/[0.03] border border-white/5 rounded-2xl space-y-4 hover:border-orange-500/30 transition-all">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="space-y-1">
+                              {task.phase && (
+                                <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full border border-orange-400/20">
+                                  Phase {task.phase}
+                                </span>
+                              )}
+                              <h4 className="font-black text-white text-lg uppercase tracking-tight">{task.title}</h4>
+                            </div>
+                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                              task.priority === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                              task.priority === 'medium' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                              'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            }`}>
+                              {task.priority || 'standard'}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-gray-400 font-medium leading-relaxed">
+                            {task.description}
+                          </p>
+
+                          {task.projectTask && (
+                            <div className="rounded-xl bg-orange-500/5 border border-orange-500/20 p-4">
+                              <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Project task</p>
+                              <p className="text-sm text-gray-300 font-medium leading-relaxed">{task.projectTask}</p>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-white/5 gap-4">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                              Deadline: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Awaiting sync'}
+                            </span>
+                            {task.hasSubmitted ? (
+                              <div className="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-tighter bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
+                                <CheckCircle className="w-4 h-4" />
+                                Submission Locked
+                              </div>
+                            ) : (
+                              <Button 
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setShowTaskSubmitDialog(true);
+                                }}
+                                className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black uppercase tracking-tighter h-10 px-6 shadow-lg shadow-orange-500/20"
+                              >
+                                Commit Files
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Quiz Section */}
+              <Card className="glass-card border-white/5">
+                <CardHeader className="border-b border-white/5 px-8 py-6">
+                  <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-blue-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                    Cognitive Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  {!quiz ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No assessment available.</p>
+                    </div>
+                  ) : mySubmission ? (
+                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-8 text-center space-y-4">
+                      <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+                        <CheckCircle className="w-8 h-8 text-blue-400" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-gray-400 font-black uppercase tracking-widest text-[10px]">Verification Complete</p>
+                        <h4 className="text-3xl font-black text-white">Score: {mySubmission.score} / 10</h4>
+                      </div>
+                      <p className="text-xs text-blue-400/60 font-medium">Result verified and stored in secure registry.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-12">
+                      <div className="space-y-2">
+                        <h4 className="text-xl font-black text-white uppercase italic tracking-tight">{quiz.title}</h4>
+                        <div className="h-0.5 w-20 bg-blue-600 rounded-full" />
+                      </div>
+                      
+                      <ol className="space-y-12 list-none">
+                        {quiz.questions.map((q, idx) => (
+                          <li key={idx} className="space-y-6 animate-in slide-in-from-left duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                            <div className="flex gap-4">
+                              <span className="text-2xl font-black text-blue-700/50 italic leading-none">{idx + 1}.</span>
+                              <div className="text-lg font-bold text-gray-200 leading-tight">{q.questionText}</div>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-4 pl-10">
+                              {q.options.map((opt, oIdx) => (
+                                <label key={oIdx} className={`group relative p-4 rounded-xl border transition-all cursor-pointer ${
+                                  answers[idx] === oIdx 
+                                    ? 'bg-blue-600/10 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)]' 
+                                    : 'bg-white/5 border-white/5 hover:border-white/10'
+                                }`}>
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-4 h-4 rounded-full border-2 transition-all flex items-center justify-center ${
+                                      answers[idx] === oIdx ? 'border-blue-500 bg-blue-500' : 'border-gray-600'
+                                    }`}>
+                                      {answers[idx] === oIdx && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                    <input
+                                      type="radio"
+                                      className="hidden"
+                                      name={`q-${idx}`}
+                                      checked={answers[idx] === oIdx}
+                                      onChange={() => setAnswers(prev => prev.map((a, i) => i === idx ? oIdx : a))}
+                                    />
+                                    <span className={`text-sm font-bold ${answers[idx] === oIdx ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'}`}>
+                                      {opt}
+                                    </span>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+
+                      <div className="flex justify-end pt-8 border-t border-white/5">
+                        <Button
+                          disabled={submittingQuiz || answers.some(a => a === null)}
+                          onClick={async () => {
+                            try {
+                              setSubmittingQuiz(true);
+                              const resp = await submitStudentQuizAnswersService(id, {
+                                studentId: auth?.user?._id,
+                                studentName: auth?.user?.userName,
+                                answers,
+                              });
+                              if (resp?.success) {
+                                setMySubmission({ score: resp.data?.score });
+                              }
+                            } finally {
+                              setSubmittingQuiz(false);
+                            }
+                          }}
+                          className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl h-14 px-10 font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 disabled:opacity-50"
+                        >
+                          {submittingQuiz ? "Transmitting..." : "Submit Assessment"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        )}
+          )}
+
+          {activeTab === "certificate" && (
+            <Card className="glass-card border-white/5 bg-gradient-to-br from-blue-600/10 to-purple-600/10">
+              <CardContent className="p-12 text-center space-y-8">
+                <div className="w-24 h-24 bg-white/5 rounded-3xl border border-white/10 flex items-center justify-center mx-auto shadow-2xl rotate-3">
+                   <Award className="w-12 h-12 text-blue-400 drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]" />
+                </div>
+                
+                <div className="space-y-2">
+                   <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Credential Achievement</h3>
+                   <p className="max-w-md mx-auto text-gray-400 font-bold text-sm">
+                      Authentic digital architectural engineering certification issued upon successful verification of program completion.
+                   </p>
+                </div>
+
+                <div className="flex flex-col items-center gap-4">
+                  <Button 
+                    onClick={handleDownloadCertificate} 
+                    disabled={!eligible || downloading}
+                    size="lg"
+                    className="h-16 px-12 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-base shadow-2xl shadow-blue-500/30 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {downloading ? (
+                      <div className="flex items-center gap-3">
+                         <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                         Syncing PDF...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                         <Download className="w-5 h-5" />
+                         Generate PDF
+                      </div>
+                    )}
+                  </Button>
+                  
+                  {!eligibilityChecked ? (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-400/50">
+                       <div className="w-1.5 h-1.5 rounded-full bg-blue-400/50 animate-pulse" />
+                       Verification in progress
+                    </div>
+                  ) : !eligible ? (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-[10px] font-black uppercase tracking-widest">
+                       <X className="w-3.5 h-3.5" />
+                       Verification pending instructor approval
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                       <CheckCircle className="w-3.5 h-3.5" />
+                       Credential Verified
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
-      {/* Task Submission Dialog */}
+      {/* Task Submission Modal - Dark Refactor */}
       {showTaskSubmitDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 max-w-3xl w-full my-8">
-            <h3 className="text-lg font-semibold mb-4">Submit Task: {selectedTask?.title}</h3>
-            <form onSubmit={handleTaskSubmit} className="space-y-4">
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Work Description *</label>
-                <textarea
-                  required
-                  value={taskSubmissionText}
-                  onChange={(e) => setTaskSubmissionText(e.target.value)}
-                  placeholder="Describe what you've accomplished, challenges faced, and solutions implemented..."
-                  rows={4}
-                  className="w-full border rounded p-2 text-sm"
-                />
-              </div>
+        <div className="fixed inset-0 bg-[#020617]/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <Card className="max-w-2xl w-full glass-card border-white/10 shadow-3xl">
+            <CardHeader className="border-b border-white/5 p-6 flex flex-row items-center justify-between">
+              <CardTitle className="text-xl font-black text-white uppercase italic">Submit Deployment</CardTitle>
+              <button 
+                onClick={() => setShowTaskSubmitDialog(false)}
+                className="p-2 hover:bg-white/5 rounded-xl text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              <form onSubmit={handleTaskSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Operation Briefing *</label>
+                  <textarea
+                    required
+                    value={taskSubmissionText}
+                    onChange={(e) => setTaskSubmissionText(e.target.value)}
+                    placeholder="Document your technical implementation and methodology..."
+                    rows={4}
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all outline-none"
+                  />
+                </div>
 
-              {/* Links Section */}
-              <div className="border-t pt-4">
-                <h4 className="text-sm font-semibold mb-3">Project Links</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">GitHub Repository</label>
-                    <input
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Source Cluster (GitHub)</label>
+                    <Input
                       type="url"
                       value={submissionLinks.github}
                       onChange={(e) => setSubmissionLinks({ ...submissionLinks, github: e.target.value })}
-                      placeholder="https://github.com/username/repository"
-                      className="w-full border rounded p-2 text-sm"
+                      placeholder="https://github.com/..."
+                      className="bg-white/[0.03] border-white/10 text-white rounded-xl h-11"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Live Project URL</label>
-                    <input
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Live Endpoint</label>
+                    <Input
                       type="url"
                       value={submissionLinks.project}
                       onChange={(e) => setSubmissionLinks({ ...submissionLinks, project: e.target.value })}
-                      placeholder="https://your-project.com"
-                      className="w-full border rounded p-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Other Links (Documentation, Demo, etc.)</label>
-                    <input
-                      type="url"
-                      value={submissionLinks.other}
-                      onChange={(e) => setSubmissionLinks({ ...submissionLinks, other: e.target.value })}
                       placeholder="https://..."
-                      className="w-full border rounded p-2 text-sm"
+                      className="bg-white/[0.03] border-white/10 text-white rounded-xl h-11"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* File Upload Section */}
-              <div className="border-t pt-4">
-                <h4 className="text-sm font-semibold mb-3">File References (Optional)</h4>
-                <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
-                  <p className="text-xs text-blue-800">
-                    <strong>Recommended:</strong> Upload files to Google Drive, Dropbox, or GitHub and paste the link above.
-                    This ensures your files are accessible and won't be lost.
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
-                  className="w-full border rounded p-2 text-sm"
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.zip"
-                />
-                {submissionFiles.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-xs text-gray-600 mb-1">Selected files (names will be recorded):</p>
-                    <ul className="text-xs space-y-1">
-                      {submissionFiles.map((file, idx) => (
-                        <li key={idx} className="text-gray-700">• {file.name} ({(file.size / 1024).toFixed(1)} KB)</li>
-                      ))}
-                    </ul>
+                <div className="space-y-2 bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none">Attachment Protocol</p>
                   </div>
-                )}
-                <p className="text-xs text-gray-500 mt-2">
-                  Note: Only file names are stored. Upload actual files to cloud storage and share links above.
-                </p>
-              </div>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
+                    className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:transition-all mb-2"
+                  />
+                  <p className="text-[10px] text-gray-600 font-medium">Supported payloads: PDF, DOCX, ZIP, IMAGES. Max 50MB.</p>
+                </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 justify-end border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowTaskSubmitDialog(false);
-                    setTaskSubmissionText("");
-                    setSubmissionLinks({ github: "", project: "", other: "" });
-                    setSubmissionFiles([]);
-                    setSelectedTask(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Submit Task</Button>
-              </div>
-            </form>
-          </div>
+                <div className="flex gap-3 justify-end pt-4 border-t border-white/5">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowTaskSubmitDialog(false)}
+                    className="text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-bold"
+                  >
+                    Abort
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="bg-orange-600 hover:bg-orange-500 text-white rounded-xl h-11 px-8 font-black uppercase tracking-widest shadow-lg shadow-orange-500/20"
+                  >
+                    Initialize Upload
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Floating Message Button - Responsive */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
+      {/* Floating Comms Terminal - Dark Refactor */}
+      <div className="fixed bottom-8 right-8 z-[60]">
         <button
           onClick={() => setShowMessageDialog(true)}
-          className="relative bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-200 touch-manipulation"
-          title="Message Instructor"
-          aria-label="Message Instructor"
+          className="relative w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.4)] transition-all hover:scale-110 active:scale-95 group overflow-hidden"
         >
-          <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <MessageCircle className="w-8 h-8 relative z-10" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-5 px-1 sm:px-1.5 flex items-center justify-center animate-pulse">
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black rounded-lg min-w-[22px] h-5.5 px-1.5 flex items-center justify-center border-2 border-[#020617] animate-bounce">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* Message Dialog */}
+      {/* Messaging Modal - Dark Refactor */}
       {showMessageDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl h-[600px] flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-blue-600" />
-                <h3 className="font-semibold">Message Instructor</h3>
-                {connected && <span className="text-xs text-green-600">● Online</span>}
+        <div className="fixed inset-0 bg-[#020617]/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4">
+          <Card className="max-w-2xl w-full h-[650px] flex flex-col glass-card border-white/10 shadow-3xl">
+            <CardHeader className="border-b border-white/5 p-6 flex flex-row items-center justify-between">
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <MessageCircle className="w-6 h-6 text-blue-400" />
+                 </div>
+                 <div>
+                    <CardTitle className="text-xl font-black text-white uppercase italic leading-none">Comms Terminal</CardTitle>
+                    <div className="flex items-center gap-1.5 mt-1">
+                       <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-600'}`} />
+                       <span className="text-[10px] font-black uppercase tracking-wider text-gray-500">{connected ? 'System Online' : 'Signal Lost'}</span>
+                    </div>
+                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleClearChat}
-                  className="text-red-500 hover:text-red-700 p-1"
-                  title="Clear Chat"
+                  className="p-2.5 hover:bg-red-500/10 rounded-xl text-gray-500 hover:text-red-400 transition-all border border-transparent hover:border-red-500/20"
+                  title="Purge Archives"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setShowMessageDialog(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="p-2.5 hover:bg-white/5 rounded-xl text-gray-500 hover:text-white transition-all border border-transparent hover:border-white/10"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-            </div>
+            </CardHeader>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  <p>No messages yet. Start a conversation!</p>
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/5">
+                     <MessageCircle className="w-8 h-8 text-gray-700" />
+                  </div>
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No active transmission logs.</p>
                 </div>
               ) : (
                 <>
@@ -710,14 +875,14 @@ function LearnPage() {
                       className={`flex ${msg.senderRole === "student" ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                        className={`max-w-[80%] rounded-2xl px-5 py-3 shadow-lg ${
                           msg.senderRole === "student"
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200 text-gray-900"
+                            ? "bg-blue-600 text-white shadow-blue-500/10 rounded-br-none"
+                            : "bg-white/5 text-gray-200 border border-white/10 rounded-bl-none"
                         }`}
                       >
-                        <p className="text-sm">{msg.message}</p>
-                        <p className="text-xs mt-1 opacity-70">
+                        <p className="text-sm font-medium leading-relaxed">{msg.message}</p>
+                        <p className={`text-[10px] mt-2 font-black uppercase tracking-tighter opacity-40 ${msg.senderRole === "student" ? "text-right" : "text-left"}`}>
                           {new Date(msg.createdAt).toLocaleTimeString()}
                         </p>
                       </div>
@@ -725,11 +890,11 @@ function LearnPage() {
                   ))}
                   {isTyping && (
                     <div className="flex justify-start">
-                      <div className="bg-gray-200 rounded-lg px-4 py-2">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-                          <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></span>
-                          <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+                      <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-none px-5 py-4">
+                        <div className="flex gap-1.5">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]" />
                         </div>
                       </div>
                     </div>
@@ -739,23 +904,28 @@ function LearnPage() {
               )}
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  handleTyping();
-                }}
-                onBlur={handleStopTyping}
-                placeholder="Type your message..."
-                className="flex-1"
-              />
-              <Button type="submit" disabled={!newMessage.trim()}>
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
+            <CardFooter className="p-6 border-t border-white/5 bg-white/[0.02]">
+              <form onSubmit={handleSendMessage} className="flex gap-3 w-full">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
+                  onBlur={handleStopTyping}
+                  placeholder="Intercept frequency and type..."
+                  className="flex-1 bg-white/5 border-white/10 text-white rounded-xl focus:ring-blue-500/20"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!newMessage.trim()}
+                  className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl w-12 h-12 p-0 shadow-lg shadow-blue-500/20 active:scale-95"
+                >
+                  <Send className="w-5 h-5" />
+                </Button>
+              </form>
+            </CardFooter>
+          </Card>
         </div>
       )}
     </div>

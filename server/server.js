@@ -40,7 +40,7 @@ const instructorMessagingRoutes = require("./routes/instructor-routes/messaging-
 const instructorQuizRoutes = require("./routes/instructor-routes/quiz-routes");
 const studentQuizRoutes = require("./routes/student-routes/quiz-routes");
 const publicRoutes = require("./routes/public-routes");
-const sliderRoutes = require("./routes/admin-routes/slider-routes");
+
 const adminUserRoutes = require("./routes/admin-routes/user-routes");
 const adminCourseRoutes = require("./routes/admin-routes/course-routes");
 const adminPaymentRoutes = require("./routes/admin-routes/payment-routes");
@@ -72,7 +72,8 @@ const allowedOrigins = [
   "http://localhost:5173",
  
   // Allow any Render app subdomain for both client and server if configured
-  "https://*.onrender.com"
+  "https://*.onrender.com",
+  "http://192.168.1.6:5173"
 ];
 
 // CORS configuration
@@ -169,6 +170,7 @@ CORS_ORIGINS.forEach(o => dynamicConnectSrc.add(o));
 dynamicConnectSrc.add("http://localhost:5000");
 dynamicConnectSrc.add("https://localhost:5000");
 dynamicConnectSrc.add("https://*.onrender.com");
+dynamicConnectSrc.add("http://192.168.1.6:5173");
 
 dynamicMediaSrc.add("'self'");
 dynamicMediaSrc.add("https://res.cloudinary.com");
@@ -338,7 +340,7 @@ app.use("/instructor/internships", instructorInternshipTaskRoutes);
 app.use("/instructor/messages", instructorMessagingRoutes);
 app.use("/instructor/quizzes", instructorQuizRoutes);
 app.use("/student/quizzes", studentQuizRoutes);
-app.use("/admin/sliders", sliderRoutes);
+
 app.use("/admin/users", adminUserRoutes);
 app.use("/admin/courses", adminCourseRoutes);
 app.use("/admin/payments", adminPaymentRoutes);
@@ -439,4 +441,6 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 WebSocket server initialized`);
 });
+
+
 

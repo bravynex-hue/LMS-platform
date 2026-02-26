@@ -1,302 +1,261 @@
 import CommonForm from "@/components/common-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signInFormControls, signUpFormControls } from "@/config";
 import { AuthContext } from "@/context/auth-context";
-import { Clock, Users } from "lucide-react";
-import { useContext, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useContext, useEffect, lazy, Suspense } from "react";
+import { useSearchParams } from "react-router-dom";
 import ForgotPassword from "@/components/auth/forgot-password";
 import ResetPassword from "@/components/auth/reset-password";
+import { Zap, Sparkles, ArrowLeft, Lock, UserPlus, KeyRound, ShieldCheck } from "lucide-react";
+
+const FuturisticHeroScene = lazy(() =>
+  import("@/components/student-view/futuristic-hero-scene")
+);
 
 function AuthPage() {
   const [searchParams] = useSearchParams();
   const {
-    signInFormData,
-    setSignInFormData,
-    signUpFormData,
-    setSignUpFormData,
-    handleRegisterUser,
-    handleLoginUser,
-    activeTab,
-    handleTabChange,
-    isRegistering,
-    isLoggingIn,
+    signInFormData, setSignInFormData,
+    signUpFormData, setSignUpFormData,
+    handleRegisterUser, handleLoginUser,
+    activeTab, handleTabChange,
+    isRegistering, isLoggingIn,
   } = useContext(AuthContext);
 
-  // Check for tab query parameter and set active tab accordingly
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (tabParam && ["signup", "signin", "forgot", "reset"].includes(tabParam)) {
-      if (activeTab !== tabParam) {
-        handleTabChange(tabParam);
-      }
+      if (activeTab !== tabParam) handleTabChange(tabParam);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  function checkIfSignInFormIsValid() {
+  function isSignInValid() {
+    return signInFormData?.userEmail !== "" && signInFormData?.password !== "";
+  }
+  function isSignUpValid() {
     return (
-      signInFormData &&
-      signInFormData.userEmail !== "" &&
-      signInFormData.password !== ""
+      signUpFormData?.userName?.length >= 4 &&
+      signUpFormData?.userName?.length <= 13 &&
+      signUpFormData?.userEmail !== "" &&
+      signUpFormData?.password !== "" &&
+      signUpFormData?.guardianName?.length >= 4 &&
+      signUpFormData?.guardianName?.length <= 13
     );
   }
 
-  function checkIfSignUpFormIsValid() {
-    return (
-      signUpFormData &&
-      signUpFormData.userName !== "" &&
-      signUpFormData.userName.length >= 4 &&
-      signUpFormData.userName.length <= 13 &&
-      signUpFormData.userEmail !== "" &&
-      signUpFormData.password !== "" &&
-      signUpFormData.guardianName !== "" &&
-      signUpFormData.guardianName.length >= 4 &&
-      signUpFormData.guardianName.length <= 13
-    );
-  }
+  const tabMeta = {
+    signin: { icon: Lock,      label: "Welcome Back",       sub: "Sign in to continue your journey" },
+    signup: { icon: UserPlus,  label: "Join Bravynex",      sub: "Create your free account today" },
+    forgot: { icon: KeyRound,  label: "Forgot Password",    sub: "We'll send a reset OTP to your email" },
+    reset:  { icon: ShieldCheck, label: "Reset Password",   sub: "Enter the OTP and your new password" },
+  };
+  const meta = tabMeta[activeTab] || tabMeta.signin;
+  const MetaIcon = meta.icon;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
-        {/* Left Panel - Reference Matching Design */}
-        <div className="hidden lg:flex items-center justify-center border-r ">
-          <div className="max-w-xl w-full px-8">
-            {/* Learning Card */}
-            <div className="bg-white border border-gray-300 rounded-2xl p-10 shadow-sm flex items-center gap-8">
-              <div className="w-48 h-48 rounded-2xl border border-gray-300 flex items-center justify-center shrink-0">
-                <div className="w-28 h-28 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                  <Users className="w-12 h-12 text-gray-700" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center text-sm text-gray-600 mb-2">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Learning Time
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gray-700 h-2 rounded-full" style={{ width: "65%" }}></div>
-                </div>
-              </div>
+    <div
+      className="min-h-screen flex overflow-hidden"
+      style={{ background: "var(--bg-dark)" }}
+    >
+      {/* ── Left: 3D Scene ────────────────────────────── */}
+      <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
+        {/* Scene */}
+        <div className="absolute inset-0">
+          <Suspense fallback={null}>
+            <FuturisticHeroScene />
+          </Suspense>
+          {/* Right-edge fade */}
+          <div className="absolute inset-y-0 right-0 w-1/3 pointer-events-none"
+            style={{ background: "linear-gradient(90deg, transparent, var(--bg-dark))" }} />
+          {/* Bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-24 pointer-events-none"
+            style={{ background: "linear-gradient(0deg, var(--bg-dark), transparent)" }} />
+        </div>
+
+        {/* Branding overlay */}
+        <div className="relative z-10 flex flex-col h-full p-10">
+          {/* Logo */}
+          <a href="/home" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #3b82f6, #a855f7)" }}>
+              <Zap className="w-5 h-5 text-white" />
             </div>
+            <span className="text-lg font-black"
+              style={{
+                background: "linear-gradient(90deg, #60a5fa, #c084fc)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>
+              BRAVYNEX
+            </span>
+          </a>
 
-            {/* Copy + Stats */}
-            <div className="mt-8 text-center lg:text-left">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome Back to Learning!</h2>
-              <p className="text-gray-600">
-                Continue your educational journey with Bravynex and unlock new opportunities for growth and success.
-              </p>
+          {/* Bottom copy */}
+          <div className="mt-auto">
+            <h2 className="text-4xl font-black leading-tight mb-3"
+              style={{ color: "#f0f9ff" }}>
+              Launch your
+              <br />
+              <span style={{
+                background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>engineering career.</span>
+            </h2>
+            <p className="text-sm max-w-sm" style={{ color: "#475569" }}>
+              Real projects. Expert mentors. Verified certificates.
+              Join 10,000+ interns building the future.
+            </p>
 
-              <div className="grid grid-cols-3 gap-8 mt-8">
-                <div>
-                  <div className="text-2xl font-bold text-gray-700">50K+</div>
-                  <div className="text-sm text-gray-500">Students</div>
+            {/* Stats row */}
+            <div className="flex gap-6 mt-6">
+              {[["10K+", "Interns"], ["4.9★", "Rating"], ["95%", "Placed"]].map(([v, l]) => (
+                <div key={l}>
+                  <p className="text-xl font-black" style={{ color: "#f0f9ff" }}>{v}</p>
+                  <p className="text-xs" style={{ color: "#475569" }}>{l}</p>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-700">500+</div>
-                  <div className="text-sm text-gray-500">Courses</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-700">4.8</div>
-                  <div className="text-sm text-gray-500">Rating</div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Right Panel */}
-        <div className="w-full flex items-start justify-center pt-10 pb-14">
-          <div className="w-full max-w-lg px-6">
-            <div className="flex items-center justify-center mb-6">
-              <img src="/images/logo.png" alt="BRAVYNEX ENGINEERING" className="h-16" />
-            </div>
+      {/* ── Right: Auth Form Panel ────────────────────── */}
+      <div
+        className="w-full lg:w-[440px] flex-shrink-0 flex flex-col items-center justify-center p-6 sm:p-10 relative min-h-screen"
+        style={{
+          background: "rgba(5,14,36,0.97)",
+          borderLeft: "1px solid rgba(59,130,246,0.1)",
+        }}
+      >
+        {/* Top glow */}
+        <div className="absolute top-0 inset-x-0 h-px"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)" }} />
 
-            <Tabs
-              value={activeTab}
-              defaultValue="signin"
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
-                <TabsTrigger
-                  value="signin"
-                  className="data-[state=active]:bg-white data-[state=active]:text-gray-800 data-[state=active]:shadow-sm"
-                >
-                  Sign In
-                </TabsTrigger>
-                <TabsTrigger
-                  value="signup"
-                  className="data-[state=active]:bg-white data-[state=active]:text-gray-800 data-[state=active]:shadow-sm"
-                >
-                  Sign Up
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Sign In Tab */}
-              <TabsContent value="signin" className="mt-6">
-                <Card className="border border-gray-200 shadow-sm bg-white">
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl font-bold text-gray-900">Student Login</CardTitle>
-                    <CardDescription className="text-gray-600">
-                      Hey! Enter your details to sign in to your account
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4 px-6 pb-6">
-                    {/* {registrationSuccess && (
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-blue-800 text-sm font-medium">
-                          🎉 Welcome! Your account has been created successfully. Please sign in below.
-                        </p>
-                      </div>
-                    )} */}
-
-                    <CommonForm
-                      formControls={signInFormControls}
-                      buttonText={isLoggingIn ? "Signing in..." : "Sign In"}
-                      formData={signInFormData}
-                      setFormData={setSignInFormData}
-                      isButtonDisabled={!checkIfSignInFormIsValid() || isLoggingIn}
-                      handleSubmit={handleLoginUser}
-                    />
-
-                    <div className="flex items-center justify-between pt-2">
-                      <label className="flex items-center text-sm text-gray-600">
-                        <input type="checkbox" className="mr-2 rounded border-gray-300" />
-                        Having trouble in sign in?
-                      </label>
-                      <button
-                        onClick={() => handleTabChange("forgot")}
-                        className="text-sm text-gray-700 hover:text-gray-900 font-medium"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-
-                    <div className="relative pt-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">Or sign in with</span>
-                      </div>
-                    </div>
-{/* 
-                    <div className="grid grid-cols-2 gap-3 pt-4">
-                      <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                        <span className="mr-2">G</span>
-                        Google
-                      </button>
-                      <button className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                        <span className="mr-2">f</span>
-                        Facebook
-                      </button>
-                    </div> */}
-
-                    <div className="text-center pt-4">
-                      <span className="text-sm text-gray-600">Don&apos;t have an account? </span>
-                      <button
-                        onClick={() => handleTabChange("signup")}
-                        className="text-sm text-gray-700 hover:text-gray-900 font-medium"
-                      >
-                        Sign up here
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Sign Up Tab */}
-              <TabsContent value="signup" className="mt-6">
-                <Card className="border border-gray-200 shadow-sm bg-white">
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl font-bold text-gray-900">Create Account</CardTitle>
-                    <CardDescription className="text-gray-600">
-                      Enter your details to get started with your learning journey
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4 px-6 pb-6">
-                    {/* {registrationSuccess && (
-                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-green-800 text-sm font-medium">
-                          ✅ Registration successful! Please sign in with your credentials.
-                        </p>
-                      </div>
-                    )} */}
-
-                    <CommonForm
-                      formControls={signUpFormControls}
-                      buttonText={isRegistering ? "Creating Account..." : "Sign Up"}
-                      formData={signUpFormData}
-                      setFormData={setSignUpFormData}
-                      isButtonDisabled={!checkIfSignUpFormIsValid() || isRegistering}
-                      handleSubmit={handleRegisterUser}
-                    />
-
-                    {/* <div className="text-center pt-2">
-                      <p className="text-xs text-gray-500">
-                        By signing up, you agree to our{" "}
-                        <Link to="/terms" className="text-gray-700 hover:text-gray-900">
-                          Terms of Service
-                        </Link>{" "}
-                        and{" "}
-                        <Link to="/privacy" className="text-gray-700 hover:text-gray-900">
-                          Privacy Policy
-                        </Link>
-                      </p>
-                    </div> */}
-
-                    <div className="text-center pt-2">
-                      <span className="text-sm text-gray-600">Already have an account? </span>
-                      <button
-                        onClick={() => handleTabChange("signin")}
-                        className="text-sm text-gray-700 hover:text-gray-900 font-medium"
-                      >
-                        Sign in here
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Add Forgot Password Tab */}
-              <TabsContent value="forgot" className="mt-6">
-                <Card className="border border-gray-200 shadow-sm bg-white">
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl font-bold text-gray-900">Forgot Password</CardTitle>
-                    <CardDescription className="text-gray-600">
-                      Enter your email to receive a password reset OTP
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ForgotPassword onBack={handleTabChange} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Add Reset Password Tab */}
-              <TabsContent value="reset" className="mt-6">
-                <Card className="border border-gray-200 shadow-sm bg-white">
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl font-bold text-gray-900">Reset Password</CardTitle>
-                    <CardDescription className="text-gray-600">
-                      Enter the OTP sent to your email and your new password
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResetPassword onBack={handleTabChange} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+        {/* Mobile logo */}
+        <a href="/home" className="flex items-center gap-2 mb-8 lg:hidden">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #a855f7)" }}>
+            <Zap className="w-4 h-4 text-white" />
           </div>
+          <span className="font-black text-base"
+            style={{
+              background: "linear-gradient(90deg, #60a5fa, #c084fc)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>
+            BRAVYNEX
+          </span>
+        </a>
+
+        <div className="w-full max-w-sm">
+          {/* Tab switcher (only for signin/signup) */}
+          {(activeTab === "signin" || activeTab === "signup") && (
+            <div className="flex gap-1 mb-6 p-1 rounded-xl"
+              style={{ background: "rgba(15,23,42,0.9)", border: "1px solid rgba(59,130,246,0.12)" }}>
+              {["signin", "signup"].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => handleTabChange(t)}
+                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-250"
+                  style={activeTab === t
+                    ? { background: "linear-gradient(135deg, #3b82f6, #6366f1)", color: "#fff", boxShadow: "0 2px 12px rgba(59,130,246,0.35)" }
+                    : { color: "#475569" }
+                  }
+                >
+                  {t === "signin" ? "Sign In" : "Sign Up"}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Back button for forgot/reset */}
+          {(activeTab === "forgot" || activeTab === "reset") && (
+            <button
+              onClick={() => handleTabChange("signin")}
+              className="flex items-center gap-1.5 text-sm mb-5 transition-colors duration-200"
+              style={{ color: "#475569" }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "#60a5fa"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "#475569"}
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+            </button>
+          )}
+
+          {/* Header */}
+          <div className="mb-6">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)" }}>
+              <MetaIcon className="w-5 h-5" style={{ color: "#60a5fa" }} />
+            </div>
+            <h1 className="text-2xl font-black mb-1" style={{ color: "#f0f9ff" }}>{meta.label}</h1>
+            <p className="text-sm" style={{ color: "#475569" }}>{meta.sub}</p>
+          </div>
+
+          {/* Forms */}
+          <div
+            className="rounded-2xl p-6"
+            style={{
+              background: "rgba(10,22,40,0.8)",
+              border: "1px solid rgba(59,130,246,0.1)",
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            {activeTab === "signin" && (
+              <div className="space-y-4">
+                <CommonForm
+                  formControls={signInFormControls}
+                  buttonText={isLoggingIn ? "Signing in…" : "Sign In"}
+                  formData={signInFormData}
+                  setFormData={setSignInFormData}
+                  isButtonDisabled={!isSignInValid() || isLoggingIn}
+                  handleSubmit={handleLoginUser}
+                />
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs" style={{ color: "#374151" }}></span>
+                  <button
+                    onClick={() => handleTabChange("forgot")}
+                    className="text-xs font-medium transition-colors duration-200"
+                    style={{ color: "#60a5fa" }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#93c5fd"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "#60a5fa"}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <p className="text-center text-xs pt-2" style={{ color: "#374151" }}>
+                  No account?{" "}
+                  <button onClick={() => handleTabChange("signup")} className="font-semibold" style={{ color: "#60a5fa" }}>
+                    Sign up free
+                  </button>
+                </p>
+              </div>
+            )}
+
+            {activeTab === "signup" && (
+              <div className="space-y-4">
+                <CommonForm
+                  formControls={signUpFormControls}
+                  buttonText={isRegistering ? "Creating account…" : "Create Account"}
+                  formData={signUpFormData}
+                  setFormData={setSignUpFormData}
+                  isButtonDisabled={!isSignUpValid() || isRegistering}
+                  handleSubmit={handleRegisterUser}
+                />
+                <p className="text-center text-xs pt-2" style={{ color: "#374151" }}>
+                  Already have an account?{" "}
+                  <button onClick={() => handleTabChange("signin")} className="font-semibold" style={{ color: "#60a5fa" }}>
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            )}
+
+            {activeTab === "forgot" && <ForgotPassword onBack={handleTabChange} />}
+            {activeTab === "reset"  && <ResetPassword  onBack={handleTabChange} />}
+          </div>
+
+          {/* Footer note */}
+          <p className="text-center text-xs mt-6" style={{ color: "#1f2937" }}>
+            © {new Date().getFullYear()} Bravynex Engineering · All rights reserved
+          </p>
         </div>
       </div>
     </div>
@@ -304,9 +263,3 @@ function AuthPage() {
 }
 
 export default AuthPage;
-
-
-
-
-
-

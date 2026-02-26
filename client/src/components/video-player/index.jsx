@@ -74,7 +74,6 @@ function VideoPlayer({
   }
 
   function handleVideoEnded() {
-    console.log("Video ended - calling onVideoEnded callback");
     if (onVideoEnded && typeof onVideoEnded === 'function') {
       onVideoEnded();
     }

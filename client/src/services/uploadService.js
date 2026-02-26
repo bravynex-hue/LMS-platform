@@ -60,8 +60,6 @@ class UploadService {
         
         if (message.includes('expired') || message.includes('Token expired')) {
           if (retryCount < maxRetries) {
-            console.log(`Token expired during upload. Retrying... (${retryCount + 1}/${maxRetries})`);
-            // Wait a bit before retry
             await new Promise(resolve => setTimeout(resolve, 1000));
             return this.uploadFile(formData, onProgressCallback, retryCount + 1);
           } else {
@@ -117,8 +115,6 @@ class UploadService {
         
         if (message.includes('expired') || message.includes('Token expired')) {
           if (retryCount < maxRetries) {
-            console.log(`Token expired during bulk upload. Retrying... (${retryCount + 1}/${maxRetries})`);
-            // Wait a bit before retry
             await new Promise(resolve => setTimeout(resolve, 1000));
             return this.uploadBulkFiles(formData, onProgressCallback, retryCount + 1);
           } else {

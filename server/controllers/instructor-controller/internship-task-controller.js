@@ -6,7 +6,7 @@ const InternshipProgram = require("../../models/InternshipProgram");
 const createTask = async (req, res) => {
   try {
     const { programId } = req.params;
-    const { title, description, phase, type, priority, dueDate, assignedTo } = req.body;
+    const { title, description, projectTask, phase, type, priority, dueDate, assignedTo } = req.body;
     const instructorId = req.user?._id;
 
     if (!title) {
@@ -39,6 +39,7 @@ const createTask = async (req, res) => {
       internshipProgramId: program._id,
       title,
       description,
+      projectTask: projectTask || "",
       phase,
       type: type || "task",
       priority: priority || "medium",
@@ -92,7 +93,7 @@ const getTasks = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { title, description, phase, type, priority, dueDate, status, assignedTo } = req.body;
+    const { title, description, projectTask, phase, type, priority, dueDate, status, assignedTo } = req.body;
     const instructorId = req.user?._id;
 
     const task = await InternshipTask.findById(taskId);
@@ -109,6 +110,7 @@ const updateTask = async (req, res) => {
     // Update fields
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
+    if (projectTask !== undefined) task.projectTask = projectTask;
     if (phase !== undefined) task.phase = phase;
     if (type !== undefined) task.type = type;
     if (priority !== undefined) task.priority = priority;

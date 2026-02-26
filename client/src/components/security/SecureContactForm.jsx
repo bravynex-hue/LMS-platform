@@ -52,7 +52,6 @@ const SecureContactForm = () => {
       }
     }
 
-    
     // Message validation
     if (!formData.message.trim()) {
       errors.message = 'Message is required';
@@ -202,16 +201,16 @@ const SecureContactForm = () => {
             required
             maxLength={50}
             showValidation={false}
-            className="bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20"
           />
           {touchedFields.fromName && validationErrors.fromName && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.fromName}</p>
+            <p className="text-red-400 text-[10px] mt-1 px-1">{validationErrors.fromName}</p>
           )}
         </div>
         
         <div>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 shadow-lg shadow-black/20"
             value={formData.course}
             onChange={handleSelectChange('course')}
           >
@@ -237,10 +236,10 @@ const SecureContactForm = () => {
             required
             maxLength={100}
             showValidation={false}
-            className="bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20"
           />
           {touchedFields.fromEmail && validationErrors.fromEmail && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.fromEmail}</p>
+            <p className="text-red-400 text-[10px] mt-1 px-1">{validationErrors.fromEmail}</p>
           )}
         </div>
         
@@ -252,10 +251,10 @@ const SecureContactForm = () => {
             onChange={handleInputChange('phoneNumber')}
             maxLength={20}
             showValidation={false}
-            className="bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20"
           />
           {touchedFields.phoneNumber && validationErrors.phoneNumber && (
-            <p className="text-red-500 text-xs mt-1">{validationErrors.phoneNumber}</p>
+            <p className="text-red-400 text-[10px] mt-1 px-1">{validationErrors.phoneNumber}</p>
           )}
         </div>
       </div>
@@ -264,7 +263,7 @@ const SecureContactForm = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <select
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 shadow-lg shadow-black/20"
             value={formData.segment}
             onChange={handleSelectChange('segment')}
           >
@@ -284,7 +283,7 @@ const SecureContactForm = () => {
             value={formData.institution}
             onChange={handleInputChange('institution')}
             maxLength={100}
-            className="bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+            className="input-dark w-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
       </div>
@@ -299,10 +298,10 @@ const SecureContactForm = () => {
           maxLength={1000}
           rows={3}
           showValidation={false}
-          className="bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-100"
+          className="input-dark w-full px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 resize-none shadow-lg shadow-black/20"
         />
         {touchedFields.message && validationErrors.message && (
-          <p className="text-red-500 text-xs mt-1">{validationErrors.message}</p>
+          <p className="text-red-400 text-[10px] mt-1 px-1">{validationErrors.message}</p>
         )}
       </div>
       
@@ -310,10 +309,10 @@ const SecureContactForm = () => {
       <button 
         type="submit"
         disabled={isSubmitting || !isFormValid || isBlocked}
-        className={`inline-flex h-10 items-center justify-center rounded-md px-6 text-sm font-medium transition-colors duration-200 ${
+        className={`w-full h-12 rounded-xl text-sm font-black uppercase tracking-widest transition-all duration-300 shadow-xl ${
           isSubmitting || !isFormValid || isBlocked
-            ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-            : 'bg-black text-white hover:bg-black/90'
+            ? 'bg-white/5 text-gray-600 cursor-not-allowed border border-white/5'
+            : 'bg-blue-600 text-white hover:bg-blue-500 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]'
         }`}
       >
         {isSubmitting ? (

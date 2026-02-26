@@ -23,6 +23,7 @@ const InternshipTaskSchema = new mongoose.Schema(
     internshipProgramId: { type: String, required: true, index: true },
     title: { type: String, required: true },
     description: { type: String },
+    projectTask: { type: String }, // Project task description / directive for this internship task
     phase: { type: String }, // Phase 1, Phase 2, Phase 3, etc.
     type: { type: String, enum: ["milestone", "task"], default: "task" },
     priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },

@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import { fetchStudentBoughtCoursesService } from "@/services";
-import { Watch } from "lucide-react";
+import { Watch, Zap, Rocket, ChevronRight, BookText } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SpinnerOverlay } from "@/components/ui/spinner";
@@ -27,94 +26,111 @@ function StudentCoursesPage() {
       setIsLoading(false);
     }
   }
+  
   useEffect(() => {
     fetchStudentBoughtCourses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            {/* <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-black rounded-xl flex items-center justify-center">
-              <Watch className="w-6 h-6 text-white" />
-            </div> */}
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">My Courses</h1>
-              <p className="text-gray-600 text-lg">Continue your learning journey</p>
-            </div>
+    <div className="min-h-screen text-gray-200" style={{ background: "var(--bg-dark)" }}>
+      {/* Background orbs */}
+      <div className="orb orb-blue absolute w-[700px] h-[700px] -top-96 -left-40 opacity-[0.03] pointer-events-none" />
+      <div className="absolute inset-0 grid-bg opacity-[0.06] pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-24 space-y-12">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="space-y-4">
+            <span className="section-badge mb-4 inline-flex">
+              <Rocket className="w-3 h-3" />
+              Student Dashboard
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
+              My Learning <br />
+              <span style={{ background: "linear-gradient(135deg, #60a5fa, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Active Programs
+              </span>
+            </h1>
+            <p className="text-gray-400 max-w-md">
+              Access your enrolled internship tracks, view your progress, and continue your professional engineering journey.
+            </p>
           </div>
-          {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                <Watch className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Your Learning Dashboard</h3>
-                <p className="text-sm text-gray-600">Track your progress and continue where you left off</p>
-              </div>
-            </div>
-          </div> */}
+          <div className="flex items-center gap-4">
+             <div className="glass-card px-6 py-3 border-white/10 hidden sm:flex flex-col items-center">
+                <span className="text-sm font-black text-white">{studentBoughtCoursesList?.length || 0}</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active tracks</span>
+             </div>
+          </div>
         </div>
 
+        {/* Courses Grid */}
         {isLoading ? (
-          <SpinnerOverlay message="Loading your courses..." />
+          <div className="flex flex-col items-center justify-center py-32 space-y-6">
+             <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+             <p className="text-xs font-black uppercase tracking-widest text-gray-600">Syncing Course Data...</p>
+          </div>
         ) : studentBoughtCoursesList && studentBoughtCoursesList.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {studentBoughtCoursesList.map((course) => (
-              <Card key={course?.courseId || course?.id} className="group bg-white border border-gray-200 rounded overflow-hidden shadow-sm hover:shadow-md transition-transform duration-300 hover:-translate-y-1">
-                <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
+              <div 
+                 key={course?.courseId || course?.id} 
+                 className="glass-card group overflow-hidden border-white/10 hover:border-blue-500/30 transition-all duration-500 flex flex-col h-full cursor-pointer shadow-xl shadow-black/40"
+                 onClick={() => navigate(`/learn/${course?.courseId}`)}
+              >
+                <div className="relative aspect-video w-full overflow-hidden">
                   <img
                     src={course?.courseImage}
                     alt={course?.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute top-3 right-3">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/90 text-gray-800 shadow-sm backdrop-blur-sm border border-gray-200">Enrolled</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute top-4 right-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                     <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/40">
+                        <ChevronRight className="w-4 h-4 text-white" />
+                     </div>
                   </div>
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute bottom-4 left-4">
+                     <span className="px-2.5 py-1 bg-blue-500/10 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-blue-500/20 text-blue-400">
+                        Enrolled
+                     </span>
+                  </div>
                 </div>
-                <CardContent className="p-5">
-                  <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-gray-700 transition-colors">
+
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="text-base font-black text-white group-hover:text-blue-400 transition-colors mb-4 line-clamp-2">
                     {course?.title}
                   </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                    {/* <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 text-white flex items-center justify-center text-xs font-bold">
-                      {course?.instructorName?.charAt(0)}
-                    </div>
-                    <span className="font-medium">{course?.instructorName}</span> */}
+                  
+                  <div className="mt-auto pt-6 border-t border-white/5 space-y-4">
+                     <CourseProgressBar course={course} />
+                     <Button
+                        onClick={(e) => {
+                           e.stopPropagation();
+                           navigate(`/learn/${course?.courseId}`);
+                        }}
+                        className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-black text-[10px] uppercase tracking-widest h-12 rounded-xl transition-all"
+                     >
+                        <Watch className="mr-2 h-4 w-4 text-blue-400" />
+                        Continue Session
+                     </Button>
                   </div>
-                  <CourseProgressBar course={course} />
-              </CardContent>
-                <CardFooter className="p-5 pt-0">
-                <Button
-                  onClick={() =>
-                    navigate(`/learn/${course?.courseId}`)
-                  }
-                    className="w-full bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900 text-white font-semibold shadow-md hover:shadow-lg transition-transform duration-200 hover:-translate-y-0.5"
-                >
-                  <Watch className="mr-2 h-4 w-4" />
-                    Go to Learning Page
-                </Button>
-              </CardFooter>
-            </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Watch className="w-12 h-12 text-gray-400" />
+          <div className="text-center py-32 glass-card border-dashed border-white/10">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+              <Zap className="w-8 h-8 text-gray-700" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">No courses yet</h3>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              You haven&apos;t enrolled in any courses yet. Start your learning journey by exploring our course catalog.
-            </p>
+            <h3 className="text-xl font-black text-white mb-2">No active enrollments</h3>
+            <p className="text-gray-500 mb-8 max-w-sm mx-auto italic">Your dashboard is empty. Discover the perfect technology track to launch your engineering career.</p>
             <Button
               onClick={() => navigate("/courses")}
-              className="bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900 text-white font-semibold px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs px-10 h-14 rounded-xl shadow-lg shadow-blue-600/20"
             >
-              Browse Courses
+              Discover Programs
             </Button>
           </div>
         )}
@@ -122,8 +138,6 @@ function StudentCoursesPage() {
     </div>
   );
 }
-
-export default StudentCoursesPage;
 
 function CourseProgressBar({ course }) {
   const percent = useMemo(() => {
@@ -137,12 +151,8 @@ function CourseProgressBar({ course }) {
   if (percent === null) {
     return (
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium border border-indigo-100">
-          <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-          Available
-        </span>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100">
-          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 text-gray-400 text-[10px] font-black uppercase tracking-tighter border border-white/5">
+          <BookText className="w-3 h-3 text-purple-400" />
           Self-paced
         </span>
       </div>
@@ -150,14 +160,16 @@ function CourseProgressBar({ course }) {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2 text-xs text-gray-600">
-        <span>Progress</span>
-        <span className="font-medium text-gray-900">{percent}%</span>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-500">
+        <span>Completion Progress</span>
+        <span className="text-blue-400">{percent}%</span>
       </div>
-      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-2 bg-gradient-to-r from-gray-800 to-black" style={{ width: `${percent}%` }} />
+      <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+        <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
 }
+
+export default StudentCoursesPage;

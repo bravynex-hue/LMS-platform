@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Plus, Eye } from "lucide-react";
+import { MessageSquare, Plus, Eye, Zap, ArrowRight, ShieldCheck, Mail, AlertCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   submitFeedbackService,
@@ -20,10 +20,7 @@ function StudentFeedbackSupportPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [formData, setFormData] = useState({
-    subject: "",
-    message: "",
-  });
+  const [formData, setFormData] = useState({ subject: "", message: "" });
 
   useEffect(() => {
     loadTickets();
@@ -33,22 +30,9 @@ function StudentFeedbackSupportPage() {
     setLoading(true);
     try {
       const res = await getMyFeedbackTicketsService();
-      if (res?.success) {
-        setTickets(res.data || []);
-      } else {
-        toast({
-          title: "Error",
-          description: res?.message || "Failed to load tickets",
-          variant: "destructive",
-        });
-      }
+      if (res?.success) setTickets(res.data || []);
     } catch (error) {
       console.error("Error loading tickets:", error);
-      toast({
-        title: "Error",
-        description: error?.response?.data?.message || "Failed to load tickets",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -56,49 +40,20 @@ function StudentFeedbackSupportPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    if (!formData.subject.trim()) {
-      toast({
-        title: "Error",
-        description: "Subject is required",
-        variant: "destructive",
-      });
+    if (!formData.subject.trim() || !formData.message.trim()) {
+      toast({ title: "Validation Error", description: "Subject and message are required", variant: "destructive" });
       return;
     }
-
-    if (!formData.message.trim() || formData.message.trim().length < 10) {
-      toast({
-        title: "Error",
-        description: "Message must be at least 10 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const res = await submitFeedbackService(formData);
       if (res?.success) {
-        toast({
-          title: "Success",
-          description: res.message || "Feedback submitted successfully",
-        });
+        toast({ title: "Ticket Submitted", description: "Your support request has been logged." });
         setFormData({ subject: "", message: "" });
         setShowCreateDialog(false);
         loadTickets();
-      } else {
-        toast({
-          title: "Error",
-          description: res?.message || "Failed to submit feedback",
-          variant: "destructive",
-        });
       }
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      toast({
-        title: "Error",
-        description: error?.response?.data?.message || "Failed to submit feedback",
-        variant: "destructive",
-      });
+      toast({ title: "Submission Failed", description: "Could not submit ticket at this time.", variant: "destructive" });
     }
   }
 
@@ -108,185 +63,201 @@ function StudentFeedbackSupportPage() {
   }
 
   function getStatusBadge(status) {
-    switch (status) {
-      case "resolved":
-        return <Badge className="bg-green-100 text-green-700">Resolved</Badge>;
-      case "in-progress":
-        return <Badge className="bg-blue-100 text-blue-700">In Progress</Badge>;
-      case "open":
-        return <Badge className="bg-yellow-100 text-yellow-700">Open</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+    const styles = {
+      resolved: "bg-green-500/10 text-green-400 border-green-500/20",
+      "in-progress": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      open: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+    };
+    return (
+      <Badge className={`${styles[status] || "bg-gray-500/10 text-gray-400 border-gray-500/20"} border font-bold uppercase tracking-tighter hover:bg-transparent`}>
+        {status}
+      </Badge>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Feedback & Support</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
-              Submit feedback or report issues to the admin team
+    <div className="min-h-screen text-gray-200" style={{ background: "var(--bg-dark)" }}>
+      {/* Background elements */}
+      <div className="orb orb-purple absolute w-[600px] h-[600px] -top-80 -left-20 opacity-[0.03] pointer-events-none" />
+      <div className="absolute inset-0 grid-bg opacity-[0.05] pointer-events-none" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-24 space-y-12">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="space-y-4">
+            <span className="section-badge">
+              <ShieldCheck className="w-3 h-3" />
+              Support Center
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
+              Feedback & <br />
+              <span style={{ background: "linear-gradient(135deg, #a855f7, #06b6d4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Technical Support
+              </span>
+            </h1>
+            <p className="text-gray-400 max-w-md">
+              Need help? Log a support ticket or share your feedback. Our admin team will review and respond promptly.
             </p>
           </div>
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-black text-white"
+            className="h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-105"
           >
             <Plus className="w-4 h-4 mr-2" />
-            New Ticket
+            Create New Ticket
           </Button>
         </div>
 
-        {/* Tickets Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>My Support Tickets ({tickets.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Tickets Grid/Table */}
+        <div className="glass-card overflow-hidden border-white/10">
+          <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+             <h3 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
+               <Mail className="w-4 h-4 text-blue-400" />
+               Support History
+             </h3>
+             <span className="text-xs font-bold text-gray-500 uppercase">{tickets.length} Registered Records</span>
+          </div>
+          
+          <div className="p-0 overflow-x-auto">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Loading...</div>
+              <div className="text-center py-20">
+                 <div className="w-10 h-10 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+                 <p className="text-xs font-bold text-gray-600 tracking-widest uppercase">Fetching Tickets...</p>
+              </div>
             ) : tickets.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                <p>No tickets yet. Create one to get started!</p>
+              <div className="text-center py-24 text-gray-500">
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+                  <MessageSquare className="w-8 h-8 text-gray-700" />
+                </div>
+                <h4 className="text-white font-bold mb-2">No Support Records</h4>
+                <p className="text-sm text-gray-600 max-w-xs mx-auto mb-8">You haven't submitted any support requests yet. Click the button above to start.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead>Actions</TableHead>
+              <Table>
+                <TableHeader className="bg-white/[0.01]">
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="text-gray-500 font-black uppercase text-[10px] tracking-widest h-14 px-8">Subject</TableHead>
+                    <TableHead className="text-gray-500 font-black uppercase text-[10px] tracking-widest h-14">Status</TableHead>
+                    <TableHead className="text-gray-500 font-black uppercase text-[10px] tracking-widest h-14">Timestamp</TableHead>
+                    <TableHead className="text-gray-500 font-black uppercase text-[10px] tracking-widest h-14 text-right px-8">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tickets.map((t) => (
+                    <TableRow key={t._id} className="border-white/5 hover:bg-white/[0.02] transition-colors group">
+                      <TableCell className="font-bold text-white px-8 truncate max-w-[300px]">{t.subject}</TableCell>
+                      <TableCell>{getStatusBadge(t.status)}</TableCell>
+                      <TableCell className="text-gray-500 font-medium text-xs">
+                        {new Date(t.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </TableCell>
+                      <TableCell className="text-right px-8">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewDetails(t)}
+                          className="w-10 h-10 rounded-xl hover:bg-white/10 hover:text-blue-400 group-hover:scale-110 transition-all text-gray-500"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tickets.map((ticket) => (
-                      <TableRow key={ticket._id}>
-                        <TableCell className="font-medium">{ticket.subject}</TableCell>
-                        <TableCell>{getStatusBadge(ticket.status)}</TableCell>
-                        <TableCell>
-                          {new Date(ticket.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDetails(ticket)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Create Ticket Dialog */}
+        {/* Create Dialog */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create Support Ticket</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">Subject</label>
+          <DialogContent className="bg-[#0a0a0c] border-white/10 text-gray-200 p-0 overflow-hidden rounded-2xl max-w-xl">
+            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 px-8 py-6 border-b border-white/5">
+               <DialogTitle className="text-xl font-black text-white uppercase tracking-tighter">Submit Support Request</DialogTitle>
+               <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-bold">Encrypted direct channel to admin team</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Inquiry Subject</label>
                 <Input
-                  type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  placeholder="Brief description of your issue"
-                  maxLength={200}
-                  className="mt-1"
+                  placeholder="e.g. Access issue with React module"
+                  className="bg-white/5 border-white/10 rounded-xl h-12 text-gray-100 placeholder:text-gray-600 focus:border-blue-500/50"
+                  maxLength={150}
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Message</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Detailed Message</label>
                 <Textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Describe your issue or feedback in detail..."
-                  rows={6}
-                  maxLength={2000}
-                  className="mt-1"
+                  placeholder="Please describe your problem or feedback in detail..."
+                  rows={5}
+                  className="bg-white/5 border-white/10 rounded-xl text-gray-100 placeholder:text-gray-600 focus:border-blue-500/50 resize-none"
+                  maxLength={1500}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.message.length}/2000 characters
-                </p>
               </div>
-              <div className="flex gap-2 justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowCreateDialog(false);
-                    setFormData({ subject: "", message: "" });
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Submit Ticket</Button>
+              
+              <div className="flex gap-3 justify-end pt-4">
+                <Button variant="ghost" type="button" onClick={() => setShowCreateDialog(false)} className="text-gray-500 font-bold uppercase tracking-widest text-[10px] hover:bg-white/5">Cancel</Button>
+                <Button type="submit" className="bg-white text-black hover:bg-gray-200 px-8 font-black uppercase tracking-widest text-[10px]">Log Ticket</Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
 
-        {/* Ticket Details Dialog */}
+        {/* Details Dialog */}
         <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>{selectedTicket?.subject}</DialogTitle>
-            </DialogHeader>
-            {selectedTicket && (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Status:</label>
-                  <div className="mt-1">{getStatusBadge(selectedTicket.status)}</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Your Message:</label>
-                  <p className="text-sm text-gray-900 mt-1 whitespace-pre-wrap bg-gray-50 p-3 rounded">
-                    {selectedTicket.message}
-                  </p>
-                </div>
-                {selectedTicket.adminResponse && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Admin Response:</label>
-                    <p className="text-sm text-gray-900 mt-1 whitespace-pre-wrap bg-blue-50 p-3 rounded border border-blue-200">
-                      {selectedTicket.adminResponse}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Created:</label>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {new Date(selectedTicket.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                {selectedTicket.resolvedAt && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Resolved At:</label>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {new Date(selectedTicket.resolvedAt).toLocaleString()}
-                    </p>
-                  </div>
-                )}
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setShowDetailsDialog(false)}>
-                    Close
-                  </Button>
-                </div>
+           <DialogContent className="bg-[#0a0a0c] border-white/10 text-gray-200 p-0 overflow-hidden rounded-2xl max-w-2xl">
+              <div className="bg-white/[0.02] border-b border-white/5 px-8 pt-10 pb-6 flex items-start justify-between">
+                 <div className="space-y-2">
+                   {getStatusBadge(selectedTicket?.status)}
+                   <DialogTitle className="text-2xl font-black text-white leading-tight">{selectedTicket?.subject}</DialogTitle>
+                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                     Ticket ID: {selectedTicket?._id?.slice(-8).toUpperCase()} • Created on {new Date(selectedTicket?.createdAt).toLocaleDateString()}
+                   </p>
+                 </div>
+                 <Button variant="ghost" onClick={() => setShowDetailsDialog(false)} className="rounded-full w-8 h-8 p-0 hover:bg-white/5 text-gray-500">
+                    <X className="w-4 h-4" />
+                 </Button>
               </div>
-            )}
-          </DialogContent>
+              
+              <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto">
+                 <div className="space-y-3">
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">User Message</span>
+                    <div className="bg-white/[0.03] border border-white/5 p-5 rounded-2xl text-sm leading-relaxed text-gray-300 italic">
+                       "{selectedTicket?.message}"
+                    </div>
+                 </div>
+
+                 {selectedTicket?.adminResponse && (
+                   <div className="space-y-3 animate-slide-up">
+                      <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <Zap className="w-3 h-3" /> Admin Response
+                      </span>
+                      <div className="bg-purple-500/5 border border-purple-500/20 p-6 rounded-2xl text-sm leading-relaxed text-gray-200 relative">
+                         <div className="absolute top-0 right-8 -translate-y-1/2 px-3 py-1 bg-purple-600 rounded-full text-[8px] font-black uppercase tracking-widest text-white shadow-lg">Official Response</div>
+                         {selectedTicket.adminResponse}
+                      </div>
+                   </div>
+                 )}
+                 
+                 {!selectedTicket?.adminResponse && (
+                    <div className="flex items-center gap-3 bg-yellow-500/5 border border-yellow-500/10 p-4 rounded-xl">
+                       <AlertCircle className="w-4 h-4 text-yellow-500" />
+                       <span className="text-xs font-bold text-yellow-500/70 uppercase tracking-widest">Awaiting Admin Review</span>
+                    </div>
+                 )}
+              </div>
+              
+              <div className="p-6 border-t border-white/5 bg-white/[0.01] flex justify-end">
+                 <Button onClick={() => setShowDetailsDialog(false)} className="bg-white/5 border border-white/10 hover:border-white/20 text-gray-300 px-8 font-black uppercase tracking-widest text-[10px]">Close Archive</Button>
+              </div>
+           </DialogContent>
         </Dialog>
+
       </div>
     </div>
   );

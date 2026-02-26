@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, User, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useSocket } from "@/context/socket-context";
@@ -191,30 +192,36 @@ function CommunicationPage() {
   };
 
   return (
-    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 h-full flex flex-col">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Communication</h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
-          Chat and message with your interns
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 h-full flex flex-col relative">
+      <div className="fade-in">
+        <h1 className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-tight">
+          Signal <span className="text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">Terminal</span>
+        </h1>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mt-2">
+          Secure Communication Protocol v4.0.1
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-        {/* Sidebar - Course and Student Selection */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Select Course & Student</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Course</label>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+        {/* Sidebar - Selector */}
+        <div className="lg:col-span-1 glass-card border-white/5 bg-[#0f172a]/60 backdrop-blur-xl rounded-3xl p-6 flex flex-col gap-6 shadow-2xl">
+          <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+             <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <User className="w-5 h-5 text-blue-500" />
+             </div>
+             <h2 className="text-xs font-black uppercase tracking-widest text-white italic">Node Selector</h2>
+          </div>
+
+          <div className="space-y-6 overflow-y-auto custom-scrollbar pr-1">
+            <div className="space-y-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 px-1">Active Module</label>
               <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a course" />
+                <SelectTrigger className="w-full h-11 bg-white/5 border-white/10 rounded-xl text-white font-bold transition-all focus:ring-blue-500/50">
+                  <SelectValue placeholder="Identify Channel" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-[#0f172a] border-white/10 text-gray-300 rounded-xl">
                   {courses.map((course) => (
-                    <SelectItem key={course._id} value={course._id}>
+                    <SelectItem key={course._id} value={course._id} className="py-3">
                       {course.title}
                     </SelectItem>
                   ))}
@@ -222,135 +229,171 @@ function CommunicationPage() {
               </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Student</label>
-              <Select value={selectedStudentId} onValueChange={setSelectedStudentId} disabled={loading || students.length === 0}>
-                <SelectTrigger>
-                  <SelectValue placeholder={loading ? "Loading students..." : students.length === 0 ? "No students enrolled" : "Select a student"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {students.map((student) => (
-                    <SelectItem key={student.studentId} value={student.studentId}>
-                      {student.studentName || student.studentEmail || "Unknown"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {!loading && students.length === 0 && (
-                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-xs text-yellow-800">
-                    <strong>No students enrolled yet.</strong><br/>
-                    Students need to purchase/enroll in this course first.
-                  </p>
-                </div>
-              )}
+            <div className="space-y-4">
+              <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 px-1">Enrolled Subjects</label>
+              <div className="space-y-2">
+                 {loading ? (
+                    <div className="text-center py-6 text-[10px] font-black text-gray-600 animate-pulse">Scanning Nodes...</div>
+                 ) : students.length === 0 ? (
+                    <div className="text-center py-6 text-[10px] font-black text-gray-600 italic">No Active Transmissions</div>
+                 ) : (
+                    students.map((student) => (
+                       <button
+                          key={student.studentId}
+                          onClick={() => setSelectedStudentId(student.studentId)}
+                          className={`w-full p-4 rounded-2xl flex items-center justify-between transition-all group ${selectedStudentId === student.studentId ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white/5 border border-white/5 text-gray-400 hover:bg-white/10 hover:border-white/10'}`}
+                       >
+                          <div className="flex flex-col items-start min-w-0">
+                             <span className={`text-[11px] font-black truncate w-full italic uppercase tracking-tight ${selectedStudentId === student.studentId ? 'text-white' : 'text-gray-300'}`}>
+                                {student.studentName || "Anonymous Node"}
+                             </span>
+                             <span className={`text-[8px] font-black uppercase tracking-widest mt-0.5 ${selectedStudentId === student.studentId ? 'text-blue-100' : 'text-gray-600'}`}>
+                                {student.studentEmail?.slice(0, 15)}...
+                             </span>
+                          </div>
+                          <div className={`w-2 h-2 rounded-full ${selectedStudentId === student.studentId ? 'bg-white shadow-[0_0_8px_white]' : 'bg-gray-700'}`} />
+                       </button>
+                    ))
+                 )}
+              </div>
             </div>
-
-            {students.length === 0 && selectedCourseId && (
-              <p className="text-sm text-gray-500">No students enrolled in this course.</p>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Chat Area */}
-        <Card className="lg:col-span-2 flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Messages
+        <div className="lg:col-span-2 glass-card border-white/5 bg-[#0f172a]/60 backdrop-blur-xl rounded-3xl flex flex-col shadow-2xl relative overflow-hidden">
+          {/* Header */}
+          <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+                <MessageCircle className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="text-sm font-black text-white italic tracking-widest uppercase">
+                  Data Stream Terminal
+                </h3>
                 {selectedStudentId && (
-                  <span className="text-sm font-normal text-gray-500">
-                    - {students.find((s) => s.studentId === selectedStudentId)?.studentName || "Student"}
-                  </span>
+                   <div className="flex items-center gap-2 mt-0.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                        Node: {students.find((s) => s.studentId === selectedStudentId)?.studentName || "Linked Student"}
+                      </span>
+                   </div>
                 )}
               </div>
-              {selectedStudentId && messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearChat}
-                  className="text-red-500 hover:text-red-700"
-                  title="Clear Chat"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col">
+            </div>
+            {selectedStudentId && messages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearChat}
+                className="h-9 w-9 p-0 rounded-xl text-red-500 hover:text-white hover:bg-red-500/20 border border-transparent transition-all"
+                title="Wipe Stream"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col p-6 min-h-0 relative z-10">
             {!selectedStudentId ? (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                  <p>Select a student to start messaging</p>
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
+                   <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
+                   <MessageCircle className="w-10 h-10 text-gray-700 relative z-10" />
                 </div>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-gray-600">Secure Link Awaiting Initialization</h3>
+                <p className="text-[10px] font-medium text-gray-700 mt-2">Identify a subject to establish a neural data link</p>
               </div>
             ) : (
               <>
                 {/* Messages List */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-[300px]">
+                <div className="flex-1 overflow-y-auto space-y-6 mb-6 px-1 custom-scrollbar">
                   {messages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      <p>No messages yet. Start a conversation!</p>
+                    <div className="h-full flex flex-col items-center justify-center">
+                      <div className="px-6 py-3 rounded-full bg-white/5 border border-dashed border-white/10">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600">Link Established • Encrypted Channel Open</p>
+                      </div>
                     </div>
                   ) : (
-                    <>
+                    <div className="space-y-6">
                       {messages.map((msg) => (
                         <div
                           key={msg._id}
-                          className={`flex ${msg.senderRole === "instructor" ? "justify-end" : "justify-start"}`}
+                          className={`flex ${msg.senderRole === "instructor" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
                         >
                           <div
-                            className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                              msg.senderRole === "instructor"
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-900"
-                            }`}
+                            className={`max-w-[80%] flex flex-col ${msg.senderRole === "instructor" ? "items-end" : "items-start"}`}
                           >
-                            <p className="text-sm">{msg.message}</p>
-                            <p className="text-xs mt-1 opacity-70">
-                              {new Date(msg.createdAt).toLocaleTimeString()}
-                            </p>
+                             <div
+                               className={`rounded-2xl px-5 py-3 relative group ${
+                                 msg.senderRole === "instructor"
+                                   ? "bg-blue-600 text-white shadow-xl shadow-blue-600/10 rounded-tr-none"
+                                   : "bg-white/5 border border-white/10 text-gray-300 rounded-tl-none"
+                               }`}
+                             >
+                               <p className="text-sm font-medium leading-relaxed italic">{msg.message}</p>
+                               <div className="mt-2 flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                                  <div className="w-1 h-1 rounded-full bg-current" />
+                                  <p className="text-[9px] font-black uppercase tracking-widest">
+                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                               </div>
+                             </div>
                           </div>
                         </div>
                       ))}
                       {isTyping && (
                         <div className="flex justify-start">
-                          <div className="bg-gray-200 rounded-lg px-4 py-2">
-                            <div className="flex gap-1">
-                              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-                              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></span>
-                              <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+                          <div className="bg-white/5 border border-white/10 rounded-2xl rounded-tl-none px-5 py-3">
+                            <div className="flex gap-1.5">
+                              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
+                              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></span>
+                              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
                             </div>
                           </div>
                         </div>
                       )}
                       <div ref={messagesEndRef} />
-                    </>
+                    </div>
                   )}
                 </div>
 
                 {/* Message Input */}
-                <form onSubmit={handleSendMessage} className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => {
-                      setNewMessage(e.target.value);
-                      handleTyping();
-                    }}
-                    onBlur={handleStopTyping}
-                    placeholder="Type your message..."
-                    className="flex-1"
-                  />
-                  <Button type="submit" disabled={!newMessage.trim()}>
-                    <Send className="w-4 h-4" />
-                  </Button>
+                <form onSubmit={handleSendMessage} className="relative mt-auto">
+                   <div className="absolute inset-0 bg-blue-500/5 blur-2xl rounded-3xl" />
+                   <div className="relative flex gap-3 p-2 bg-black/40 border border-white/10 rounded-2xl items-end shadow-2xl">
+                      <Textarea
+                        value={newMessage}
+                        onChange={(e) => {
+                          setNewMessage(e.target.value);
+                          handleTyping();
+                        }}
+                        onBlur={handleStopTyping}
+                        placeholder="Push data to stream..."
+                        className="flex-1 bg-transparent border-none text-white focus:ring-0 resize-none py-3 px-4 min-h-[50px] max-h-[150px] font-medium placeholder-gray-700 custom-scrollbar"
+                        rows={1}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage(e);
+                          }
+                        }}
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={!newMessage.trim()}
+                        className="h-10 w-10 p-0 bg-white text-black hover:bg-gray-200 rounded-xl shadow-xl shadow-white/5 flex-shrink-0 mb-1 transition-all active:scale-90 disabled:opacity-20"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                   </div>
                 </form>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

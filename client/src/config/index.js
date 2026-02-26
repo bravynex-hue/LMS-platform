@@ -79,19 +79,19 @@ export const courseLevelOptions = [
 
 export const courseCategories = [
   // Engineering & Technology
-  { id: "vlsi", label: "VLSI" },
-  { id: "python-programming", label: "Introduction to Python" },
-  { id: "embedded-software", label: "Embedded Software" },
-  { id: "data-science", label: "Data Science" },
-  { id: "devops", label: "DevOps" },
-  { id: "cyber-security", label: "Cyber Security" },
-  { id: "frontend-development", label: "Front End Development" },
-  { id: "fullstack-development", label: "Full Stack Development" },
+  { id: "vlsi", label: "VLSI", description: "Design complex integrated circuits and systems using advanced EDA tools." },
+  { id: "python-programming", label: "Introduction to Python", description: "Master the fundamentals of Python for automation, scripting, and development." },
+  { id: "embedded-software", label: "Embedded Software", description: "Develop low-level software for microcontrollers and real-time operating systems." },
+  { id: "data-science", label: "Data Science", description: "Analyze large datasets and build predictive models using statistical techniques." },
+  { id: "devops", label: "DevOps", description: "Bridge the gap between development and operations with CI/CD and automation." },
+  { id: "cyber-security", label: "Cyber Security", description: "Protect networks and systems from digital attacks with offensive and defensive strategies." },
+  { id: "frontend-development", label: "Front End Development", description: "Build stunning, responsive user interfaces using modern web technologies." },
+  { id: "fullstack-development", label: "Full Stack Development", description: "Master both client-side and server-side development to build complete web applications." },
 
-  { id: "ai-data-engineer", label: "AI Data Engineer" },
-  { id: "web-development", label: "Web Development" },
-  { id: "basic-cpp-programming", label: "Basic C++ Programming" },
-  { id: "cloud-computing", label: "Cloud Computing" },
+  { id: "ai-data-engineer", label: "AI Data Engineer", description: "Design and implement data pipelines for large-scale AI and ML systems." },
+  { id: "web-development", label: "Web Development", description: "Learn the core languages and frameworks of the modern web ecosystem." },
+  { id: "basic-cpp-programming", label: "Basic C++ Programming", description: "Understand object-oriented programming and memory management with C++." },
+  { id: "cloud-computing", label: "Cloud Computing", description: "Architect and deploy scalable applications on AWS, Azure, or GCP." },
 ];
 
 export const courseLandingPageFormControls = [

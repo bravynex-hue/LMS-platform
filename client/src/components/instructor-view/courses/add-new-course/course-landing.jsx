@@ -3,23 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { courseLandingPageFormControls } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
 import { useContext } from "react";
-// Removed certificate settings; no need for Input/Label here
 import { BookOpen, Eye, Star } from "lucide-react";
 
 function CourseLanding() {
-  const { courseLandingFormData, setCourseLandingFormData } =
-    useContext(InstructorContext);
+  const { courseLandingFormData, setCourseLandingFormData } = useContext(InstructorContext);
+
   return (
-    <div className="space-y-6">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-100">
+    <div className="space-y-5">
+      <Card className="border-white/5 bg-[#0f172a]/60 backdrop-blur overflow-hidden">
+        <CardHeader className="border-b border-white/5 px-6 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-2xl font-bold text-gray-900">Course Landing Page</CardTitle>
-              <p className="text-gray-600 mt-1">Create an engaging landing page that converts visitors to students</p>
+              <CardTitle className="text-base font-black text-white">Course Landing Page</CardTitle>
+              <p className="text-sm text-gray-500 mt-0.5">Create an engaging landing page that converts visitors to students</p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-200 px-3 py-1 rounded-full">
-              <Eye className="w-4 h-4" />
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-full">
+              <Eye className="w-3.5 h-3.5" />
               Live Preview
             </div>
           </div>
@@ -35,57 +34,55 @@ function CourseLanding() {
               />
             </div>
 
-            {/* Preview Section */}
-            <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+            {/* Preview Panel */}
+            <div className="space-y-5">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-blue-400" />
                   Course Preview
                 </h3>
-                
-                {/* Course Image Placeholder */}
-                <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-4 flex items-center justify-center">
+
+                {/* Course Image */}
+                <div className="w-full h-44 bg-white/5 rounded-xl mb-4 flex items-center justify-center overflow-hidden border border-white/5">
                   {courseLandingFormData?.image ? (
-                    <img 
-                      src={courseLandingFormData.image} 
-                      alt="Course preview" 
-                      className="w-full h-full object-cover rounded-lg"
+                    <img
+                      src={courseLandingFormData.image}
+                      alt="Course preview"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="text-center text-gray-500">
-                      <BookOpen className="w-12 h-12 mx-auto mb-2" />
-                      <p className="text-sm">Course image will appear here</p>
+                    <div className="text-center text-gray-600">
+                      <BookOpen className="w-10 h-10 mx-auto mb-2" />
+                      <p className="text-xs">Course image will appear here</p>
                     </div>
                   )}
                 </div>
 
                 {/* Course Details */}
-                <div className="space-y-3">
-                  <h4 className="text-xl font-bold text-gray-900">
+                <div className="space-y-2">
+                  <h4 className="font-black text-white text-base leading-snug">
                     {courseLandingFormData?.title || "Course Title"}
                   </h4>
-                  <p className="text-gray-700 text-sm">
+                  <p className="text-gray-400 text-xs font-semibold">
                     {courseLandingFormData?.subtitle || "Course subtitle will appear here"}
                   </p>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 text-xs leading-relaxed line-clamp-3">
                     {courseLandingFormData?.description || "Course description will be displayed here. This gives students a comprehensive overview of what they'll learn."}
                   </p>
-                  
-                  {/* Course Stats */}
-                  <div className="flex items-center gap-4 pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-4 pt-3 border-t border-white/5 mt-3">
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
                       <span>4.8 (120 reviews)</span>
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <BookOpen className="w-4 h-4 text-blue-500" />
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <BookOpen className="w-3.5 h-3.5 text-blue-500" />
                       <span>12 lectures</span>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Certificate Settings removed as requested */}
             </div>
           </div>
         </CardContent>

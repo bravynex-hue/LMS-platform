@@ -1,6 +1,3 @@
-
-
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +17,7 @@ import {
   resetCourseProgressService,
   downloadCertificateService,
 } from "@/services";
-import { Check, ChevronLeft, ChevronRight, Play, Award, Download, Lock, X, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play, Award, Download, Lock, X, Loader2, Zap, Rocket, Watch } from "lucide-react";
 import { useContext, useEffect, useState, useCallback } from "react";
 import Confetti from "react-confetti";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,13 +33,31 @@ function StudentViewCourseProgressPage() {
   const [showCourseCompleteDialog, setShowCourseCompleteDialog] =
     useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
+  const [isSideBarOpen, setIsSideBarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
   const [isCourseCompleted, setIsCourseCompleted] = useState(false);
-  const [showCertificateSidebar, setShowCertificateSidebar] = useState(false);
   const [showVideoCompleteNotification, setShowVideoCompleteNotification] = useState(false);
   const [completedVideoTitle, setCompletedVideoTitle] = useState("");
   const [isCertificateDownloading, setIsCertificateDownloading] = useState(false);
   const { id } = useParams();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+
+    const sync = () => setIsSideBarOpen(mq.matches);
+    sync();
+
+    if (mq.addEventListener) mq.addEventListener("change", sync);
+    else mq.addListener(sync);
+
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", sync);
+      else mq.removeListener(sync);
+    };
+  }, []);
 
 
   const fetchCurrentCourseProgress = useCallback(async () => {
@@ -200,7 +215,7 @@ function StudentViewCourseProgressPage() {
     } catch (error) {
       console.error("Error in video completion handler:", error);
     }
-  }, [currentLecture, studentCurrentCourseProgress, markLectureAsViewed, toast]);
+  }, [currentLecture, studentCurrentCourseProgress, markLectureAsViewed]);
 
   async function handleRewatchCourse() {
     try {
@@ -214,7 +229,6 @@ function StudentViewCourseProgressPage() {
         setShowConfetti(false);
         setShowCourseCompleteDialog(false);
         setIsCourseCompleted(false);
-        setShowCertificateSidebar(false);
         fetchCurrentCourseProgress();
         toast({
           title: "Course Reset",
@@ -239,8 +253,6 @@ function StudentViewCourseProgressPage() {
   }
 
   const handleDownloadCertificate = useCallback(async (event) => {
-    console.log('Certificate download clicked', { isCertificateDownloading, event });
-    
     // Prevent event bubbling and multiple clicks - more aggressive approach
     if (event) {
       event.preventDefault();
@@ -250,7 +262,6 @@ function StudentViewCourseProgressPage() {
     
     // Prevent multiple simultaneous downloads
     if (isCertificateDownloading) {
-      console.log('Download already in progress, ignoring click');
       return;
     }
     
@@ -261,8 +272,6 @@ function StudentViewCourseProgressPage() {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
-      console.log('Starting certificate download...');
-
       const res = await downloadCertificateService(
         auth?.user?._id,
         studentCurrentCourseProgress?.courseDetails?._id
@@ -349,7 +358,14 @@ function StudentViewCourseProgressPage() {
     } finally {
       setIsCertificateDownloading(false);
     }
-  }, [isCertificateDownloading, auth?.user?._id, studentCurrentCourseProgress?.courseDetails?._id, toast]);
+  }, [
+    isCertificateDownloading,
+    auth?.user?._id,
+    auth?.user?.userName,
+    studentCurrentCourseProgress?.courseDetails?._id,
+    studentCurrentCourseProgress?.courseDetails?.title,
+    toast,
+  ]);
 
   useEffect(() => {
     fetchCurrentCourseProgress();
@@ -363,416 +379,287 @@ function StudentViewCourseProgressPage() {
 
 
   return (
-    <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
+    <div className="flex flex-col h-[100dvh] overflow-hidden text-white" style={{ background: "var(--bg-dark)" }}>
       {showConfetti && <Confetti />}
   
-      
+      {/* Background Atmosphere */}
+      <div className="orb orb-blue absolute w-[700px] h-[700px] -top-96 -left-40 opacity-[0.03] pointer-events-none" />
+      <div className="absolute inset-0 grid-bg opacity-[0.05] pointer-events-none" />
+
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 bg-[#1c1d1f] border-b border-gray-700">
-        <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+      <div className="relative z-30 flex items-center justify-between p-4 glass-nav border-b border-white/5">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Button
             onClick={() => navigate("/student-courses")}
-            className="text-white flex-shrink-0"
+            className="text-gray-400 hover:text-white hover:bg-white/5"
             variant="ghost"
             size="sm"
           >
             <ChevronLeft className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Back to My Courses</span>
-            <span className="sm:hidden">Back</span>
+            <span className="hidden sm:inline">Catalogue</span>
           </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm sm:text-lg font-bold truncate">
+          <div className="flex-1 min-w-0 px-2">
+            <h1 className="text-sm sm:text-base font-black truncate text-gray-100 uppercase tracking-tighter">
               {studentCurrentCourseProgress?.courseDetails?.title}
             </h1>
             {/* Progress Indicator */}
-            <div className="flex items-center space-x-2 mt-1">
-              <div className="w-20 sm:w-32 bg-gray-700 rounded-full h-1.5 sm:h-2">
+            <div className="flex items-center space-x-3 mt-1.5">
+              <div className="w-24 sm:w-40 bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
                 <div 
-                  className="bg-green-500 h-1.5 sm:h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 h-full transition-all duration-700 shadow-[0_0_10px_rgba(37,99,235,0.3)]"
                   style={{ 
                     width: `${((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100}%` 
                   }}
                 ></div>
               </div>
-              <span className="text-xs sm:text-sm text-gray-300 whitespace-nowrap">
+              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
                 {studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0} / {studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 0}
               </span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {isCourseCompleted && (
-            <Button 
-              onClick={() => setShowCertificateSidebar(!showCertificateSidebar)}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white"
-              size="sm"
-            >
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline ml-2">Certificate</span>
-            </Button>
-          )}
+        <div className="flex items-center gap-3">
           <Button 
             onClick={() => setIsSideBarOpen(!isSideBarOpen)}
-            className="bg-gray-600 hover:bg-gray-700 text-white"
+            className="bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 h-9 font-black uppercase text-[10px] tracking-widest"
             size="sm"
           >
-            {isSideBarOpen ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
-            <span className="hidden sm:inline ml-2">{isSideBarOpen ? "Hide" : "Show"} Content</span>
+            {isSideBarOpen ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline ml-2">{isSideBarOpen ? "Hide" : "Expand"} Content</span>
           </Button>
         </div>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div
-          className={`flex-1 ${
+
+      <div className="flex flex-1 overflow-hidden relative z-10">
+        <main
+          className={`flex-1 overflow-y-auto ${
             isSideBarOpen ? "lg:mr-[400px]" : ""
           } transition-all duration-300`}
         >
-          <div className="w-full h-48 sm:h-56 md:h-64 lg:h-80 xl:h-96">
+          <div className="aspect-video w-full bg-black/40 border-b border-white/5 shadow-2xl relative">
             <VideoPlayer
               width="100%"
               height="100%"
               url={currentLecture?.videoUrl}
               onVideoEnded={handleVideoEnded}
             />
-          </div>
-          <div className="p-3 sm:p-6">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4">
-              {currentLecture?.title || "Select a Lecture"}
-            </h2>
-            <p className="text-gray-300 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
-              {currentLecture?.description}
-            </p>
-            
-            {/* Mobile Progress Indicator */}
-            <div className="lg:hidden mt-4 p-3 bg-gray-800 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-300">Course Progress</span>
-                <span className="text-sm text-green-400 font-semibold">
-                  {Math.round(((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100}%` 
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                {studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0} of {studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 0} lectures completed
-              </p>
-            </div>
-            
-            {/* Desktop Progress Indicator */}
-            <div className="hidden lg:block mt-4 p-4 bg-gray-800 rounded-lg">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-base text-gray-300 font-medium">Course Progress</span>
-                <span className="text-base text-green-400 font-semibold">
-                  {Math.round(((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-3">
-                <div 
-                  className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100}%` 
-                  }}
-                ></div>
-              </div>
-              <p className="text-sm text-gray-400 mt-2">
-                {studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0} of {studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 0} lectures completed
-              </p>
-            </div>
-          </div>
-        </div>
-        <div
-          className={`fixed right-0 top-0 h-full bg-[#2d2f31] shadow-lg transform ${
-            isSideBarOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out z-20 w-full lg:w-[400px]`}
-        >
-          <ScrollArea className="h-full p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg sm:text-xl font-semibold">Course Content</h3>
-                {isCourseCompleted && (
-                  <p className="text-xs sm:text-sm text-green-400 flex items-center mt-1">
-                    <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    Course Completed
-                  </p>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSideBarOpen(false)}
-                className="flex-shrink-0 text-gray-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            {studentCurrentCourseProgress?.courseDetails?.curriculum?.map(
-              (lecture, index) => {
-                const isCompleted = studentCurrentCourseProgress?.progress?.some(
-                  (p) => p.lectureId === lecture._id && p.viewed
-                );
-                const isCurrentLecture = currentLecture?._id === lecture._id;
-                const sequentialAccess = studentCurrentCourseProgress?.courseDetails?.sequentialAccess !== false;
-                
-                // Check if lecture is accessible (for sequential access)
-                const isAccessible = !sequentialAccess || index === 0 || 
-                  studentCurrentCourseProgress?.courseDetails?.curriculum?.slice(0, index).every((prevLecture) => {
-                    return studentCurrentCourseProgress?.progress?.some(
-                      (p) => p.lectureId === prevLecture._id && p.viewed
-                    );
-                  });
-
-                return (
-                <div
-                  key={lecture._id}
-                    className={`flex items-center p-3 sm:p-4 mb-2 sm:mb-3 rounded-lg transition-all duration-200 touch-manipulation ${
-                      isCurrentLecture
-                      ? "bg-blue-600 shadow-md"
-                        : isAccessible
-                        ? "bg-gray-700 hover:bg-gray-600 cursor-pointer"
-                        : "bg-gray-800 opacity-60 cursor-not-allowed"
-                  }`}
-                    onClick={() => isAccessible && setCurrentLecture(lecture)}
-                >
-                  <div className="flex-shrink-0 mr-2 sm:mr-3">
-                      {isCompleted ? (
-                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
-                      ) : isAccessible ? (
-                        <Play className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                    ) : (
-                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                    )}
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <p
-                      className={`font-medium text-sm sm:text-base truncate ${
-                          isCurrentLecture
-                          ? "text-white"
-                            : isAccessible
-                            ? "text-gray-100"
-                            : "text-gray-500"
-                      }`}
-                    >
-                      {lecture.title}
-                    </p>
-                    <p
-                      className={`text-xs sm:text-sm ${
-                          isCurrentLecture
-                          ? "text-blue-200"
-                            : isCompleted
-                            ? "text-green-300"
-                            : isAccessible
-                            ? "text-gray-300"
-                            : "text-gray-500"
-                      }`}
-                    >
-                      {isCompleted ? "Completed" : isCurrentLecture ? "▶️ Playing" : `Lecture ${index + 1}`}
-                        {!isAccessible && sequentialAccess && (
-                          <span className="ml-1 sm:ml-2 text-xs text-red-400">(Locked)</span>
-                        )}
-                    </p>
-                  </div>
-                  {lecture.freePreview && (
-                    <span className="ml-auto px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-semibold text-blue-800 bg-blue-200 rounded-full flex-shrink-0">
-                      Free
-                    </span>
-                  )}
+            {showVideoCompleteNotification && (
+              <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 glass px-4 py-2 sm:px-6 sm:py-3 rounded-2xl flex items-center gap-3 animate-bounce-gentle border-blue-500/30 max-w-[92vw]">
+                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-400" />
                 </div>
-                );
-              }
+                <span className="text-sm font-bold text-white truncate min-w-0">
+                  Next lesson loading{completedVideoTitle ? ` after: ${completedVideoTitle}` : "..."}
+                </span>
+              </div>
             )}
-          </ScrollArea>
-        </div>
+          </div>
 
-        {/* Certificate Sidebar */}
-        <div
-          className={`fixed right-0 top-0 h-full bg-[#2d2f31] shadow-lg transform ${
-            showCertificateSidebar ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out z-30 w-full lg:w-[400px]`}
-        >
-          <ScrollArea className="h-full p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-lg sm:text-xl font-semibold flex-1 min-w-0">Your Certificate</h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowCertificateSidebar(false)}
-                className="flex-shrink-0 text-gray-400 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+          <div className="px-4 py-6 sm:p-10 max-w-5xl mx-auto space-y-6 sm:space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+              <div className="space-y-4">
+                <span className="section-badge inline-flex">
+                  <Zap className="w-3 h-3" />
+                  Active Session
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter">
+                  {currentLecture?.title || "Select a Session"}
+                </h2>
+              </div>
+              <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-4 bg-white/[0.03] px-4 py-2.5 rounded-xl border border-white/5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Global Progress</span>
+                <span className="text-sm font-black text-blue-400">
+                  {Math.round(((studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0) / (studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 1)) * 100)}%
+                </span>
+              </div>
             </div>
-            <div className="text-center">
-              {isCourseCompleted ? (
-                <>
-                  <Award className="h-16 w-16 sm:h-24 sm:w-24 text-yellow-400 mx-auto mb-4 sm:mb-6" />
-                  <p className="text-base sm:text-lg mb-3 sm:mb-4 text-green-400">
-                    🎉 Congratulations! You have completed the course.
-                  </p>
-                  <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
-                    <p className="text-xs sm:text-sm text-green-300">
-                      Completed on: {studentCurrentCourseProgress?.completionDate ? 
-                        new Date(studentCurrentCourseProgress.completionDate).toLocaleDateString() : 
-                        'Recently'}
-                    </p>
-                  </div>
-                  {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
-                    <Button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={handleDownloadCertificate}
-                      disabled={isCertificateDownloading}
-                      className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center w-full mb-2 sm:mb-3 text-sm sm:text-base py-3 sm:py-4 touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {isCertificateDownloading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 animate-spin" />
-                          Preparing Certificate...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Download Certificate
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
-                      <p className="text-xs sm:text-sm text-yellow-300">
-                        Certificate generation is disabled for this course
-                      </p>
-                    </div>
-                  )}
+
+            <div className="prose prose-invert max-w-none">
+              <p className="text-gray-400 leading-relaxed text-base sm:text-lg">
+                {currentLecture?.description || "Pick a lecture from the curriculum to begin your learning journey."}
+              </p>
+            </div>
+
+            {/* Notification area */}
+            <div className="rounded-2xl p-4 sm:p-6 bg-blue-600/5 border border-blue-500/10 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/20 flex items-center justify-center border border-blue-500/20 flex-shrink-0">
+                <Watch className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white mb-1">Stay Disciplined</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">Systematic progress is key to mastering technical skills. Ensure you follow the curriculum sequence for the best learning outcomes.</p>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* Floating Sidebar (Content) */}
+        <aside
+          className={`fixed right-0 top-0 h-full bg-[#0a0f1e]/95 backdrop-blur-2xl border-l border-white/5 shadow-3xl transform ${
+            isSideBarOpen ? "translate-x-0" : "translate-x-full"
+          } transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 w-full sm:w-[360px] lg:w-[400px] flex flex-col pt-16 sm:pt-20`}
+        >
+          <div className="p-4 sm:p-6 border-b border-white/5 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-black text-white uppercase tracking-wider">Curriculum</h3>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Industrial Learning Path</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSideBarOpen(false)}
+              className="text-gray-500 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          <ScrollArea className="flex-1 p-3 sm:p-4">
+            <div className="space-y-3">
+              {studentCurrentCourseProgress?.courseDetails?.curriculum?.map(
+                (lecture, index) => {
+                  const isCompleted = studentCurrentCourseProgress?.progress?.some(
+                    (p) => p.lectureId === lecture._id && p.viewed
+                  );
+                  const isCurrentLecture = currentLecture?._id === lecture._id;
+                  const sequentialAccess = studentCurrentCourseProgress?.courseDetails?.sequentialAccess !== false;
                   
-                  <Button
-                    onClick={handleRewatchCourse}
-                    variant="outline"
-                    className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-3 touch-manipulation"
-                  >
-                    <Play className="h-4 w-4 mr-2" /> Rewatch Course
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Lock className="h-16 w-16 sm:h-24 sm:w-24 text-gray-400 mx-auto mb-4 sm:mb-6" />
-                  <p className="text-base sm:text-lg text-gray-300 mb-3 sm:mb-4">
-                    Complete all lectures to unlock your certificate.
-                  </p>
-                  <div className="p-2 sm:p-3 bg-gray-700 rounded-lg mb-3 sm:mb-4">
-                    <p className="text-xs sm:text-sm text-gray-300">
-                      Progress: {studentCurrentCourseProgress?.progress?.filter(p => p.viewed).length || 0} / {studentCurrentCourseProgress?.courseDetails?.curriculum?.length || 0} lectures completed
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1 sm:mt-2">
-                      Watch each video completely to advance to the next one
-                    </p>
-                  </div>
-                </>
+                  const isAccessible = !sequentialAccess || index === 0 || 
+                    studentCurrentCourseProgress?.courseDetails?.curriculum?.slice(0, index).every((prevLecture) => {
+                      return studentCurrentCourseProgress?.progress?.some(
+                        (p) => p.lectureId === prevLecture._id && p.viewed
+                      );
+                    });
+
+                  return (
+                    <div
+                      key={lecture._id}
+                      className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-5 rounded-2xl border transition-all duration-300 group ${
+                        isCurrentLecture
+                          ? "bg-blue-600/20 border-blue-500/40 shadow-lg shadow-blue-500/10"
+                          : isAccessible
+                          ? "bg-white/[0.02] border-white/5 hover:bg-white/[0.05] hover:border-white/10 cursor-pointer"
+                          : "bg-white/[0.01] border-transparent opacity-30 cursor-not-allowed"
+                      }`}
+                      onClick={() => isAccessible && setCurrentLecture(lecture)}
+                    >
+                      <div className="flex-shrink-0">
+                        {isCompleted ? (
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                            <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-400 font-bold" />
+                          </div>
+                        ) : isCurrentLecture ? (
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 animate-pulse">
+                            <Play className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                          </div>
+                        ) : (
+                          <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border ${isAccessible ? "bg-white/5 border-white/10" : "bg-black/20 border-white/5"}`}>
+                            {isAccessible ? <Play className="h-4 w-4 text-gray-500 group-hover:text-white transition-colors" /> : <Lock className="h-4 w-4 text-gray-700" />}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <p className={`text-sm font-bold truncate transition-colors ${isCurrentLecture ? "text-blue-400" : isAccessible ? "text-gray-100" : "text-gray-600"}`}>
+                          {lecture.title}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Lecture {index + 1}</span>
+                          {lecture.freePreview && <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded leading-none">Free</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
               )}
             </div>
-            <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-gray-700 rounded-lg">
-              <h4 className="text-base sm:text-lg font-semibold mb-2">Course Completion</h4>
-              <p className="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base">
-                To receive your certificate, ensure all lectures are marked as
-                viewed. Your progress is automatically saved.
-              </p>
-              <Button
-                onClick={handleRewatchCourse}
-                variant="outline"
-                className="w-full text-blue-400 border-blue-400 hover:bg-blue-900 text-sm sm:text-base py-2 sm:py-3"
-              >
-                Reset Course Progress
-              </Button>
-            </div>
           </ScrollArea>
-        </div>
+        </aside>
 
-        {/* Course Locked Dialog */}
+        {/* Certificate Sidebar (High Level) - removed from this page as per design change */}
+
+        {/* Course Locked Modal */}
         <Dialog open={lockCourse}>
-          <DialogContent className="w-[95vw] max-w-[425px] bg-gray-800 text-white p-4 sm:p-6 rounded-lg shadow-xl mx-2 sm:mx-4">
-            <DialogHeader>
-              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-red-500 text-center sm:text-left">
-                Course Not Purchased
+          <DialogContent className="bg-[#0a1428] border-white/10 text-white max-w-md shadow-3xl">
+            <DialogHeader className="text-center sm:text-left">
+              <DialogTitle className="text-2xl font-black text-red-500 tracking-tighter uppercase italic mb-2">
+                Unauthorized Access
               </DialogTitle>
-              <DialogDescription className="text-gray-300 mt-2 text-sm sm:text-base text-center sm:text-left">
-                It looks like you haven&apos;t purchased this course yet. Please
-                purchase the course to access its content.
+              <DialogDescription className="text-gray-400 font-medium">
+                Our protocol indicates that this track has not been authorized for your account. Please acquire access via the catalogue.
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-center sm:justify-end gap-2 sm:gap-3">
+            <div className="mt-8 flex justify-end">
               <Button
-                onClick={() => navigate("/student-courses")}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base px-4 sm:px-6 py-3 sm:py-3 w-full sm:w-auto touch-manipulation"
+                onClick={() => navigate("/courses")}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest px-8 shadow-lg shadow-blue-600/20"
               >
-                Go to Courses
+                Go to Catalogue
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Course Complete Dialog */}
+        {/* Global Completion Success Modal */}
         <Dialog open={showCourseCompleteDialog} onOpenChange={setShowCourseCompleteDialog}>
-          <DialogContent className="w-[95vw] max-w-[500px] bg-white text-gray-900 p-4 sm:p-6 rounded-lg shadow-xl mx-2 sm:mx-4">
-            <DialogHeader>
-              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-green-600 flex items-center justify-center sm:justify-start">
-                <Award className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                Course Completed!
-              </DialogTitle>
-              <DialogDescription className="text-gray-600 mt-2 text-sm sm:text-base text-center sm:text-left">
-                Congratulations! You have successfully completed all lectures. 
-                Your certificate is now available for download.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4 sm:mt-6 flex flex-col space-y-3 sm:space-y-3">
-              {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
-                <Button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleDownloadCertificate}
-                  disabled={isCertificateDownloading}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center py-3 sm:py-3 text-sm sm:text-base w-full touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isCertificateDownloading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 animate-spin" /> Preparing Certificate...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" /> Download Certificate
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <div className="p-3 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-xs sm:text-sm text-yellow-800 text-center">
-                    Certificate generation is disabled for this course
-                  </p>
+          <DialogContent className="bg-[#0a0f1e] border border-white/10 text-white overflow-hidden shadow-3xl flex flex-col rounded-none sm:rounded-2xl left-0 top-0 translate-x-0 translate-y-0 w-screen h-[100dvh] sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-full sm:max-w-lg sm:h-auto sm:max-h-[90vh]">
+            <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/5 p-4 sm:p-10 text-center border-b border-white/5 pt-[max(1rem,env(safe-area-inset-top))]">
+              <div className="relative inline-block mb-6">
+                 <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-20" />
+                 <Award className="h-20 w-20 text-blue-400 relative z-10" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tighter italic uppercase text-white mb-2">
+                Track Mastered!
+              </h2>
+              <p className="text-blue-400/80 font-black uppercase tracking-[0.12em] sm:tracking-[0.2em] text-[9px] sm:text-[10px]">
+                Certification Access Granted
+              </p>
+            </div>
+
+            <div className="p-5 sm:p-10 space-y-6 overflow-y-auto pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+              <p className="text-gray-400 font-medium text-center">
+                Outstanding performance! You have successfully processed all curriculum nodes. Your specialized industrial certificate is now ready for verification.
+              </p>
+              
+              <div className="space-y-3">
+                {studentCurrentCourseProgress?.courseDetails?.certificateEnabled ? (
+                  <Button
+                    onClick={handleDownloadCertificate}
+                    disabled={isCertificateDownloading}
+                    className="w-full h-14 bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-600/20"
+                  >
+                    {isCertificateDownloading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Preparing...</>
+                    ) : (
+                      <><Download className="h-4 w-4 mr-3" /> Secure Certificate</>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="p-4 bg-white/5 border border-white/5 rounded-xl text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">
+                      Standard Issue Certification Only
+                    </p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                   <Button
+                      onClick={handleRewatchCourse}
+                      variant="outline"
+                      className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5 font-black uppercase tracking-widest text-[10px] h-12"
+                   >
+                     <Rocket className="h-3.5 w-3.5 mr-2" /> Reset
+                   </Button>
+                   <Button
+                      onClick={() => {
+                        setShowCourseCompleteDialog(false);
+                        setShowConfetti(false);
+                      }}
+                      className="bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-[10px] h-12 border border-white/10"
+                   >
+                     Continue
+                   </Button>
                 </div>
-              )}
-              <Button
-                onClick={handleRewatchCourse}
-                variant="outline"
-                className="text-blue-600 border-blue-600 hover:bg-blue-50 py-3 sm:py-3 text-sm sm:text-base w-full touch-manipulation"
-              >
-                <Play className="h-4 w-4 mr-2" /> Rewatch Course
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowCourseCompleteDialog(false);
-                  setShowConfetti(false);
-                }}
-                variant="ghost"
-                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 text-sm sm:text-base py-3 sm:py-3 w-full touch-manipulation"
-              >
-                Continue Learning
-              </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -782,3 +669,4 @@ function StudentViewCourseProgressPage() {
 }
 
 export default StudentViewCourseProgressPage;
+

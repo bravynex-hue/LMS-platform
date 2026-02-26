@@ -22,24 +22,6 @@ import {
 } from "@/components/ui/select";
 
 function InstructorDashboard({ listOfCourses = [] }) {
-  // Debug: Log the courses data to see what we're receiving
-  useEffect(() => {
-    console.log("📊 Dashboard received courses:", listOfCourses);
-    if (listOfCourses.length > 0) {
-      console.log("👥 First course students:", listOfCourses[0].students);
-      listOfCourses.forEach((course, index) => {
-        if (course.students && course.students.length > 0) {
-          console.log(`Course ${index + 1} (${course.title}) students:`, course.students.map(s => ({
-            id: s.studentId,
-            name: s.studentName || s.userName,
-            email: s.studentEmail || s.userEmail,
-            enrollmentDate: s.enrollmentDate
-          })));
-        }
-      });
-    }
-  }, [listOfCourses]);
-
   // Separate pagination for courses and students
   const INITIAL_ROWS_COURSES = 5;
   const INITIAL_ROWS_STUDENTS = 5;
@@ -264,20 +246,22 @@ function InstructorDashboard({ listOfCourses = [] }) {
   ];
 
   return (
-    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="space-y-6">
       {/* Date Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white p-4 rounded-lg border shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-[#0f172a]/60 backdrop-blur-md p-4 rounded-2xl border border-white/5">
         <div className="flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Revenue Dashboard</h2>
+          <div className="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
+            <Calendar className="h-5 w-5 text-blue-400" />
+          </div>
+          <h2 className="text-base font-bold text-white tracking-tight">Revenue Dashboard</h2>
         </div>
         <div className="flex items-center gap-3">
           <Filter className="h-4 w-4 text-gray-500" />
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-[#0f172a] border-white/10 text-gray-300">
               <SelectValue placeholder="Select time period" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#0f172a] border-white/10 text-gray-200">
               <SelectItem value="all">All Time</SelectItem>
               <SelectItem value="today">Today</SelectItem>
               <SelectItem value="week">This Week</SelectItem>
@@ -289,48 +273,47 @@ function InstructorDashboard({ listOfCourses = [] }) {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((item, index) => (
-          <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white">
-            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+          <Card key={index} className="border-white/5 bg-[#0f172a]/60 backdrop-blur hover:bg-[#0f172a]/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/5">
+            <CardHeader className="pb-2 px-5 pt-5">
               <div className="flex items-center justify-between">
-                <div className={`p-2 sm:p-3 rounded-xl ${item.bgColor}`}>
-                  <item.icon className={`h-4 w-4 sm:h-6 sm:w-6 ${item.iconColor}`} />
+                <div className={`p-2.5 rounded-xl ${item.bgColor}`}>
+                  <item.icon className={`h-5 w-5 ${item.iconColor}`} />
                 </div>
-                <div className="flex items-center gap-1 text-green-600 text-xs sm:text-sm font-medium">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{item.trend}</span>
-                  <span className="sm:hidden">+</span>
+                <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
+                  <TrendingUp className="w-3 h-3" />
+                  <span>{item.trend}</span>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-0 px-3 sm:px-6">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">{item.value}</div>
-              <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">{item.label}</p>
-              <p className="text-xs text-gray-500 hidden sm:block">{item.description}</p>
+            <CardContent className="pt-0 px-5 pb-5">
+              <div className="text-2xl font-black text-white mb-1">{item.value}</div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">{item.label}</p>
+              <p className="text-xs text-gray-600">{item.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Courses Overview */}
-        <Card className="border-0 shadow-lg bg-white">
-          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-lg px-3 sm:px-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+        <Card className="border-white/5 bg-[#0f172a]/60 backdrop-blur">
+          <CardHeader className="border-b border-white/5 px-6">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-blue-400" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Your Courses Performance</CardTitle>
-                  <p className="text-xs sm:text-sm text-gray-500">Revenue and enrollment overview</p>
+                <div>
+                  <CardTitle className="text-base font-bold text-white">Course Performance</CardTitle>
+                  <p className="text-xs text-gray-500">Revenue and enrollment overview</p>
                 </div>
               </div>
-              <div className="text-left sm:text-right">
-                <div className="text-xl sm:text-2xl font-bold text-gray-700">{listOfCourses.length}</div>
-                <div className="text-xs sm:text-sm text-gray-500">Total Courses</div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-white">{listOfCourses.length}</div>
+                <div className="text-xs text-gray-500">Total Courses</div>
               </div>
             </div>
           </CardHeader>
@@ -338,31 +321,31 @@ function InstructorDashboard({ listOfCourses = [] }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Course</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center text-xs sm:text-sm">Students</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-right text-xs sm:text-sm">Revenue</TableHead>
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider">Course</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-center">Students</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-right">Revenue</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filterCoursesByDate(listOfCourses, dateFilter).slice(0, visibleCourses).map((c) => (
-                    <TableRow key={c._id} className="hover:bg-gray-50 transition-colors">
-                      <TableCell className="font-medium text-gray-900">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    <TableRow key={c._id} className="border-white/5 hover:bg-white/5 transition-colors">
+                      <TableCell className="font-medium text-gray-200">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-4 h-4 text-blue-400" />
                           </div>
-                          <span className="text-xs sm:text-sm truncate">{c.title}</span>
+                          <span className="text-sm truncate">{c.title}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1 sm:gap-2">
-                          <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-700" />
-                          <span className="font-semibold text-gray-900 text-xs sm:text-sm">{c.students?.length || 0}</span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Users className="h-4 w-4 text-gray-500" />
+                          <span className="font-bold text-white text-sm">{c.students?.length || 0}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-bold text-green-600 text-xs sm:text-sm">{formatINR((c.students?.length || 0) * c.pricing)}</span>
+                        <span className="font-black text-emerald-400 text-sm">{formatINR((c.students?.length || 0) * c.pricing)}</span>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -370,12 +353,12 @@ function InstructorDashboard({ listOfCourses = [] }) {
               </Table>
             </div>
             {canLoadMoreCourses ? (
-              <div className="flex justify-center mt-3 sm:mt-4 pb-3 sm:pb-4 px-3 sm:px-6">
+              <div className="flex justify-center py-4">
                 <button
                   onClick={() => setVisibleCourses((n) => n + ROWS_CHUNK)}
-                  className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-semibold border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 text-xs font-bold tracking-widest uppercase border border-white/10 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all"
                 >
-                  Load more courses
+                  Load more
                 </button>
               </div>
             ) : null}
@@ -383,21 +366,21 @@ function InstructorDashboard({ listOfCourses = [] }) {
         </Card>
 
         {/* Recent Students */}
-        <Card className="border-0 shadow-lg bg-white">
-          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-lg px-3 sm:px-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+        <Card className="border-white/5 bg-[#0f172a]/60 backdrop-blur">
+          <CardHeader className="border-b border-white/5 px-6">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                  <Users className="w-5 h-5 text-purple-400" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Recent Students</CardTitle>
-                  <p className="text-xs sm:text-sm text-gray-500">Latest enrollments and activity</p>
+                <div>
+                  <CardTitle className="text-base font-bold text-white">Recent Students</CardTitle>
+                  <p className="text-xs text-gray-500">Latest enrollments and activity</p>
                 </div>
               </div>
-              <div className="text-left sm:text-right">
-                <div className="text-xl sm:text-2xl font-bold text-gray-700">{Math.min(10, totals.studentList.length)}</div>
-                <div className="text-xs sm:text-sm text-gray-500">New Students</div>
+              <div className="text-right">
+                <div className="text-2xl font-black text-white">{Math.min(10, totals.studentList.length)}</div>
+                <div className="text-xs text-gray-500">New Students</div>
               </div>
             </div>
           </CardHeader>
@@ -405,42 +388,41 @@ function InstructorDashboard({ listOfCourses = [] }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Course Name</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Student Name</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Enrolled</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center text-xs sm:text-sm">Actions</TableHead>
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider">Course</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider">Student</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider">Enrolled</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {totals.studentList
                     .sort((a, b) => {
-                      // Sort by enrollment date (most recent first)
                       const dateA = a.enrollmentDate ? new Date(a.enrollmentDate) : new Date(0);
                       const dateB = b.enrollmentDate ? new Date(b.enrollmentDate) : new Date(0);
                       return dateB - dateA;
                     })
                     .slice(0, visibleStudents).map((s, i) => (
-                    <TableRow key={`${s.studentEmail}-${i}`} className="hover:bg-gray-50 transition-colors">
-                      <TableCell className="font-medium text-gray-900">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    <TableRow key={`${s.studentEmail}-${i}`} className="border-white/5 hover:bg-white/5 transition-colors">
+                      <TableCell className="font-medium text-gray-200">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
                           </div>
-                          <span className="text-xs sm:text-sm truncate max-w-24 sm:max-w-32">{s.courseTitle}</span>
+                          <span className="text-sm truncate max-w-28">{s.courseTitle}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium text-gray-800">
+                      <TableCell className="font-medium text-gray-300">
                         <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                            <svg className="w-2 h-2 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-7 h-7 bg-purple-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg className="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                           </div>
-                          <span className="text-xs sm:text-sm truncate">{s.studentName}</span>
+                          <span className="text-sm truncate">{s.studentName}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs sm:text-sm text-gray-600">
+                      <TableCell className="text-xs text-gray-500">
                         {s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -449,11 +431,11 @@ function InstructorDashboard({ listOfCourses = [] }) {
                       </TableCell>
                       <TableCell className="text-center">
                         <button 
-                          className="p-1 sm:p-2 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors group"
                           onClick={() => handleShowRecentActions(s)}
                           title="View recent actions"
                         >
-                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                          <Eye className="h-4 w-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
                       </TableCell>
                     </TableRow>
@@ -462,12 +444,12 @@ function InstructorDashboard({ listOfCourses = [] }) {
               </Table>
             </div>
             {totals.studentList.length > visibleStudents ? (
-              <div className="flex justify-center mt-3 sm:mt-4 pb-3 sm:pb-4 px-3 sm:px-6">
+              <div className="flex justify-center py-4">
                 <button
                   onClick={() => setVisibleStudents((n) => n + ROWS_CHUNK)}
-                  className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-semibold border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 text-xs font-bold tracking-widest uppercase border border-white/10 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all"
                 >
-                  Load more students
+                  Load more
                 </button>
               </div>
             ) : null}
@@ -476,29 +458,29 @@ function InstructorDashboard({ listOfCourses = [] }) {
       </div>
 
       <Dialog open={actionsOpen} onOpenChange={setActionsOpen}>
-        <DialogContent className="max-w-xl mx-4 sm:mx-auto">
+        <DialogContent className="max-w-xl bg-[#0f172a] border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl">Recent actions</DialogTitle>
+            <DialogTitle className="text-base font-bold text-white">Recent Actions</DialogTitle>
           </DialogHeader>
-          <div className="mt-2 text-sm text-gray-600">
-            <div className="mb-3">
-              <span className="font-semibold text-gray-900 text-sm sm:text-base">{actionsContext.studentName}</span>
-              <span className="mx-2">•</span>
-              <span className="text-gray-700 text-sm sm:text-base">{actionsContext.courseTitle}</span>
+          <div className="mt-2 text-sm">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="font-bold text-blue-400">{actionsContext.studentName}</span>
+              <span className="text-gray-600">•</span>
+              <span className="text-gray-400 text-sm">{actionsContext.courseTitle}</span>
             </div>
             {actionsLoading ? (
-              <div className="py-6 text-center text-sm sm:text-base">Loading...</div>
+              <div className="py-8 text-center text-gray-500">Loading...</div>
             ) : recentActions.length > 0 ? (
-              <ul className="space-y-2 max-h-64 overflow-y-auto">
+              <ul className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                 {recentActions.map((a, idx) => (
-                  <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 sm:p-3 rounded-md bg-gray-50 gap-1 sm:gap-0">
-                    <span className="text-gray-900 text-sm sm:text-base truncate">{a.title}</span>
-                    <span className="text-xs text-gray-500">{a.dateViewed.toLocaleString()}</span>
+                  <li key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 gap-1">
+                    <span className="text-gray-200 text-sm truncate">{a.title}</span>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">{a.dateViewed.toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <div className="py-6 text-center text-gray-500 text-sm sm:text-base">No recent actions found</div>
+              <div className="py-8 text-center text-gray-600">No recent actions found</div>
             )}
           </div>
         </DialogContent>

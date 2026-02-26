@@ -1,49 +1,381 @@
-import { courseCategories } from "@/config";
-// removed static banner in favor of dynamic hero images
-import { useState, useRef, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { useContext, useEffect, useCallback } from "react";
+import { courseCategories, signInFormControls, signUpFormControls } from "@/config";
+import { useState, useContext, useEffect, useCallback, useRef, Suspense, lazy } from "react";
+import { useNavigate } from "react-router-dom";
 import { StudentContext } from "@/context/student-context";
+import { AuthContext } from "@/context/auth-context";
 import {
   checkCoursePurchaseInfoService,
   fetchStudentViewCourseListService,
-  getAllSlidersService,
 } from "@/services";
-import { AuthContext } from "@/context/auth-context";
-import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePageTransition } from "@/hooks/use-gsap";
 import { SpinnerOverlay } from "@/components/ui/spinner";
+import CommonForm from "@/components/common-form";
+import ForgotPassword from "@/components/auth/forgot-password";
+import ResetPassword from "@/components/auth/reset-password";
+import {
+  ArrowRight,
+  Zap,
+  Users,
+  BookOpen,
+  Star,
+  TrendingUp,
+  Award,
+  Play,
+  Layers,
+  Code2,
+  Database,
+  Shield,
+  Globe,
+  Cpu,
+  BarChart2,
+  Cloud,
+  Terminal,
+  Binary,
+  Braces,
+  CheckCircle2,
+  Sparkles,
+  ChevronRight,
+  GraduationCap,
+  Rocket,
+  BrainCircuit,
+  MonitorPlay,
+} from "lucide-react";
 
-import sliderImage1 from "/images/slider1.avif";
-import sliderImage2 from "/images/slider2.avif";
-import sliderImage3 from "/images/slider3.avif";
+// Lazy load the heavy 3D component
+const FuturisticHeroScene = lazy(() =>
+  import("@/components/student-view/futuristic-hero-scene")
+);
 
-// Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Data ────────────────────────────────────────────────────────────────────
+const categoryIconMap = {
+  "vlsi": Cpu,
+  "python-programming": Terminal,
+  "embedded-software": Binary,
+  "data-science": BarChart2,
+  "devops": Layers,
+  "cyber-security": Shield,
+  "frontend-development": Globe,
+  "fullstack-development": Braces,
+  "ai-data-engineer": Zap,
+  "web-development": Code2,
+  "basic-cpp-programming": Database,
+  "cloud-computing": Cloud,
+};
+
+const HERO_STATS = [
+  { icon: Users,   value: "10,000+", label: "Active Interns",   color: "#3b82f6" },
+  { icon: BookOpen,value: "120+",    label: "Expert Courses",   color: "#a855f7" },
+  { icon: Star,    value: "4.9★",    label: "Average Rating",   color: "#fbbf24" },
+  { icon: Award,   value: "95%",     label: "Placement Rate",   color: "#06b6d4" },
+];
+
+const FEATURES = [
+  {
+    icon: Rocket,
+    title: "Launch-Ready Curriculum",
+    desc: "Programs co-designed with engineering leaders. Go from zero to deployment in weeks — not months.",
+    color: "#3b82f6",
+    gradient: "from-blue-500/15 to-indigo-500/5",
+  },
+  {
+    icon: BrainCircuit,
+    title: "AI-Powered Learning Path",
+    desc: "Smart recommendations adapt to your pace. Focus on gaps, accelerate strengths, track in real-time.",
+    color: "#a855f7",
+    gradient: "from-purple-500/15 to-fuchsia-500/5",
+  },
+  {
+    icon: MonitorPlay,
+    title: "Live Project Experience",
+    desc: "Work on real client briefs with team-based sprints. Build a portfolio that employers actually want.",
+    color: "#06b6d4",
+    gradient: "from-cyan-500/15 to-blue-500/5",
+  },
+  {
+    icon: GraduationCap,
+    title: "Mentor-Led Certification",
+    desc: "Get certified under senior engineers. Verified blockchain credentials recognized industry-wide.",
+    color: "#10b981",
+    gradient: "from-emerald-500/15 to-cyan-500/5",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Arjun Mehta",
+    role: "Full Stack Engineer @ TCS",
+    text: "Bravynex's internship transformed how I think about code. Real projects, real mentors — I had an offer within 3 months of completing the program.",
+    avatar: "AM",
+    color: "#3b82f6",
+  },
+  {
+    name: "Priya Sharma",
+    role: "Data Scientist @ Infosys",
+    text: "The VLSI and Data Science tracks were genuinely industry-level. Nothing else online came close to this depth.",
+    avatar: "PS",
+    color: "#a855f7",
+  },
+  {
+    name: "Rahul Nair",
+    role: "DevOps Engineer @ Wipro",
+    text: "From zero cloud experience to designing CI/CD pipelines in 8 weeks. The mentorship quality here is unmatched.",
+    avatar: "RN",
+    color: "#06b6d4",
+  },
+];
+
+// ─── 3D Canvas Placeholder (shows while lazy loading) ─────────────────────
+function CanvasLoader() {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="relative">
+        <div className="w-16 h-16 rounded-full border-2 border-blue-500/30 border-t-blue-500 animate-spin" />
+        <div className="absolute inset-2 rounded-full border-2 border-purple-500/30 border-b-purple-500 animate-spin"
+          style={{ animationDirection: "reverse", animationDuration: "0.8s" }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Landing Page Auth Section ─────────────────────────────────────────────
+function LandingAuthSection() {
+  const {
+    signInFormData, setSignInFormData,
+    signUpFormData, setSignUpFormData,
+    handleRegisterUser, handleLoginUser,
+    activeTab, handleTabChange,
+    isRegistering, isLoggingIn,
+  } = useContext(AuthContext);
+
+  function isSignInValid() {
+    return signInFormData?.userEmail !== "" && signInFormData?.password !== "";
+  }
+  function isSignUpValid() {
+    return (
+      signUpFormData?.userName?.length >= 4 &&
+      signUpFormData?.userName?.length <= 13 &&
+      signUpFormData?.userEmail !== "" &&
+      signUpFormData?.password !== "" &&
+      signUpFormData?.guardianName?.length >= 4 &&
+      signUpFormData?.guardianName?.length <= 13
+    );
+  }
+
+  const displayTab = ["signin", "signup"].includes(activeTab) ? activeTab : "signin";
+
+  return (
+    <section
+      id="join"
+      className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      style={{ background: "rgba(5,14,36,0.9)", borderTop: "1px solid rgba(59,130,246,0.08)" }}
+    >
+      {/* Background glows */}
+      <div className="orb orb-blue absolute w-[500px] h-[500px] top-0 left-1/2 -translate-x-1/2 opacity-[0.06] pointer-events-none" />
+      <div className="absolute inset-0 grid-bg opacity-30" />
+
+      <div className="max-w-5xl mx-auto relative z-10">
+        {/* Section header */}
+        <div className="text-center mb-12 fade-up">
+          <span className="section-badge mb-4 inline-flex">
+            <Zap className="w-3 h-3" />
+            Get Started Today
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black mt-4 mb-3">
+            <span style={{ color: "#f0f9ff" }}>Join </span>
+            <span style={{
+              background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>Bravynex</span>
+            <span style={{ color: "#f0f9ff" }}> for Free</span>
+          </h2>
+          <p className="text-base max-w-lg mx-auto" style={{ color: "#475569" }}>
+            Sign up in seconds. Access courses, mentors, and certificates immediately.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Left: Why join */}
+          <div className="space-y-5 fade-up">
+            <h3 className="text-xl font-bold" style={{ color: "#f0f9ff" }}>Why students choose Bravynex</h3>
+            {[
+              { icon: Rocket,       color: "#3b82f6", title: "Real internship experience",   desc: "Work on live projects with actual client deliverables" },
+              { icon: Award,        color: "#a855f7", title: "Industry certificates",         desc: "Blockchain-verified credentials recognized by top firms" },
+              { icon: Users,        color: "#06b6d4", title: "Expert mentorship",             desc: "1-on-1 guidance from senior engineers in your domain" },
+              { icon: TrendingUp,   color: "#10b981", title: "95% placement rate",           desc: "Our alumni land roles at TCS, Infosys, Wipro & more" },
+              { icon: GraduationCap,color: "#fbbf24", title: "Self-paced + structured",     desc: "Learn at your own speed with milestone-based progression" },
+            ].map(({ icon: Icon, color, title, desc }) => (
+              <div key={title} className="flex items-start gap-3">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: `${color}14`, border: `1px solid ${color}28` }}
+                >
+                  <Icon className="w-4 h-4" style={{ color }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "#e2e8f0" }}>{title}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "#475569" }}>{desc}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Social proof */}
+            <div
+              className="rounded-2xl p-4 mt-6 flex items-center gap-4"
+              style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}
+            >
+              <div className="flex -space-x-2 flex-shrink-0">
+                {["AM", "PS", "RN", "SK"].map((initials, i) => (
+                  <div key={i}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white border-2"
+                    style={{
+                      background: ["#3b82f6", "#a855f7", "#06b6d4", "#10b981"][i],
+                      borderColor: "rgba(5,14,36,0.9)",
+                    }}
+                  >
+                    {initials}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-sm font-bold" style={{ color: "#f0f9ff" }}>10,000+ interns</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3 h-3" style={{ color: "#fbbf24", fill: "#fbbf24" }} />
+                  ))}
+                  <span className="text-xs ml-1" style={{ color: "#64748b" }}>4.9 average</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Auth Form */}
+          <div className="fade-up">
+            <div
+              className="rounded-2xl overflow-hidden"
+              style={{
+                background: "rgba(10,22,40,0.85)",
+                border: "1px solid rgba(59,130,246,0.12)",
+                backdropFilter: "blur(24px)",
+              }}
+            >
+              {/* Top accent */}
+              <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent)" }} />
+
+              {/* Tab switcher */}
+              <div className="p-5 pb-0">
+                <div
+                  className="flex gap-1 p-1 rounded-xl"
+                  style={{ background: "rgba(5,14,36,0.8)", border: "1px solid rgba(59,130,246,0.1)" }}
+                >
+                  {["signin", "signup"].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => handleTabChange(t)}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-250"
+                      style={displayTab === t
+                        ? {
+                            background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                            color: "#fff",
+                            boxShadow: "0 2px 14px rgba(59,130,246,0.4)",
+                          }
+                        : { color: "#475569" }
+                      }
+                    >
+                      {t === "signin" ? "Sign In" : "Create Account"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Form body */}
+              <div className="p-5">
+                {displayTab === "signin" && (
+                  <div className="space-y-4">
+                    <div className="mb-2">
+                      <p className="text-base font-bold" style={{ color: "#f0f9ff" }}>Welcome back 👋</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#475569" }}>Sign in to continue your learning journey</p>
+                    </div>
+                    <CommonForm
+                      formControls={signInFormControls}
+                      buttonText={isLoggingIn ? "Signing in…" : "Sign In"}
+                      formData={signInFormData}
+                      setFormData={setSignInFormData}
+                      isButtonDisabled={!isSignInValid() || isLoggingIn}
+                      handleSubmit={handleLoginUser}
+                    />
+                    <div className="flex items-center justify-between pt-1">
+                      <span />
+                      <button
+                        onClick={() => handleTabChange("forgot")}
+                        className="text-xs font-medium"
+                        style={{ color: "#60a5fa" }}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {displayTab === "signup" && (
+                  <div className="space-y-4">
+                    <div className="mb-2">
+                      <p className="text-base font-bold" style={{ color: "#f0f9ff" }}>Start for free 🚀</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#475569" }}>Create your account and begin today</p>
+                    </div>
+                    <CommonForm
+                      formControls={signUpFormControls}
+                      buttonText={isRegistering ? "Creating account…" : "Create Account"}
+                      formData={signUpFormData}
+                      setFormData={setSignUpFormData}
+                      isButtonDisabled={!isSignUpValid() || isRegistering}
+                      handleSubmit={handleRegisterUser}
+                    />
+                  </div>
+                )}
+
+                {activeTab === "forgot" && (
+                  <div className="space-y-4">
+                    <div className="mb-2">
+                      <p className="text-base font-bold" style={{ color: "#f0f9ff" }}>Reset your password</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#475569" }}>Enter your email to receive a reset OTP</p>
+                    </div>
+                    <ForgotPassword onBack={handleTabChange} />
+                  </div>
+                )}
+
+                {activeTab === "reset" && (
+                  <div className="space-y-4">
+                    <div className="mb-2">
+                      <p className="text-base font-bold" style={{ color: "#f0f9ff" }}>Set new password</p>
+                    </div>
+                    <ResetPassword onBack={handleTabChange} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── MAIN PAGE ─────────────────────────────────────────────────────────────
 function StudentHomePage() {
-  const { studentViewCoursesList, setStudentViewCoursesList } =
-    useContext(StudentContext);
+  const { studentViewCoursesList, setStudentViewCoursesList } = useContext(StudentContext);
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  // Animation refs
   const pageRef = usePageTransition();
+  const heroRef = useRef(null);
 
-  // Slider state
-  const [slides, setSlides] = useState([]);
-  const [slidersLoading, setSlidersLoading] = useState(true);
 
   function handleNavigateToCoursesPage(getCurrentId) {
     sessionStorage.removeItem("filters");
-    const currentFilter = {
-      category: [getCurrentId],
-    };
-
-    sessionStorage.setItem("filters", JSON.stringify(currentFilter));
-
+    sessionStorage.setItem("filters", JSON.stringify({ category: [getCurrentId] }));
     navigate("/courses");
   }
 
@@ -52,608 +384,632 @@ function StudentHomePage() {
     if (response?.success) setStudentViewCoursesList(response?.data);
   }, [setStudentViewCoursesList]);
 
-  async function handleCourseNavigate(getCurrentCourseId) {
-    const response = await checkCoursePurchaseInfoService(
-      getCurrentCourseId,
-      auth?.user?._id
-    );
 
-    if (response?.success) {
-      if (response?.data) {
-        navigate(`/student-courses`);
-      } else {
-        navigate(`/course/details/${getCurrentCourseId}`);
-      }
-    }
-  }
-
-  // Fallback slider data (memoized to prevent re-creation)
-  const fallbackSlides = useMemo(() => {
-    const heroImages = [sliderImage1, sliderImage2, sliderImage3];
-    return [
-      {
-        id: 1,
-        badge: "Most Popular",
-        title: "Master Programming\nSkills",
-        subtitle:
-          "Build your coding expertise with hands-on projects and real-world applications.",
-        imageUrl: heroImages[0],
-        statLeft: "50,000+ students",
-        statMid: "4.8 rating",
-        statRight: "Self-paced",
-      },
-      {
-        id: 2,
-        badge: "Trending",
-        title: "Learn Backend\nEngineering",
-        subtitle:
-          "APIs, databases and deployments. From fundamentals to production.",
-        imageUrl: heroImages[1],
-        statLeft: "10+ projects",
-        statMid: "Career-ready",
-        statRight: "Mentor support",
-      },
-      {
-        id: 3,
-        badge: "New",
-        title: "Dive into Data\nScience",
-        subtitle:
-          "Statistics, Python and ML workflows with beautiful visualizations.",
-        imageUrl: heroImages[2],
-        statLeft: "150+ lessons",
-        statMid: "Hands-on",
-        statRight: "Capstone",
-      },
-    ];
-  }, []);
-
-  // Fetch sliders from API
-  const fetchSliders = useCallback(async () => {
-    try {
-      setSlidersLoading(true);
-      const response = await getAllSlidersService();
-      if (response?.success && response?.data?.length > 0) {
-        setSlides(response.data);
-      } else {
-        setSlides(fallbackSlides);
-      }
-    } catch (error) {
-      console.error("Error fetching sliders:", error);
-      setSlides(fallbackSlides);
-    } finally {
-      setSlidersLoading(false);
-    }
-  }, [fallbackSlides]);
-
-  // Separate useEffect for data fetching (runs only once)
   useEffect(() => {
     fetchAllStudentViewCourses();
-    fetchSliders();
-  }, [fetchAllStudentViewCourses, fetchSliders]);
+  }, [fetchAllStudentViewCourses]);
 
-  // Separate useEffect for animations
+  // GSAP Entrance Animations
   useEffect(() => {
-    // Play entrance animations ONLY on hard refresh (not SPA navigation)
     const navEntry = performance.getEntriesByType("navigation")[0];
     const isReload = navEntry
       ? navEntry.type === "reload"
-      : performance.navigation && performance.navigation.type === 1;
+      : performance.navigation?.type === 1;
 
-    // Page enter animation on hard refresh
-    if (isReload) {
-      pageRef.enter("fade");
-    }
+    if (isReload) pageRef.enter("fade");
 
-    // Hero section animations
-    const heroTimeline = gsap.timeline({ delay: isReload ? 0.1 : 0 });
-    heroTimeline
-      .fromTo(
-        ".hero-title",
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
-      )
-      .fromTo(
-        ".hero-subtitle",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
-        "-=0.2"
-      )
-      .fromTo(
-        ".hero-button",
-        { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.5)" },
-        "-=0.2"
-      );
+    const tl = gsap.timeline({ delay: isReload ? 0.15 : 0 });
+    tl.fromTo(".hero-badge-anim", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" })
+      .fromTo(".hero-title",      { opacity: 0, y: 50 },  { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, "-=0.3")
+      .fromTo(".hero-subtitle",   { opacity: 0, y: 24 },  { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, "-=0.4")
+      .fromTo(".hero-stats-row",  { opacity: 0, y: 20 },  { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, "-=0.3")
+      .fromTo(".hero-cta-row",    { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, "-=0.2");
 
-    // Floating background animations
-    gsap.to(".floating-bg-1", {
-      y: -20,
-      duration: 4,
-      ease: "power1.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
-
-    gsap.to(".floating-bg-2", {
-      y: 20,
-      duration: 5,
-      ease: "power1.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
-
-    // Category card animations (existing hover effects)
-    const categoryCards = document.querySelectorAll(".category-card");
-    categoryCards.forEach((card) => {
-      const hoverIn = gsap.timeline({ paused: true });
-      const hoverOut = gsap.timeline({ paused: true });
-
-      hoverIn
-        .to(card, { y: -10, scale: 1.05, duration: 0.3, ease: "power2.out" })
-        .to(
-          card.querySelector(".category-icon"),
-          {
-            rotation: 360,
-            duration: 0.6,
-            ease: "power2.out",
-          },
-          0
-        );
-
-      hoverOut
-        .to(card, { y: 0, scale: 1, duration: 0.3, ease: "power2.out" })
-        .to(
-          card.querySelector(".category-icon"),
-          {
-            rotation: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          },
-          0
-        );
-
-      card.addEventListener("mouseenter", () => hoverIn.play());
-      card.addEventListener("mouseleave", () => hoverOut.play());
-    });
-
-    // Course card animations (existing hover effects)
-    const courseCards = document.querySelectorAll(".course-card");
-    courseCards.forEach((card) => {
-      const hoverIn = gsap.timeline({ paused: true });
-      const hoverOut = gsap.timeline({ paused: true });
-
-      hoverIn
-        .to(card, { y: -15, scale: 1.02, duration: 0.3, ease: "power2.out" })
-        .to(
-          card.querySelector(".course-image"),
-          {
-            scale: 1.1,
-            duration: 0.3,
-            ease: "power2.out",
-          },
-          0
-        );
-
-      hoverOut
-        .to(card, { y: 0, scale: 1, duration: 0.3, ease: "power2.out" })
-        .to(
-          card.querySelector(".course-image"),
-          {
-            scale: 1,
-            duration: 0.3,
-            ease: "power2.out",
-          },
-          0
-        );
-
-      card.addEventListener("mouseenter", () => hoverIn.play());
-      card.addEventListener("mouseleave", () => hoverOut.play());
-    });
-
-    // Button animations (existing click effects)
-    const buttons = document.querySelectorAll(".animated-button");
-    buttons.forEach((button) => {
-      const clickAnimation = gsap.timeline({ paused: true });
-
-      clickAnimation
-        .to(button, { scale: 0.95, duration: 0.1 })
-        .to(button, { scale: 1, duration: 0.1 });
-
-      button.addEventListener("click", () => clickAnimation.play());
-    });
-
-    // NEW: ScrollTrigger for Course Categories buttons
-    if (isReload) {
-      gsap.fromTo(
-        ".category-button-animated",
-        { opacity: 0, y: 30 },
+    // Scroll fade-ups
+    gsap.utils.toArray(".fade-up").forEach((el) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 55 },
         {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: "power2.out",
-          stagger: 0.06,
-          scrollTrigger: {
-            trigger: ".course-categories-section",
-            start: "top 90%",
-            toggleActions: "play none none none",
-            once: true,
-          },
-        }
-      );
-
-      // Ensure ScrollTrigger calculates positions after images/layout load
-      const refresh = () => {
-        try {
-          ScrollTrigger.refresh();
-        } catch (error) {
-          console.warn("ScrollTrigger refresh failed:", error);
-        }
-      };
-      if (document.readyState === "complete") {
-        setTimeout(refresh, 50);
-      } else {
-        window.addEventListener("load", refresh, { once: true });
-      }
-    }
-
-    // NEW: ScrollTrigger for Featured Courses cards - "cover with one" effect
-    gsap.utils.toArray(".course-card-animated").forEach((card) => {
-      gsap.fromTo(
-        card,
-        { opacity: 0, y: 50 }, // Start from below and transparent
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: card, // Trigger for each individual card
-            start: "top 90%", // When the top of the card enters 90% of the viewport
-            toggleActions: "play none none none", // Play animation once on scroll down
-            // markers: true, // Uncomment for debugging ScrollTrigger
-          },
+          opacity: 1, y: 0, duration: 0.75, ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 87%", toggleActions: "play none none none" },
         }
       );
     });
 
-    // Cleanup function: kill timeline and all ScrollTriggers
+    gsap.utils.toArray(".stagger-grid").forEach((parent) => {
+      const kids = parent.querySelectorAll(".stagger-item");
+      gsap.fromTo(kids,
+        { opacity: 0, y: 40, scale: 0.95 },
+        {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.6, ease: "power2.out", stagger: 0.09,
+          scrollTrigger: { trigger: parent, start: "top 83%", toggleActions: "play none none none" },
+        }
+      );
+    });
+
     return () => {
-      heroTimeline.kill();
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      tl.kill();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [pageRef]); // Added pageRef to dependency array as it's used inside
-
-  const [current, setCurrent] = useState(0);
-  const isAnimatingRef = useRef(false);
-  const timeoutRef = useRef(null);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const [touchStartY, setTouchStartY] = useState(null);
-  const [touchEndY, setTouchEndY] = useState(null);
-  // Featured Courses: show 3 rows initially (approx 12 items), then load more in chunks
-  const INITIAL_FEATURED_COUNT = 12;
-  const LOAD_MORE_CHUNK = 12;
-  const [visibleFeaturedCount, setVisibleFeaturedCount] = useState(
-    INITIAL_FEATURED_COUNT
-  );
-  const canLoadMoreFeatured =
-    (studentViewCoursesList?.length || 0) > visibleFeaturedCount;
-  function handleLoadMoreFeatured() {
-    setVisibleFeaturedCount((c) => c + LOAD_MORE_CHUNK);
-  }
-
-  function resetAutoplay() {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (!slides.length) return;
-    timeoutRef.current = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
-  }
-
-  useEffect(() => {
-    resetAutoplay();
-    return () => timeoutRef.current && clearTimeout(timeoutRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current]);
-
-  function transitionTo(index) {
-    if (isAnimatingRef.current) return;
-    if (!slides.length) return;
-    isAnimatingRef.current = true;
-
-    // Instant transition without animation
-    setCurrent((index + slides.length) % slides.length);
-
-    // Small timeout to allow DOM update
-    setTimeout(() => {
-      isAnimatingRef.current = false;
-    }, 50);
-  }
-
-  function goTo(index) {
-    const target = (index + slides.length) % slides.length;
-    transitionTo(target);
-  }
-
-  function next() {
-    transitionTo(current + 1);
-  }
-
-  function prev() {
-    transitionTo(current - 1);
-  }
-
-  // Touch gesture handlers for mobile slider - only horizontal swipes
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchEndY(null);
-    setTouchStart(e.targetTouches[0].clientX);
-    setTouchStartY(e.targetTouches[0].clientY);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-    setTouchEndY(e.targetTouches[0].clientY);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd || !touchStartY || !touchEndY) return;
-
-    const distanceX = touchStart - touchEnd;
-    const distanceY = touchStartY - touchEndY;
-
-    // Only trigger swipe if horizontal movement is greater than vertical
-    if (Math.abs(distanceX) > Math.abs(distanceY)) {
-      const isLeftSwipe = distanceX > 50;
-      const isRightSwipe = distanceX < -50;
-
-      if (isLeftSwipe) {
-        next();
-      } else if (isRightSwipe) {
-        prev();
-      }
-    }
-
-    // Reset touch states
-    setTouchStart(null);
-    setTouchEnd(null);
-    setTouchStartY(null);
-    setTouchEndY(null);
-  };
+  }, [pageRef]);
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-y-auto">
-      {/* Hero Slider */}
-      <section className="px-3 sm:px-4 lg:px-8 pt-4 sm:pt-6">
-        <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-transparent overflow-hidden border-0">
-          {slidersLoading || slides.length === 0 ? (
-            <div className="text-center py-20">Loading sliders...</div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-10 items-center p-4 sm:p-6 lg:p-10">
-                {/* Left: Copy */}
-                <div className="order-2 lg:order-1">
-                  <span className="inline-flex items-center text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white font-semibold shadow-lg hero-badge">
-                    {slides[current]?.badge || "Featured"}
-                  </span>
-                  <h1 className="mt-4 sm:mt-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight whitespace-pre-line hero-title">
-                    {slides[current]?.title || ""}
-                  </h1>
-                  <p className="mt-4 sm:mt-6 text-gray-600 text-sm sm:text-base lg:text-lg max-w-xl leading-relaxed hero-subtitle">
-                    {slides[current]?.subtitle || ""}
-                  </p>
-                  <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-700">
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-700 rounded-full"></div>
-                      <span className="font-medium text-xs sm:text-sm">
-                        {slides[current]?.statLeft || ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-500 rounded-full"></div>
-                      <span className="font-medium text-xs sm:text-sm">
-                        {slides[current]?.statMid || ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-sm border border-gray-200">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full"></div>
-                      <span className="font-medium text-xs sm:text-sm">
-                        {slides[current]?.statRight || ""}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 hero-button">
-                    <Button
-                      onClick={() => navigate("/courses")}
-                      className="bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-black text-white font-semibold px-6 sm:px-8 py-2.5 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-sm sm:text-base w-full sm:w-auto animated-button"
-                    >
-                      Explore Programming
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-6 sm:px-8 py-2.5 sm:py-3 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto animated-button"
-                    >
-                      Watch Preview
-                    </Button>
-                  </div>
-                </div>
+    <div style={{ background: "var(--bg-dark)", color: "var(--text-primary)", minHeight: "100vh" }}>
 
-                {/* Right: Visual (buttons are anchored to this container for perfect alignment) */}
-                <div
-                  className="relative order-1 lg:order-2 touch-pan-y"
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  <img
-                    key={slides[current]?._id || slides[current]?.id}
-                    src={slides[current]?.imageUrl || ""}
-                    alt="E-learning hero"
-                    loading="eager"
-                    className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[420px] object-cover rounded-lg sm:rounded-xl transition-opacity duration-500 shadow-lg hero-image"
-                  />
-                  {/* Mobile Controls - Always visible on mobile */}
-                  <button
-                    onClick={prev}
-                    aria-label="Previous slide"
-                    className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
-                  >
-                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
-                      ‹
-                    </span>
-                  </button>
-                  <button
-                    onClick={next}
-                    aria-label="Next slide"
-                    className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 items-center justify-center rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 flex touch-manipulation"
-                  >
-                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-700">
-                      ›
-                    </span>
-                  </button>
-                </div>
-              </div>
+      {/* ══════════════════════════════════════════════════════
+           HERO SECTION
+      ══════════════════════════════════════════════════════ */}
+      <section
+        ref={heroRef}
+        className="relative min-h-screen flex items-center overflow-hidden"
+      >
+        {/* Background atmosphere */}
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 80% 60% at 70% 40%, rgba(59,130,246,0.07) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 20% 60%, rgba(168,85,247,0.06) 0%, transparent 60%), var(--bg-dark)",
+        }} />
 
-              {/* Dots - Enhanced for mobile */}
-              <div className="flex items-center justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6">
-                {slides.map((s, i) => (
-                  <button
-                    key={`dot-${s._id || s.id}`}
-                    onClick={() => goTo(i)}
-                    className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 touch-manipulation ${
-                      i === current
-                        ? "w-6 sm:w-8 bg-gradient-to-r from-gray-700 to-black"
-                        : "w-1.5 sm:w-2 bg-gray-300 hover:bg-gray-400"
-                    }`}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+        {/* Subtle grid */}
+        <div className="absolute inset-0 grid-bg" style={{ opacity: 0.4 }} />
+
+        {/* 3D Canvas — right side */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-full lg:w-[58%] pointer-events-none"
+          style={{ zIndex: 1 }}
+        >
+          <Suspense fallback={<CanvasLoader />}>
+            <FuturisticHeroScene />
+          </Suspense>
+          {/* Left edge fade so text stays readable */}
+          <div className="absolute inset-y-0 left-0 w-3/4 pointer-events-none"
+            style={{
+              background: "linear-gradient(90deg, var(--bg-dark) 0%, var(--bg-dark) 20%, rgba(2,6,23,0.85) 50%, transparent 100%)",
+            }} />
         </div>
-      </section>
-      <section className="py-12 px-4 lg:px-8 bg-white course-categories-section">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Course Categories
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Explore our diverse range of programming courses
+
+        {/* Hero copy — left side */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-20 pb-24">
+          <div className="max-w-xl lg:max-w-2xl">
+
+            {/* Badge
+            <div className="hero-badge-anim mb-5">
+              <span className="section-badge">
+                <Sparkles className="w-3 h-3" style={{ color: "#60a5fa" }} />
+                #1 Engineering Internship Platform
+              </span>
+            </div> */}
+
+            {/* Main heading */}
+            <h1 className="hero-title text-[2.75rem] sm:text-6xl lg:text-7xl font-black leading-[1.1] sm:leading-[1.04] tracking-tight mb-6">
+              <span style={{ color: "#f0f9ff" }}>Master </span>
+              <span style={{
+                background: "linear-gradient(135deg, #60a5fa 0%, #818cf8 40%, #c084fc 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+                Real-World
+              </span>
+              <br className="hidden sm:block" />
+              <span style={{ color: "#f0f9ff" }}> Engineering</span>
+              <br className="hidden sm:block" />
+              <span style={{
+                background: "linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+                {" "}Skills.
+              </span>
+            </h1>
+
+            {/* Sub */}
+            <p className="hero-subtitle text-sm sm:text-lg leading-relaxed mb-8 max-w-lg"
+              style={{ color: "#94a3b8" }}>
+              Hands-on internship programs built with industry leaders. Live projects,
+              expert mentors, and verified certificates — designed to get you hired.
             </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {courseCategories.map((categoryItem) => (
-              <Button
-                className="justify-start h-16 bg-white border-2 border-gray-200 hover:border-gray-400 hover:bg-gray-50 text-gray-700 hover:text-gray-900 font-semibold transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg category-button-animated"
-                variant="outline"
-                key={categoryItem.id}
-                onClick={() => handleNavigateToCoursesPage(categoryItem.id)}
+
+            {/* CTAs */}
+            <div className="hero-cta-row flex flex-col sm:flex-row gap-3 mb-10">
+              <button
+                onClick={() => navigate("/courses")}
+                className="group flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm text-white transition-all duration-300"
+                style={{
+                  background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                  boxShadow: "0 4px 24px rgba(59,130,246,0.4), 0 0 0 1px rgba(99,102,241,0.3)",
+                }}
               >
-                {categoryItem.label}
-              </Button>
+                Explore Courses
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </button>
+
+              <button
+                onClick={() => navigate("/auth?tab=signup")}
+                className="group flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-300"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#e2e8f0",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <Play className="w-4 h-4" style={{ color: "#60a5fa" }} />
+                Start for Free
+              </button>
+            </div>
+
+            {/* Inline stats */}
+            <div className="hero-stats-row flex flex-wrap gap-5">
+              {HERO_STATS.map(({ icon: Icon, value, label, color }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${color}15`, border: `1px solid ${color}30` }}>
+                    <Icon className="w-3.5 h-3.5" style={{ color }} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-black" style={{ color: "#f0f9ff" }}>{value}</span>
+                    <span className="text-xs ml-1" style={{ color: "#475569" }}>{label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom gradient */}
+        <div className="absolute bottom-0 inset-x-0 h-32 pointer-events-none"
+          style={{ background: "linear-gradient(0deg, var(--bg-dark) 0%, transparent 100%)" }} />
+      </section>
+
+
+
+      {/* ══════════════════════════════════════════════════════
+           FEATURES SECTION
+      ══════════════════════════════════════════════════════ */}
+      <section className="relative py-24 px-6 sm:px-8 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+        <div className="orb orb-blue absolute w-[500px] h-[500px] -top-40 left-1/3 opacity-[0.04] pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 fade-up">
+            <span className="section-badge mb-5 inline-flex">
+              <Zap className="w-3 h-3" />
+              What Sets Us Apart
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black mt-4 leading-tight">
+              <span style={{
+                background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>
+                Everything you need
+              </span>
+              <br className="hidden sm:block" />
+              <span style={{ color: "#f0f9ff" }}> to fast-track your career</span>
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 stagger-grid">
+            {FEATURES.map(({ icon: Icon, title, desc, color }) => (
+              <div
+                key={title}
+                className="stagger-item group relative overflow-hidden rounded-2xl p-6 cursor-pointer transition-all duration-400"
+                style={{
+                  background: "rgba(10,22,40,0.65)",
+                  border: "1px solid rgba(59,130,246,0.08)",
+                  backdropFilter: "blur(20px)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = `${color}40`;
+                  e.currentTarget.style.transform = "translateY(-8px)";
+                  e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.4), 0 0 30px ${color}15`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(59,130,246,0.08)";
+                  e.currentTarget.style.transform = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              >
+                {/* Top accent */}
+                <div className="absolute top-0 inset-x-0 h-px transition-opacity duration-300 group-hover:opacity-100 opacity-50"
+                  style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
+
+                {/* Icon */}
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: `${color}12`, border: `1px solid ${color}25` }}>
+                  <Icon className="w-6 h-6" style={{ color }} />
+                </div>
+
+                <h3 className="text-base font-bold mb-2.5" style={{ color: "#f0f9ff" }}>{title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{desc}</p>
+
+                <div className="mt-5 flex items-center gap-1.5 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ color }}>
+                  Learn more <ChevronRight className="w-3 h-3" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
-      <section className="py-16 px-4 lg:px-8 bg-gray-50 featured-courses-section">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Featured Courses
+
+      {/* ══════════════════════════════════════════════════════
+           COURSE CATEGORIES
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-24 px-6 sm:px-8 relative overflow-hidden"
+        style={{ background: "rgba(5,14,36,0.8)", borderTop: "1px solid rgba(59,130,246,0.06)" }}>
+        <div className="orb orb-purple absolute w-[400px] h-[400px] right-0 top-0 opacity-[0.05] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-14 fade-up">
+            <span className="section-badge mb-5 inline-flex">
+              <Layers className="w-3 h-3" />
+              Learning Tracks
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black mt-4 mb-4">
+              <span style={{ color: "#f0f9ff" }}>Find your </span>
+              <span style={{
+                background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>specialty</span>
             </h2>
-            <p className="text-gray-600 text-lg">
-              Discover our most popular and highly-rated courses
+            <p className="text-sm sm:text-base max-w-lg mx-auto" style={{ color: "#475569" }}>
+              12 curated technical tracks built with the latest industry requirements
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
-              studentViewCoursesList
-                .slice(0, visibleFeaturedCount)
-                .map((courseItem) => (
-                  <div
-                    key={courseItem?._id}
-                    onClick={() => handleCourseNavigate(courseItem?._id)}
-                    className="group bg-white rounded overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border-0 course-card-animated touch-manipulation"
-                  >
-                    <div className="relative">
-                      <img
-                        src={courseItem?.image}
-                        width={300}
-                        height={200}
-                        className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300 course-image"
-                      />
-                      <div className="absolute top-3 right-3">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                          <span className="text-xs font-semibold text-gray-700">
-                            Featured
-                          </span>
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                    <div className="p-4 sm:p-6">
-                      <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-gray-700 transition-colors duration-200">
-                        {courseItem?.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                        {/* <div className="w-6 h-6 bg-gradient-to-br from-gray-500 to-gray-700 rounded-full flex items-center justify-center">
-                        <span className="text-xs text-white font-bold">
-                          {courseItem?.instructorName?.charAt(0)}
-                        </span>
-                      </div>
-                      <span className="font-medium">{courseItem?.instructorName}</span> */}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                          <span className="text-xs text-gray-600 font-medium">
-                            Available
-                          </span>
-                        </div>
-                        <p className="font-bold text-xl text-gray-900">
-                          ₹
-                          {Number(courseItem?.pricing || 0).toLocaleString(
-                            "en-IN"
-                          )}
-                        </p>
-                      </div>
-                    </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 stagger-grid">
+            {courseCategories.map((cat, idx) => {
+              const Icon = categoryIconMap[cat.id] || Code2;
+              const colors = ["#3b82f6", "#a855f7", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"];
+              const c = colors[idx % colors.length];
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleNavigateToCoursesPage(cat.id)}
+                  className="stagger-item group relative flex flex-col items-center justify-center gap-2 p-5 rounded-2xl text-center transition-all duration-500 overflow-hidden min-h-[140px]"
+                  style={{
+                    background: "rgba(10,22,40,0.6)",
+                    border: "1px solid rgba(59,130,246,0.08)",
+                    backdropFilter: "blur(16px)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = `${c}40`;
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.background = `${c}08`;
+                    e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.3), 0 0 20px ${c}12`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(59,130,246,0.08)";
+                    e.currentTarget.style.transform = "";
+                    e.currentTarget.style.background = "rgba(10,22,40,0.6)";
+                    e.currentTarget.style.boxShadow = "";
+                  }}
+                >
+                  {/* Top glow line */}
+                  <div className="absolute top-0 inset-x-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: `linear-gradient(90deg, transparent, ${c}, transparent)` }} />
+
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-90 group-hover:-translate-y-1"
+                    style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
+                    <Icon className="w-5 h-5" style={{ color: c }} />
                   </div>
-                ))
-            ) : studentViewCoursesList === null ? (
-              <div className="col-span-full">
-                <SpinnerOverlay message="Loading courses..." />
-              </div>
-            ) : (
-              <div className="col-span-full text-center py-16">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">📚</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  No Courses Found
-                </h3>
-                <p className="text-gray-600">
-                  Check back later for new courses!
-                </p>
-              </div>
-            )}
+                  
+                  <div className="flex flex-col items-center gap-1 transition-all duration-500 group-hover:-translate-y-1">
+                    <span className="text-xs font-bold leading-tight" style={{ color: "#f0f9ff" }}>
+                      {cat.label}
+                    </span>
+                    <p className="max-h-0 opacity-0 group-hover:max-h-[60px] group-hover:opacity-100 transition-all duration-500 text-[10px] leading-relaxed text-gray-500 overflow-hidden px-1">
+                      {cat.description}
+                    </p>
+                  </div>
+
+                  {/* Corner accent */}
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500/5 blur-xl group-hover:bg-blue-500/10 transition-all rounded-full" />
+                </button>
+              );
+            })}
           </div>
-          {canLoadMoreFeatured ? (
-            <div className="flex justify-center mt-10">
-              <Button
-                onClick={handleLoadMoreFeatured}
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-8 py-3 transition-all duration-200 animated-button"
-              >
-                Load more
-              </Button>
-            </div>
-          ) : null}
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════
+           INTERNSHIP PLATFORM CONTENT
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-24 px-6 sm:px-8 relative overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+        <div className="orb orb-blue absolute w-[600px] h-[600px] top-1/2 -left-40 opacity-[0.05] pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left: Interactive Visual */}
+            <div className="fade-up relative order-2 lg:order-1">
+               <div className="relative aspect-square max-w-md mx-auto">
+                  {/* Decorative Rings */}
+                  <div className="absolute inset-0 border border-blue-500/10 rounded-full animate-spin-slow" />
+                  <div className="absolute inset-8 border border-purple-500/10 rounded-full animate-spin-reverse-slow" />
+                  
+                  {/* Glowing Core */}
+                  <div className="absolute inset-20 flex items-center justify-center">
+                     <div className="w-full h-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-3xl blur-3xl animate-pulse" />
+                     <div className="absolute w-32 h-32 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl flex items-center justify-center shadow-2xl z-10">
+                        <Rocket className="w-16 h-16 text-blue-500 group-hover:scale-110 transition-transform" />
+                     </div>
+                  </div>
+
+                  {/* Floating Stat Cards */}
+                  <div className="absolute -top-4 -right-4 glass-card p-4 border-white/10 animate-bounce-slow">
+                     <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-black uppercase text-gray-500">Industry Ready</p>
+                           <p className="text-sm font-bold text-white">95% Success</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="absolute bottom-10 -left-10 glass-card p-4 border-white/10 animate-pulse">
+                     <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                           <Users className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-black uppercase text-gray-500">Live Cohorts</p>
+                           <p className="text-sm font-bold text-white">100+ Active</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Right: Content Section */}
+            <div className="space-y-10 order-1 lg:order-2">
+              <div className="fade-up">
+                <span className="section-badge mb-6 inline-flex">
+                  <Shield className="w-3 h-3" />
+                  Verified Engineering Internships
+                </span>
+                <h2 className="text-3xl sm:text-6xl font-black leading-tight mt-4">
+                  <span style={{ color: "#f0f9ff" }}>Direct </span>
+                  <span style={{
+                    background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+                  }}>Career </span>
+                  <br className="hidden sm:block" />
+                  <span style={{ color: "#f0f9ff" }}>Pipeline.</span>
+                </h2>
+                <p className="text-lg mt-6" style={{ color: "#64748b" }}>
+                  Bravynex is more than just a course platform. It&apos;s a career-accelerator designed to bridge the gap between academic theory and high-stakes engineering roles.
+                </p>
+              </div>
+
+              <div className="grid gap-6 stagger-grid">
+                {[
+                  {
+                    icon: Code2,
+                    title: "Live Project Experience",
+                    desc: "Skip the toy projects. Work on actual industrial codebases with senior engineer oversight.",
+                    color: "#3b82f6"
+                  },
+                  {
+                    icon: BrainCircuit,
+                    title: "Expert Mentorship",
+                    desc: "Weekly 1-on-1 calls with domain experts from Tier-1 tech companies.",
+                    color: "#a855f7"
+                  },
+                  {
+                    icon: Award,
+                    title: "Placement Support",
+                    desc: "Direct interview referrals and resume optimization for our 50+ hiring partners.",
+                    color: "#06b6d4"
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} className="stagger-item flex gap-5 group">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110"
+                      style={{ background: `${item.color}12`, border: `1px solid ${item.color}25` }}>
+                      <item.icon className="w-6 h-6" style={{ color: item.color }} />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-white mb-1">{item.title}</h4>
+                      <p className="text-sm leading-relaxed" style={{ color: "#475569" }}>{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-6 fade-up">
+                <button
+                  onClick={() => navigate("/courses")}
+                  className="group flex items-center gap-3 px-8 py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] text-white transition-all duration-300"
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                    boxShadow: "0 4px 24px rgba(59,130,246,0.3)",
+                  }}
+                >
+                  Explore All Programs
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ══════════════════════════════════════════════════════
+           TESTIMONIALS
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-24 px-6 sm:px-8 relative overflow-hidden"
+        style={{ background: "rgba(5,14,36,0.85)", borderTop: "1px solid rgba(59,130,246,0.06)" }}>
+        <div className="orb orb-purple absolute w-[500px] h-[500px] -bottom-40 -right-20 opacity-[0.05] pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14 fade-up">
+            <span className="section-badge mb-5 inline-flex">
+              <Star className="w-3 h-3" />
+              Success Stories
+            </span>
+            <h2 className="text-4xl sm:text-5xl font-black mt-4">
+              <span style={{ color: "#f0f9ff" }}>Real results from </span>
+              <span style={{
+                background: "linear-gradient(135deg, #60a5fa, #c084fc)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>real interns</span>
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5 stagger-grid">
+            {TESTIMONIALS.map(({ name, role, text, avatar, color }) => (
+              <div
+                key={name}
+                className="stagger-item relative rounded-2xl p-6 transition-all duration-400"
+                style={{
+                  background: "rgba(10,22,40,0.7)",
+                  border: "1px solid rgba(59,130,246,0.08)",
+                  backdropFilter: "blur(16px)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = `${color}35`;
+                  e.currentTarget.style.transform = "translateY(-5px)";
+                  e.currentTarget.style.boxShadow = `0 20px 45px rgba(0,0,0,0.4), 0 0 20px ${color}10`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(59,130,246,0.08)";
+                  e.currentTarget.style.transform = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+              >
+                {/* Quote mark */}
+                <div className="text-4xl font-black mb-4 leading-none" style={{ color: `${color}40` }}>"</div>
+
+                <p className="text-sm leading-relaxed mb-6" style={{ color: "#94a3b8" }}>{text}</p>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm text-white flex-shrink-0"
+                    style={{ background: `linear-gradient(135deg, ${color}, ${color}80)` }}>
+                    {avatar}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: "#f0f9ff" }}>{name}</p>
+                    <p className="text-xs" style={{ color: "#475569" }}>{role}</p>
+                  </div>
+                </div>
+
+                {/* Stars */}
+                <div className="absolute top-5 right-5 flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3 h-3" style={{ color: "#fbbf24", fill: "#fbbf24" }} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+           CTA SECTION
+      ══════════════════════════════════════════════════════ */}
+      <section className="relative py-28 px-6 sm:px-8 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+        {/* Background */}
+        <div className="absolute inset-0 grid-bg opacity-30" />
+        <div className="orb orb-blue absolute w-[600px] h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.06] pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 70% 60% at center, rgba(59,130,246,0.04) 0%, transparent 70%)" }} />
+
+        <div className="max-w-3xl mx-auto text-center relative z-10 fade-up">
+          {/* Glowing icon */}
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8"
+            style={{
+              background: "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(168,85,247,0.2))",
+              border: "1px solid rgba(99,102,241,0.35)",
+              boxShadow: "0 0 50px rgba(59,130,246,0.2), 0 0 100px rgba(168,85,247,0.1)",
+            }}>
+            <Rocket className="w-9 h-9" style={{ color: "#60a5fa" }} />
+          </div>
+
+          <span className="section-badge mb-6 inline-flex">
+            <Zap className="w-3 h-3" />
+            Start Today — 100% Free
+          </span>
+
+          <h2 className="text-4xl sm:text-6xl font-black leading-tight mt-5 mb-6">
+            <span style={{
+              background: "linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>
+              Ready to launch
+            </span>
+            <br />
+            <span style={{ color: "#f0f9ff" }}>your career?</span>
+          </h2>
+
+          <p className="text-base sm:text-lg mb-10 max-w-lg mx-auto" style={{ color: "#64748b" }}>
+            Join over 10,000 engineering interns who turned their ambition into a career using Bravynex.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate("/auth?tab=signup")}
+              className="group flex items-center gap-2 justify-center px-9 py-4 rounded-xl font-bold text-base text-white transition-all duration-300"
+              style={{
+                background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                boxShadow: "0 4px 30px rgba(59,130,246,0.45), 0 0 0 1px rgba(99,102,241,0.3)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px) scale(1.03)";
+                e.currentTarget.style.boxShadow = "0 10px 40px rgba(59,130,246,0.6), 0 0 0 1px rgba(99,102,241,0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "0 4px 30px rgba(59,130,246,0.45), 0 0 0 1px rgba(99,102,241,0.3)";
+              }}
+            >
+              Get Started Free
+              <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />
+            </button>
+
+            <button
+              onClick={() => navigate("/courses")}
+              className="flex items-center gap-2 justify-center px-9 py-4 rounded-xl font-semibold text-base transition-all duration-300"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#94a3b8",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                e.currentTarget.style.color = "#e2e8f0";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+                e.currentTarget.style.color = "#94a3b8";
+                e.currentTarget.style.transform = "";
+              }}
+            >
+              Browse Courses
+            </button>
+          </div>
+
+          {/* Trust signals */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
+            {[
+              { icon: CheckCircle2, text: "No credit card required", color: "#4ade80" },
+              { icon: CheckCircle2, text: "Free forever plan", color: "#60a5fa" },
+              { icon: CheckCircle2, text: "Cancel anytime",  color: "#c084fc" },
+            ].map(({ icon: Icon, text, color }) => (
+              <span key={text} className="flex items-center gap-1.5 text-sm" style={{ color: "#475569" }}>
+                <Icon className="w-4 h-4" style={{ color }} />
+                {text}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

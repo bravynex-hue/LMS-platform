@@ -19,18 +19,23 @@ export function Spinner({ className, size = "default", ...props }) {
 
 export function SpinnerFullPage({ message = "Loading..." }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <Spinner size="xl" className="text-gray-700" />
-      <p className="mt-4 text-gray-600 font-medium">{message}</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#020617]">
+      <div className="relative">
+        <Spinner size="xl" className="text-blue-500" />
+        <div className="absolute inset-0 blur-xl bg-blue-500/20 rounded-full animate-pulse" />
+      </div>
+      <p className="mt-6 text-blue-400 font-bold tracking-widest uppercase text-xs animate-pulse">
+        {message}
+      </p>
     </div>
   );
 }
 
 export function SpinnerOverlay({ message = "Loading..." }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16">
-      <Spinner size="lg" className="text-gray-700" />
-      <p className="mt-4 text-gray-600 font-medium">{message}</p>
+    <div className="flex flex-col items-center justify-center py-20 bg-transparent">
+      <Spinner size="lg" className="text-blue-500" />
+      <p className="mt-4 text-blue-400/70 text-xs font-bold tracking-wider uppercase">{message}</p>
     </div>
   );
 }

@@ -15,6 +15,9 @@ import {
   ShieldCheck,
   User,
   XCircle,
+  Zap,
+  ChevronRight,
+  ExternalLink
 } from "lucide-react";
 import axiosInstance from "@/api/axiosInstance";
 
@@ -63,21 +66,22 @@ export default function CertificateVerificationPage() {
 
   if (loading) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-slate-950 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(94,96,255,0.18),transparent_45%),_radial-gradient(circle_at_bottom,_rgba(14,165,233,0.18),transparent_45%)]" />
-        <div className="relative z-10 w-full max-w-md px-6">
-          <Card className="bg-slate-900/85 border-slate-800 shadow-2xl backdrop-blur">
-            <CardContent className="py-10 flex flex-col items-center space-y-6">
+      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+        <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+        <div className="relative z-10 w-full max-w-md">
+          <Card className="glass-card border-white/10 bg-white/[0.02]">
+            <CardContent className="py-16 flex flex-col items-center space-y-8">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full border-4 border-white/10 border-t-violet-500 animate-spin" />
+                <div className="w-24 h-24 rounded-full border-4 border-blue-500/10 border-t-blue-500 animate-spin" />
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-violet-400" />
+                  <Shield className="w-8 h-8 text-blue-400" />
                 </span>
+                <div className="absolute -inset-4 bg-blue-500/10 blur-2xl rounded-full" />
               </div>
-              <div className="text-center space-y-2">
-                <p className="text-xl font-semibold text-white">Verifying certificate</p>
-                <p className="text-sm text-slate-300">
-                  Securing a trusted connection with the accreditation ledger…
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Verifying Credentials</h3>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                  Establishing secure nexus with accreditation ledger...
                 </p>
               </div>
             </CardContent>
@@ -89,35 +93,34 @@ export default function CertificateVerificationPage() {
 
   if (error) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(239,68,68,0.12),transparent_35%),radial-gradient(circle_at_80%_80%,rgba(249,115,22,0.12),transparent_35%)]" />
-        <div className="relative z-10 w-full max-w-lg">
-          <Card className="bg-slate-900/90 border border-red-400/30 shadow-2xl backdrop-blur">
-            <CardHeader className="flex flex-col items-center text-center space-y-4">
-              <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
-                <XCircle className="w-12 h-12 text-red-400" />
+      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+        <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+        <div className="relative z-10 w-full max-w-lg animate-in zoom-in-95 duration-500">
+          <Card className="glass-card border-red-500/20 bg-red-500/[0.02]">
+            <CardHeader className="flex flex-col items-center text-center space-y-4 pt-8 sm:pt-12 px-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
               </div>
-              <div>
-                <CardTitle className="text-3xl text-white">Certificate not found</CardTitle>
-                <p className="text-slate-300 mt-2">
-                  We couldn’t match the provided ID in our verification registry.
+              <div className="space-y-2 text-center">
+                <CardTitle className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-none">Signal Lost</CardTitle>
+                <p className="text-red-400/70 font-black uppercase text-[10px] tracking-widest leading-relaxed px-4">
+                   Credential Identifier not found in active registry.
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="rounded-xl border border-white/10 bg-slate-800/60 p-4 text-sm text-slate-200">
-                <p>
-                  Please confirm the certificate ID exactly as printed on the document. If you believe
-                  this is an error, contact our credentialing desk for a manual review.
+            <CardContent className="space-y-6 sm:space-y-8 p-6 sm:p-8">
+              <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-4 sm:p-5">
+                <p className="text-[10px] sm:text-xs font-medium text-gray-500 leading-relaxed italic text-center">
+                  "Please confirm the certificate ID exactly as printed. If the issue persists, 
+                  contact the administrative attache for manual verification."
                 </p>
               </div>
               <Button
                 onClick={() => navigate("/")}
-                variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
+                className="w-full bg-white text-black hover:bg-gray-200 h-12 sm:h-14 rounded-2xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/5"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Return to homepage
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                Abort & Return
               </Button>
             </CardContent>
           </Card>
@@ -127,85 +130,90 @@ export default function CertificateVerificationPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-white overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),transparent_45%),radial-gradient(circle_at_bottom,_rgba(168,85,247,0.18),transparent_45%)]" />
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 space-y-8">
-        <div className="grid gap-6 lg:grid-cols-5">
-          <Card className="lg:col-span-3 bg-slate-900/80 border-slate-800 backdrop-blur shadow-2xl">
-            <CardHeader className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 flex items-center justify-center">
-                  <Shield className="w-10 h-10 text-emerald-400" />
+    <div className="relative min-h-screen text-gray-200 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
+      {/* Background Decor */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+      </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 space-y-8 sm:space-y-12 animate-in fade-in duration-1000">
+        {/* Verification Hero Card */}
+        <div className="grid gap-6 sm:gap-10 lg:grid-cols-5">
+          <Card className="lg:col-span-3 glass-card border-white/10 bg-white/[0.02] overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
+            <CardHeader className="p-6 sm:p-10 flex flex-col gap-5 sm:gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
+                <div className="w-20 h-20 rounded-3xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                  <ShieldCheck className="w-10 h-10 sm:w-12 sm:h-12 text-emerald-400" />
                 </div>
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Verification</p>
-                  <CardTitle className="text-3xl text-white mt-1">Certificate verified</CardTitle>
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/5 border border-emerald-500/20 text-emerald-400">
+                     <Zap className="w-2.5 h-2.5" />
+                     <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] leading-none">Security Verified</span>
+                  </div>
+                  <CardTitle className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-[1.1]">Protocol Confirmed</CardTitle>
                 </div>
               </div>
-              <p className="text-slate-300">
-                This credential has been validated against our secure registry and confirmed as an
-                official issuance from BRAVYNEX Engineering.
+              <p className="text-sm sm:text-base text-gray-400 font-medium leading-relaxed max-w-2xl text-center sm:text-left">
+                This academic credential has been successfully validated against the secure ledgers of 
+                <span className="text-white font-black italic"> BRAVYNEX Engineering</span>.
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="p-6 sm:p-10 pt-0 space-y-6 sm:space-y-8">
               <div className="grid gap-4 sm:grid-cols-2">
                 <StatusTile
                   icon={ShieldCheck}
-                  label="Status"
-                  value={verification?.revoked ? "Revoked" : "Active & authentic"}
-                  accent={verification?.revoked ? "text-red-400" : "text-emerald-400"}
+                  label="Network Status"
+                  value={verification?.revoked ? "REVOKED" : "ACTIVE / AUTHENTIC"}
+                  accent={verification?.revoked ? "text-red-500" : "text-emerald-400"}
                 />
                 <StatusTile
                   icon={Award}
-                  label="Certificate ID"
+                  label="Credential ID"
                   value={verification?.certificateId}
-                  accent="text-violet-300"
+                  accent="text-blue-400"
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 pt-6 border-t border-white/5">
                 <InfoTile
                   icon={User}
-                  label="Student"
+                  label="Student Record"
                   value={verification?.studentName}
-                  highlight={verification?.studentId ? `ID • ${verification.studentId}` : null}
+                  highlight={verification?.studentId ? `NODE_REF: ${verification.studentId}` : null}
                 />
                 <InfoTile
                   icon={BookOpen}
-                  label="Course"
+                  label="Track Domain"
                   value={verification?.courseTitle}
-                  highlight={verification?.grade ? `Grade • ${verification.grade}` : null}
+                  highlight={verification?.grade ? `Performance Index: ${verification.grade}` : null}
                 />
-                {verification?.studentFatherName && (
-                  <InfoTile
-                    icon={User}
-                    label="Guardian"
-                    value={verification.studentFatherName}
-                  />
-                )}
-                {verification?.studentEmail && (
-                  <InfoTile icon={Mail} label="Email" value={verification.studentEmail} />
-                )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 bg-slate-900/70 border-slate-800 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-2xl text-white">Certification metadata</CardTitle>
-              <p className="text-sm text-slate-400">
-                Timestamped details captured at the moment of issuance.
+          {/* Metadata Sidebar */}
+          <Card className="lg:col-span-2 glass-card border-white/5 bg-white/[0.01]">
+            <CardHeader className="p-6 sm:p-8 border-b border-white/5">
+              <CardTitle className="text-xs sm:text-sm font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.3em] flex items-center gap-3">
+                 <Fingerprint className="w-4 h-4 text-purple-400" />
+                 Metadata Archive
+              </CardTitle>
+              <p className="text-[9px] sm:text-[10px] font-bold text-gray-600 uppercase tracking-widest mt-2">
+                Immutable record logs since issuance.
               </p>
             </CardHeader>
-            <CardContent className="space-y-5">
+            <CardContent className="p-6 sm:p-8 space-y-4 sm:space-y-6">
               <MetaRow
                 icon={Fingerprint}
-                label="Custom student ID"
-                value={verification?.customStudentId || verification?.studentId || "Not assigned"}
+                label="Student ID Ref"
+                value={verification?.customStudentId || verification?.studentId || "UNASSIGNED"}
               />
               <MetaRow
                 icon={CalendarDays}
-                label="Issued on"
+                label="Timestamp"
                 value={
                   issueDate
                     ? new Date(issueDate).toLocaleDateString("en-US", {
@@ -213,39 +221,46 @@ export default function CertificateVerificationPage() {
                         month: "long",
                         day: "numeric",
                       })
-                    : "Date unavailable"
+                    : "UNKNOWN"
                 }
               />
               <MetaRow
                 icon={Shield}
-                label="Issued by"
-                value={verification?.issuedBy || "BRAVYNEX ENGINEERING"}
+                label="Issuing Node"
+                value={verification?.issuedBy || "CORE_ENGINEERING_HUB"}
               />
-              <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4">
-                <p className="text-sm text-slate-300 leading-relaxed">
-                  <strong className="text-white">Verification note:</strong> All certificate IDs are
-                  validated in real time against our safeguarded issuance ledger. Any tampering or
-                  duplication attempts trigger immediate compliance alerts.
+              <div className="rounded-2xl border border-blue-500/10 bg-blue-500/5 p-5 space-y-3 mt-4 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 blur-xl rounded-full -mr-8 -mt-8" />
+                <h5 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                   <Zap className="w-3 h-3" /> Compliance Note
+                </h5>
+                <p className="text-[11px] text-gray-500 leading-relaxed font-bold uppercase tracking-tight">
+                  This record is secured via multi-layer cryptographic hashing. Any synchronization failure triggers persistent administrative alerts.
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-slate-400">
-            <p>© {new Date().getFullYear()} BRAVYNEX ENGINEERING. All rights reserved.</p>
-            <p className="mt-1 text-slate-500">
-              Certificate verification powered by multi-layer cryptographic audits.
+        {/* Footer Actions */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 pt-8 sm:pt-10 border-t border-white/5 px-4 sm:px-0">
+          <div className="space-y-2 text-center md:text-left">
+            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-gray-600 italic">
+               © {new Date().getFullYear()} BRAVYNEX ARCHITECTURES. INTEGRITY PERSISTS.
             </p>
+            <div className="flex items-center justify-center md:justify-start gap-4 text-[7px] sm:text-[9px] font-bold text-gray-700 uppercase tracking-widest">
+               <span>Secure Ledger #8829-X</span>
+               <div className="w-1 h-1 rounded-full bg-gray-800" />
+               <span>Compliance Verified</span>
+            </div>
           </div>
           <Button
             onClick={() => navigate("/")}
-            variant="outline"
-            className="border-white/20 text-white hover:bg-white/10"
+            variant="ghost"
+            className="w-full sm:w-auto border border-white/5 text-gray-500 hover:text-white hover:bg-white/5 h-12 sm:h-14 px-8 sm:px-10 rounded-2xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to homepage
+            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+            Terminate Link
           </Button>
         </div>
       </div>
@@ -255,13 +270,13 @@ export default function CertificateVerificationPage() {
 
 function StatusTile({ icon: Icon, label, value, accent }) {
   return (
-    <div className="rounded-xl border border-white/10 p-4 bg-slate-900/60">
-      <div className="flex items-center gap-3">
-        <Icon className={`w-10 h-10 ${accent || "text-white"}`} />
-        <div>
-          <p className="text-sm text-slate-400">{label}</p>
-          <p className="text-lg font-semibold text-white">{value}</p>
-        </div>
+    <div className="rounded-2xl border border-white/5 p-6 bg-white/[0.02] flex items-center gap-5 group hover:border-white/10 transition-colors">
+      <div className={`p-3 rounded-xl bg-white/5 border border-white/5 ${accent}`}>
+         <Icon className="w-8 h-8" />
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-1">{label}</p>
+        <p className={`text-lg font-black uppercase tracking-tight italic ${accent}`}>{value}</p>
       </div>
     </div>
   );
@@ -270,26 +285,33 @@ function StatusTile({ icon: Icon, label, value, accent }) {
 function InfoTile({ icon: Icon, label, value, highlight }) {
   if (!value) return null;
   return (
-    <div className="rounded-xl border border-white/10 bg-slate-900/60 p-4 space-y-2">
-      <div className="flex items-center gap-2 text-sm text-slate-400">
-        <Icon className="w-4 h-4 text-slate-300" />
+    <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-6 space-y-3 group hover:bg-white/[0.02] transition-colors">
+      <div className="flex items-center gap-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+        <Icon className="w-3.5 h-3.5 text-blue-500/60" />
         <span>{label}</span>
       </div>
-      <p className="text-lg font-semibold text-white">{value}</p>
-      {highlight && <p className="text-sm text-slate-400">{highlight}</p>}
+      <div className="space-y-1">
+         <p className="text-xl font-black text-white italic tracking-tight">{value}</p>
+         {highlight && (
+           <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest flex items-center gap-2">
+              <ChevronRight className="w-3 h-3 text-purple-500" />
+              {highlight}
+           </p>
+         )}
+      </div>
     </div>
   );
 }
 
 function MetaRow({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-center gap-3 border border-white/5 rounded-lg p-3 bg-slate-900/40">
-      <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
-        <Icon className="w-5 h-5 text-slate-200" />
+    <div className="flex items-center gap-4 border border-white/5 rounded-2xl p-4 bg-white/[0.02] group hover:border-white/10 transition-colors">
+      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
+        <Icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
       </div>
       <div>
-        <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-        <p className="text-sm font-medium text-white">{value}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-0.5">{label}</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-tight group-hover:text-white transition-colors">{value}</p>
       </div>
     </div>
   );

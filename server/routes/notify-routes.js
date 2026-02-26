@@ -6,9 +6,6 @@ const router = express.Router();
 
 // Contact form handler using Resend API
 const handleContactForm = async (req, res) => {
-  console.log("=== Contact Form Request Started ===");
-  console.log("Environment:", process.env.NODE_ENV);
-  
   try {
     const { 
       fromEmail, 
@@ -20,17 +17,6 @@ const handleContactForm = async (req, res) => {
       message, 
       subject 
     } = req.body || {};
-    
-    // Debug logging
-    console.log("=== Contact Form Data Received ===");
-    console.log("fromName:", fromName);
-    console.log("fromEmail:", fromEmail);
-    console.log("phoneNumber:", phoneNumber);
-    console.log("course:", course);
-    console.log("segment:", segment);
-    console.log("institution:", institution);
-    console.log("message:", message);
-    console.log("===================================");
     
     // Validation
     if (!message) return res.status(400).json({ success: false, message: "message is required" });

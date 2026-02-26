@@ -19,10 +19,7 @@ import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { deleteCourseService } from "@/services";
 
-// Helper function to format currency in INR
-const formatINR = (amount) => {
-  return `₹${Number(amount).toLocaleString('en-IN')}`;
-};
+const formatINR = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
 
 function InstructorCourses({ listOfCourses }) {
   const navigate = useNavigate();
@@ -33,11 +30,8 @@ function InstructorCourses({ listOfCourses }) {
   const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
   const canLoadMore = (listOfCourses?.length || 0) > visibleRows;
 
-  console.log("InstructorCourses - listOfCourses:", listOfCourses); // Add this line
-  console.log("InstructorCourses - visibleRows:", visibleRows); // Add this line
-  console.log("InstructorCourses - canLoadMore:", canLoadMore); // Add this line
-
   useEffect(() => { setVisibleRows(INITIAL_ROWS); }, [listOfCourses]);
+
   const {
     setCurrentEditedCourseId,
     setCourseLandingFormData,
@@ -46,89 +40,64 @@ function InstructorCourses({ listOfCourses }) {
     setInstructorCoursesList,
   } = useContext(InstructorContext);
 
-                           // Handle course deletion
-            const handleDeleteCourse = async (courseId, courseTitle, forceDelete = false) => {
-              if (!courseId) return;
-              
-              console.log(`Attempting to delete course: ${courseId}, force: ${forceDelete}`);
-              
-              try {
-                setDeletingCourseId(courseId);
-                
-                // Use the deleteCourseService with proper authentication
-                const response = await deleteCourseService(courseId, forceDelete);
-                
-                console.log('Delete response:', response);
-                
-                if (response?.success) {
-                  // Remove course from local state
-                  const updatedCourses = instructorCoursesList.filter(course => course._id !== courseId);
-                  setInstructorCoursesList(updatedCourses);
-                  
-                  // Close confirmation dialog
-                  setShowDeleteConfirm(null);
-                  
-                  // Show success message
-                  alert(`Course "${courseTitle}" deleted successfully!`);
-                } else {
-                  throw new Error(response?.message || "Failed to delete course");
-                }
-              } catch (error) {
-                console.error("Delete course error:", error);
-                
-                // Check if it's a student enrollment error
-                if (error.message && error.message.includes("enrolled students")) {
-                  const shouldForceDelete = confirm(
-                    `This course has enrolled students. Are you sure you want to force delete it? This will remove all student enrollments.`
-                  );
-                  
-                  if (shouldForceDelete) {
-                    // Retry with force delete
-                    await handleDeleteCourse(courseId, courseTitle, true);
-                    return;
-                  }
-                } else {
-                  alert(`Failed to delete course: ${error.message || 'Unknown error occurred'}`);
-                }
-              } finally {
-                setDeletingCourseId(null);
-              }
-            };
+  const handleDeleteCourse = async (courseId, courseTitle, forceDelete = false) => {
+    if (!courseId) return;
+    try {
+      setDeletingCourseId(courseId);
+      const response = await deleteCourseService(courseId, forceDelete);
+      if (response?.success) {
+        const updatedCourses = instructorCoursesList.filter(course => course._id !== courseId);
+        setInstructorCoursesList(updatedCourses);
+        setShowDeleteConfirm(null);
+        alert(`Course "${courseTitle}" deleted successfully!`);
+      } else {
+        throw new Error(response?.message || "Failed to delete course");
+      }
+    } catch (error) {
+      console.error("Delete course error:", error);
+      if (error.message && error.message.includes("enrolled students")) {
+        const shouldForceDelete = confirm(
+          `This course has enrolled students. Are you sure you want to force delete it? This will remove all student enrollments.`
+        );
+        if (shouldForceDelete) {
+          await handleDeleteCourse(courseId, courseTitle, true);
+          return;
+        }
+      } else {
+        alert(`Failed to delete course: ${error.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setDeletingCourseId(null);
+    }
+  };
 
-             // Confirm delete dialog
-           const confirmDelete = (courseId, courseTitle, studentCount = 0) => {
-             setShowDeleteConfirm({ id: courseId, title: courseTitle, studentCount });
-           };
+  const confirmDelete = (courseId, courseTitle, studentCount = 0) => {
+    setShowDeleteConfirm({ id: courseId, title: courseTitle, studentCount });
+  };
+
+  const navigateCreate = () => {
+    setCurrentEditedCourseId(null);
+    setCourseLandingFormData(courseLandingInitialFormData);
+    setCourseCurriculumFormData(courseCurriculumInitialFormData);
+    navigate("/instructor/create-new-course");
+  };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-100">
-          <div className="flex justify-between flex-row items-center">
+    <div className="space-y-6">
+      <Card className="border-white/5 bg-[#0f172a]/60 backdrop-blur">
+        <CardHeader className="border-b border-white/5 px-6 py-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Course Management</CardTitle>
-              <p className="text-gray-600">Create, edit, and manage your online courses</p>
+              <CardTitle className="text-xl font-black text-white tracking-tight">Course Management</CardTitle>
+              <p className="text-sm text-gray-500 mt-0.5">Create, edit, and manage your online courses</p>
             </div>
-                         <div className="flex gap-3">
-               <Button
-                 onClick={() => {
-                   setCurrentEditedCourseId(null);
-                   setCourseLandingFormData(courseLandingInitialFormData);
-                   setCourseCurriculumFormData(courseCurriculumInitialFormData);
-                   navigate("/instructor/create-new-course");
-                 }}
-                 className="p-6 bg-gradient-to-r from-gray-700 to-black hover:from-gray-800 hover:to-black text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-               >
-                 <Plus className="w-5 h-5 mr-2" />
-                 Create New Course
-               </Button>
-               
-
-               
-
-               
-
-             </div>
+            <Button
+              onClick={navigateCreate}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Course
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -136,67 +105,66 @@ function InstructorCourses({ listOfCourses }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-700 text-left">Course</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">Students</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-center">Revenue</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-right">Actions</TableHead>
+                  <TableRow className="border-white/5 hover:bg-transparent">
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider pl-6">Course</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-center">Students</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-center">Revenue</TableHead>
+                    <TableHead className="font-bold text-gray-500 text-xs uppercase tracking-wider text-right pr-6">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {listOfCourses.slice(0, visibleRows).map((course) => (
-                    <TableRow key={course?._id} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                      <TableCell className="text-left py-4">
+                    <TableRow key={course?._id} className="border-white/5 hover:bg-white/5 transition-colors">
+                      <TableCell className="py-4 pl-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center">
-                            <BookOpen className="w-6 h-6 text-white" />
+                          <div className="w-11 h-11 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="w-5 h-5 text-blue-400" />
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 text-lg">{course?.title}</div>
-                            <div className="text-sm text-gray-500">Course ID: {course?._id?.slice(-8)}</div>
+                            <div className="font-bold text-white text-[15px]">{course?.title}</div>
+                            <div className="text-xs text-gray-500 font-mono">ID: {course?._id?.slice(-8)}</div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-center py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <Users className="w-5 h-5 text-gray-700" />
-                          <span className="font-semibold text-gray-900 text-lg">{course?.students?.length || 0}</span>
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span className="font-black text-white text-base">{course?.students?.length || 0}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-center py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <IndianRupee className="w-5 h-5 text-gray-700" />
-                          <span className="font-bold text-gray-900 text-lg">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <IndianRupee className="w-4 h-4 text-emerald-500" />
+                          <span className="font-black text-emerald-400 text-base">
                             {formatINR((course?.students?.length || 0) * (course?.pricing || 0))}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right py-4">
+                      <TableCell className="text-right py-4 pr-6">
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             onClick={() => {
-                              // Pre-set the course ID in context to avoid any timing issues
                               if (typeof setCurrentEditedCourseId === "function") {
                                 setCurrentEditedCourseId(course?._id);
                               }
                               navigate(`/instructor/edit-course/${course?._id}`);
                             }}
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+                            className="border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white rounded-xl transition-all"
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
                           </Button>
-                                                             <Button 
-                                     onClick={() => confirmDelete(course._id, course.title, course.students?.length || 0)}
-                                     variant="outline" 
-                                     size="sm"
-                                     disabled={deletingCourseId === course._id}
-                                     className="border-gray-300 text-gray-800 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
-                                   >
+                          <Button
+                            onClick={() => confirmDelete(course._id, course.title, course.students?.length || 0)}
+                            variant="ghost"
+                            size="sm"
+                            disabled={deletingCourseId === course._id}
+                            className="border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-all"
+                          >
                             {deletingCourseId === course._id ? (
-                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-1"></div>
+                              <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin mr-1" />
                             ) : (
                               <Delete className="h-4 w-4 mr-1" />
                             )}
@@ -208,33 +176,27 @@ function InstructorCourses({ listOfCourses }) {
                   ))}
                 </TableBody>
               </Table>
-              {canLoadMore ? (
-                <div className="flex justify-center mt-4 pb-4">
-                  <Button
+              {canLoadMore && (
+                <div className="flex justify-center py-5">
+                  <button
                     onClick={() => setVisibleRows((n) => n + ROWS_CHUNK)}
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-8 py-3 transition-all duration-200"
+                    className="px-6 py-2 text-xs font-bold tracking-widest uppercase border border-white/10 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all"
                   >
-                    Load more courses
-                  </Button>
+                    Load more
+                  </button>
                 </div>
-              ) : null}
+              )}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-12 h-12 text-gray-400" />
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <BookOpen className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No courses yet</h3>
-              <p className="text-gray-600 mb-6">Start building your online course empire today!</p>
+              <h3 className="text-xl font-black text-white mb-2">No courses yet</h3>
+              <p className="text-gray-500 mb-7 text-sm">Start building your online course empire today!</p>
               <Button
-                onClick={() => {
-                  setCurrentEditedCourseId(null);
-                  setCourseLandingFormData(courseLandingInitialFormData);
-                  setCourseCurriculumFormData(courseCurriculumInitialFormData);
-                  navigate("/instructor/create-new-course");
-                }}
-                className="bg-gradient-to-r from-gray-700 to-black hover:from-gray-800 hover:to-black text-white font-semibold px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                onClick={navigateCreate}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Create Your First Course
@@ -244,62 +206,55 @@ function InstructorCourses({ listOfCourses }) {
         </CardContent>
       </Card>
 
-      {/* Duplicate bottom pager removed to avoid rendering two "Load more courses" buttons */}
-
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowDeleteConfirm(null)}
         >
-          <div 
-            className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+          <div
+            className="bg-[#0f172a] border border-white/10 rounded-2xl p-7 max-w-md w-full mx-4 shadow-2xl shadow-black/50"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Delete Course</h3>
-                <p className="text-sm text-gray-500">This action cannot be undone</p>
+                <h3 className="text-base font-bold text-white">Delete Course</h3>
+                <p className="text-xs text-gray-500">This action cannot be undone</p>
               </div>
             </div>
-            
-                                 <p className="text-gray-700 mb-6">
-                       Are you sure you want to delete <span className="font-semibold">&ldquo;{showDeleteConfirm.title}&rdquo;</span>? 
-                       This will permanently remove the course and all its content.
-                       {showDeleteConfirm.studentCount > 0 && (
-                         <span className="block mt-2 text-red-600 font-medium">
-                           ⚠️ This course has {showDeleteConfirm.studentCount} enrolled students. 
-                           Deleting will remove all student enrollments.
-                         </span>
-                       )}
-                     </p>
-            
+            <p className="text-gray-300 text-sm mb-6 leading-relaxed">
+              Are you sure you want to delete{' '}
+              <span className="font-bold text-white">&ldquo;{showDeleteConfirm.title}&rdquo;</span>?
+              This will permanently remove the course and all its content.
+              {showDeleteConfirm.studentCount > 0 && (
+                <span className="block mt-3 text-red-400 text-xs font-semibold bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+                  ⚠️ This course has {showDeleteConfirm.studentCount} enrolled students. All enrollments will be removed.
+                </span>
+              )}
+            </p>
             <div className="flex gap-3">
               <Button
                 onClick={() => setShowDeleteConfirm(null)}
-                variant="outline"
-                className="flex-1"
+                variant="ghost"
+                className="flex-1 border border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
                 disabled={deletingCourseId === showDeleteConfirm.id}
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => handleDeleteCourse(showDeleteConfirm.id, showDeleteConfirm.title)}
-                variant="destructive"
-                className="flex-1"
+                className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-xl font-bold transition-all"
                 disabled={deletingCourseId === showDeleteConfirm.id}
               >
                 {deletingCourseId === showDeleteConfirm.id ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin mr-2" />
                     Deleting...
                   </>
-                ) : (
-                  'Delete Course'
-                )}
+                ) : 'Delete Course'}
               </Button>
             </div>
           </div>

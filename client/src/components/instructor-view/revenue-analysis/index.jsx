@@ -1,550 +1,505 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  IndianRupee, 
-  TrendingUp, 
-  TrendingDown, 
-  BarChart3, 
+import {
+  IndianRupee,
+  TrendingUp,
+  BarChart3,
   Calendar,
   Users,
   BookOpen,
   Target,
   ArrowUpRight,
   ArrowDownRight,
-  Filter
+  Clock,
+  Zap,
+  Activity,
 } from "lucide-react";
 import PropTypes from "prop-types";
 import { useState, useMemo, useEffect, useContext } from "react";
 import { AuthContext } from "@/context/auth-context";
+import { useSocket } from "@/context/socket-context";
 import { fetchInstructorAnalyticsService } from "@/services";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-function RevenueAnalysis({ listOfCourses = [] }) {
-  const [selectedPeriod, setSelectedPeriod] = useState("monthly");
-  const [dateFilter, setDateFilter] = useState("all");
+/* ─── shared dark chart styles ─────────────────────────────────────────── */
+const GRID_COLOR   = "rgba(255,255,255,0.06)";
+const AXIS_COLOR   = "#4B5563";           // gray-600
+const TOOLTIP_STYLE = {
+  contentStyle: {
+    background: "#0f172a",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "12px",
+    color: "#f1f5f9",
+    fontSize: 13,
+  },
+  labelStyle: { color: "#94a3b8" },
+  cursor: { fill: "rgba(255,255,255,0.04)" },
+};
+
+function RealTimeRevenueAnalysis({ listOfCourses = [] }) {
   const { auth } = useContext(AuthContext);
-  const [analytics, setAnalytics] = useState(null);
-  
-  // Helper function to format currency in INR
-  const formatINR = (amount) => {
-    return `₹${Number(amount).toLocaleString('en-IN')}`;
-  };
+  const { socket, connected } = useSocket();
+  const [selectedPeriod, setSelectedPeriod] = useState("daily");
 
-  // Helper function to filter courses by date
-  const filterCoursesByDate = (courses, filter) => {
-    if (filter === "all") return courses;
-    
-    const now = new Date();
-    
-    return courses.filter(course => {
-      // Check for different possible date fields
-      const dateField = course.createdAt || course.date || course.created_at;
-      if (!dateField) {
-        console.log('Course missing date field:', course.title, 'Available fields:', Object.keys(course));
-        return false;
-      }
-      const courseDate = new Date(dateField);
-      
-      switch (filter) {
-        case "today":
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          return courseDate >= today;
-        case "week":
-          const weekAgo = new Date();
-          weekAgo.setDate(now.getDate() - 7);
-          return courseDate >= weekAgo;
-        case "month":
-          const monthAgo = new Date();
-          monthAgo.setMonth(now.getMonth() - 1);
-          return courseDate >= monthAgo;
-        case "year":
-          const yearAgo = new Date();
-          yearAgo.setFullYear(now.getFullYear() - 1);
-          return courseDate >= yearAgo;
-        default:
-          return true;
-      }
-    });
-  };
+  const formatINR = (amount) => `₹${Number(amount).toLocaleString("en-IN")}`;
+
+  const [realTimeData] = useState([]);
+  const [analytics, setAnalytics]   = useState(null);
+  const [liveStats, setLiveStats]    = useState({
+    totalRevenue: 0, totalStudents: 0,
+    todayRevenue: 0, todayStudents: 0,
+    lastEnrollment: null, lastUpdated: null,
+  });
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
     async function load() {
       if (!auth?.user?._id) return;
-      const res = await fetchInstructorAnalyticsService(auth.user._id);
-      if (mounted && res?.success) setAnalytics(res.data);
+
+      if (auth?.user?.role === "admin") {
+        const safe = Array.isArray(listOfCourses) ? listOfCourses : [];
+        const totalRevenue  = safe.reduce((s, c) => s + (c.students?.length || 0) * (c.pricing || 0), 0);
+        const totalStudents = safe.reduce((s, c) => s + (c.students?.length || 0), 0);
+        setLiveStats({ totalRevenue, totalStudents, todayRevenue: totalRevenue, todayStudents: totalStudents, lastEnrollment: null, lastUpdated: new Date().toLocaleTimeString() });
+        return;
+      }
+
+      try {
+        const res = await fetchInstructorAnalyticsService(auth.user._id);
+        if (isMounted && res?.success && res?.data) {
+          setAnalytics(res.data);
+          const today  = res.data?.dailyData?.[res.data.dailyData.length - 1];
+          const totals = res.data?.totals || {};
+          setLiveStats({
+            totalRevenue:   Number(totals.totalRevenue   || 0),
+            totalStudents:  Number(totals.totalStudents  || 0),
+            todayRevenue:   Number(today?.revenue        || 0),
+            todayStudents:  Number(today?.students       || 0),
+            lastEnrollment: res.data?.lastEnrollment     || null,
+            lastUpdated:    new Date().toLocaleTimeString(),
+          });
+        }
+      } catch (err) { console.error("Error fetching analytics:", err); }
     }
     load();
-    const id = setInterval(load, 5000);
-    return () => { mounted = false; clearInterval(id); };
-  }, [auth?.user?._id]);
+    return () => { isMounted = false; };
+  }, [auth?.user?._id, auth?.user?.role, listOfCourses]);
+
+  useEffect(() => {
+    if (!socket || !connected || !auth?.user?._id || auth?.user?.role === "admin") return;
+    const handleUpdate = (data) => {
+      if (data.instructorId !== auth.user._id) return;
+      setLiveStats((prev) => ({
+        ...prev,
+        todayRevenue:   prev.todayRevenue   + Number(data.revenue || 0),
+        todayStudents:  prev.todayStudents  + 1,
+        totalRevenue:   prev.totalRevenue   + Number(data.revenue || 0),
+        totalStudents:  prev.totalStudents  + 1,
+        lastEnrollment: { studentName: data.studentName, courseTitle: data.courseTitle, revenue: data.revenue, timestamp: data.timestamp },
+        lastUpdated:    new Date().toLocaleTimeString(),
+      }));
+      fetchInstructorAnalyticsService(auth.user._id)
+        .then((r) => { if (r?.success) setAnalytics(r.data); })
+        .catch(console.error);
+    };
+    socket.on("revenue-update", handleUpdate);
+    return () => socket.off("revenue-update", handleUpdate);
+  }, [socket, connected, auth?.user?._id, auth?.user?.role]);
 
   const revenueData = useMemo(() => {
-    // Apply date filtering to courses first
-    const filteredCourses = filterCoursesByDate(listOfCourses, dateFilter);
-    
-    if (analytics && dateFilter === "all") {
-      // Use analytics data only when no date filter is applied
-      const totals = analytics.totals || {};
-      const categoryRevenue = (analytics.categoryData || []).reduce((acc, item) => {
-        acc[item.name] = { revenue: item.value, students: item.students || 0, courses: item.courses || 0 };
-        return acc;
-      }, {});
+    if (analytics?.totals) {
+      const t = analytics.totals || {};
       return {
-        totalRevenue: Number(totals.totalRevenue || 0),
-        totalStudents: Number(totals.totalStudents || 0),
-        averageRevenuePerStudent: Number(totals.averageRevenuePerStudent || 0),
-        courseRevenue: analytics.coursePerformance?.slice(0, 5) || [],
-        monthlyData: analytics.monthlyData || [],
-        coursePerformance: analytics.coursePerformance?.slice(0, 5) || [],
-        categoryRevenue,
+        totalRevenue:            Number(t.totalRevenue            || 0),
+        totalStudents:           Number(t.totalStudents           || 0),
+        averageRevenuePerStudent:Number(t.averageRevenuePerStudent|| 0),
+        hourlyData:  analytics.hourlyData       || [],
+        dailyData:   analytics.dailyData        || [],
+        monthlyData: analytics.monthlyData      || [],
+        coursePerformance: analytics.coursePerformance || [],
+        categoryData:      analytics.categoryData      || [],
       };
     }
-    
-    // Calculate from filtered courses when date filter is applied or no analytics
-    const courseRevenue = filteredCourses.map(course => ({
-      id: course._id,
-      title: course.title,
-      students: course.students?.length || 0,
-      price: course.pricing || 0,
-      revenue: (course.students?.length || 0) * (course.pricing || 0),
-      category: course.category || "General"
+
+    const safe = Array.isArray(listOfCourses) ? listOfCourses : [];
+    if (safe.length === 0) return { totalRevenue:0, totalStudents:0, averageRevenuePerStudent:0, hourlyData:[], dailyData:[], monthlyData:[], coursePerformance:[], categoryData:[] };
+
+    const courseRevenue = safe.map((c) => ({
+      id: c._id, title: c.title || "Untitled",
+      students: c.students?.length || 0, price: c.pricing || 0,
+      revenue:  (c.students?.length || 0) * (c.pricing || 0),
+      createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+      category: c.category || "General",
     }));
-    
-    const totalRevenue = courseRevenue.reduce((sum, c) => sum + c.revenue, 0);
-    const totalStudents = courseRevenue.reduce((sum, c) => sum + c.students, 0);
-    const averageRevenuePerStudent = totalStudents > 0 ? totalRevenue / totalStudents : 0;
-    
-    // Generate monthly data based on filtered courses
+
+    const totalRevenue  = courseRevenue.reduce((s, c) => s + c.revenue,   0);
+    const totalStudents = courseRevenue.reduce((s, c) => s + c.students,  0);
     const now = new Date();
-    const monthlyData = [];
-    for (let i = 11; i >= 0; i--) {
-      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthName = monthDate.toLocaleString('en-US', { month: 'short' });
-      
-      // For filtered data, show revenue in current month only
-      const isCurrentMonth = i === 0;
-      monthlyData.push({
-        month: monthName,
-        revenue: isCurrentMonth ? totalRevenue : 0,
-        students: isCurrentMonth ? totalStudents : 0,
-      });
-    }
-    
-    // Category revenue calculation
-    const categoryRevenue = {};
-    courseRevenue.forEach(course => {
-      const category = course.category || "General";
-      if (!categoryRevenue[category]) {
-        categoryRevenue[category] = { revenue: 0, students: 0, courses: 0 };
-      }
-      categoryRevenue[category].revenue += course.revenue;
-      categoryRevenue[category].students += course.students;
-      categoryRevenue[category].courses += 1;
+
+    const dailyData = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (29 - i));
+      return { day: d.toLocaleDateString("en-US",{month:"short",day:"numeric"}), revenue: i===29?totalRevenue:0, students: i===29?totalStudents:0 };
     });
-    
+    const monthlyData = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      return { month: d.toLocaleString("en-US",{month:"short"}), revenue: i===11?totalRevenue:0, students: i===11?totalStudents:0 };
+    });
+    const hourlyData = Array.from({ length: 24 }, (_, i) => {
+      const d = new Date(now.getTime() - (23 - i) * 3600000);
+      return { hour: `${String(d.getHours()).padStart(2,"0")}:00`, revenue: i===23?totalRevenue:0, students: i===23?totalStudents:0 };
+    });
+
     return {
-      totalRevenue,
-      totalStudents,
-      averageRevenuePerStudent,
-      courseRevenue: courseRevenue.slice(0, 5),
-      monthlyData,
-      coursePerformance: courseRevenue.sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-      categoryRevenue,
+      totalRevenue, totalStudents,
+      averageRevenuePerStudent: totalStudents > 0 ? totalRevenue / totalStudents : 0,
+      hourlyData, dailyData, monthlyData,
+      coursePerformance: courseRevenue.sort((a,b)=>b.revenue-a.revenue).slice(0,10),
+      categoryData: [],
     };
-  }, [analytics, listOfCourses, dateFilter]);
+  }, [analytics, listOfCourses]);
 
-  // Calculate growth rates
-  const currentMonthRevenue = revenueData.monthlyData?.[revenueData.monthlyData.length - 1]?.revenue || 0;
-  const previousMonthRevenue = revenueData.monthlyData?.[revenueData.monthlyData.length - 2]?.revenue || 0;
-  const revenueGrowth = previousMonthRevenue > 0 
-    ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
-    : 0;
+  const chartData = selectedPeriod === "hourly"
+    ? revenueData.hourlyData
+    : selectedPeriod === "monthly"
+      ? revenueData.monthlyData
+      : revenueData.dailyData;
+  const xKey = selectedPeriod === "hourly" ? "hour" : selectedPeriod === "monthly" ? "month" : "day";
+  const xLabel = selectedPeriod === "hourly" ? "Hour" : selectedPeriod === "monthly" ? "Month" : "Day";
 
-  const currentMonthStudents = revenueData.monthlyData?.[revenueData.monthlyData.length - 1]?.students || 0;
-  const previousMonthStudents = revenueData.monthlyData?.[revenueData.monthlyData.length - 2]?.students || 0;
-  const studentGrowth = previousMonthStudents > 0 
-    ? ((currentMonthStudents - previousMonthStudents) / previousMonthStudents) * 100 
-    : 0;
-
-  // KPI Cards
   const kpiCards = [
-    {
-      title: "Total Revenue",
-      value: formatINR(revenueData.totalRevenue),
-      change: revenueGrowth,
-      icon: IndianRupee,
-      color: "from-green-500 to-emerald-600",
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600"
-    },
-    {
-      title: "Total Students",
-      value: revenueData.totalStudents.toLocaleString(),
-      change: studentGrowth,
-      icon: Users,
-      color: "from-blue-500 to-blue-600",
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "Avg Revenue/Student",
-      value: formatINR(revenueData.averageRevenuePerStudent),
-      change: 5.2,
-      icon: Target,
-      color: "from-purple-500 to-purple-600",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600"
-    },
-    {
-      title: "Active Courses",
-      value: listOfCourses.length.toString(),
-      change: 12.5,
-      icon: BookOpen,
-      color: "from-orange-500 to-orange-600",
-      bgColor: "bg-orange-50",
-      iconColor: "text-orange-600"
-    }
+    { title:"Total Revenue",       value:formatINR(revenueData.totalRevenue),              change:12.5, icon:IndianRupee, accent:"emerald", isLive:true,  liveValue:`+${formatINR(liveStats.todayRevenue)} today` },
+    { title:"Total Students",      value:revenueData.totalStudents.toLocaleString(),        change:8.3,  icon:Users,       accent:"blue",    isLive:true,  liveValue:`+${liveStats.todayStudents} today` },
+    { title:"Avg Revenue/Student", value:formatINR(revenueData.averageRevenuePerStudent),   change:5.2,  icon:Target,      accent:"purple" },
+    { title:"Active Courses",      value:listOfCourses.length.toString(),                   change:12.5, icon:BookOpen,    accent:"orange" },
   ];
 
-  // Simple Bar Chart Component
-  // PropTypes: data (array), title (string), color (string, optional)
-  // eslint-disable-next-line react/prop-types
-  const BarChart = ({ data, title, color = "blue" }) => {
-    // Add null/undefined checks and fallback data
-    const safeData = Array.isArray(data) ? data : [];
-    
-    // If no data, show a message
-    if (safeData.length === 0) {
-      return (
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-          <div className="text-center py-8 text-gray-500">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="w-8 h-8 text-gray-400" />
-            </div>
-            <p>No data available</p>
-            <p className="text-sm">Data will appear here once courses are created</p>
-          </div>
-        </div>
-      );
-    }
-
-    const maxValue = Math.max(...safeData.map(d => d.revenue || 0));
-    
-    return (
-      <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-        <div className="space-y-3">
-          {safeData.map((item, index) => (
-            <div key={index} className="space-y-1">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">{item.month}</span>
-                <span className="text-sm font-bold text-gray-900">{formatINR(item.revenue || 0)}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className={`h-3 rounded-full bg-gradient-to-r ${
-                    color === "blue" ? "from-blue-500 to-blue-600" : 
-                    color === "green" ? "from-green-500 to-green-600" :
-                    "from-purple-500 to-purple-600"
-                  }`}
-                  style={{ width: `${maxValue > 0 ? ((item.revenue || 0) / maxValue) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  const accentMap = {
+    emerald:{ bg:"bg-emerald-500/10", text:"text-emerald-400", badge:"text-emerald-400" },
+    blue:   { bg:"bg-blue-500/10",    text:"text-blue-400",    badge:"text-blue-400"    },
+    purple: { bg:"bg-purple-500/10",  text:"text-purple-400",  badge:"text-purple-400"  },
+    orange: { bg:"bg-orange-500/10",  text:"text-orange-400",  badge:"text-orange-400"  },
   };
 
-  // Simple Pie Chart Component
-  // PropTypes: data (object), title (string)
-  // eslint-disable-next-line react/prop-types
-  const PieChart = ({ data, title }) => {
-    // Add null/undefined checks and fallback data
-    const safeData = data && typeof data === 'object' ? data : {};
-    const dataEntries = Object.entries(safeData);
-    
-    // If no data, show a message
-    if (dataEntries.length === 0) {
-      return (
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-          <div className="text-center py-8 text-gray-500">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <PieChart className="w-8 h-8 text-gray-400" />
-            </div>
-            <p>No category data available</p>
-            <p className="text-sm">Create courses with categories to see revenue breakdown</p>
-          </div>
+  const darkCard = "border-white/5 bg-[#0f172a]/60 backdrop-blur";
+
+  return (
+    <div className="space-y-7">
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-black text-white flex items-center gap-3">
+            Real-Time Revenue Analysis
+            <span className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${connected ? "bg-emerald-500/10 text-emerald-400" : "bg-gray-500/10 text-gray-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-400 animate-pulse" : "bg-gray-500"}`} />
+              {connected ? "LIVE" : "OFFLINE"}
+            </span>
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Live revenue tracking and student enrollment analytics
+            {liveStats.lastUpdated && (
+              <span className="ml-2 text-emerald-500 font-medium">• Updated {liveStats.lastUpdated}</span>
+            )}
+          </p>
         </div>
-      );
-    }
-
-    const total = dataEntries.reduce((sum, [, item]) => sum + (item?.revenue || 0), 0);
-    const colors = [
-      "from-blue-500 to-blue-600",
-      "from-green-500 to-green-600", 
-      "from-purple-500 to-purple-600",
-      "from-orange-500 to-orange-600",
-      "from-pink-500 to-pink-600"
-    ];
-
-    return (
-      <div className="space-y-4">
-        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-        <div className="space-y-3">
-          {dataEntries.map(([category, item], index) => {
-            const revenue = item?.revenue || 0;
-            const percentage = total > 0 ? (revenue / total) * 100 : 0;
-            return (
-              <div key={category} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${colors[index % colors.length]}`} />
-                  <span className="text-sm font-medium text-gray-700">{category}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-gray-900">{formatINR(revenue)}</div>
-                  <div className="text-xs text-gray-500">{percentage.toFixed(1)}%</div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="bg-[#0f172a] border border-white/10 rounded-xl px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50"
+          >
+            <option value="hourly">Last 24 Hours</option>
+            <option value="daily">Last 30 Days</option>
+            <option value="monthly">Monthly</option>
+          </select>
         </div>
       </div>
-    );
-  };
 
-  // Add error boundary
-  try {
-    return (
-      <div className="p-6 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Revenue Analysis</h1>
-            <p className="text-gray-600 mt-2">Comprehensive insights into your course revenue and performance</p>
+      {/* Live Enrollment Banner */}
+      {liveStats.lastEnrollment && (
+        <div className="flex items-center gap-4 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+            <Zap className="w-5 h-5 text-emerald-400" />
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <select 
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <select 
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="yearly">Yearly</option>
-              </select>
-            </div>
+          <div className="flex-1">
+            <p className="font-bold text-white text-sm">New Enrollment: {liveStats.lastEnrollment.studentName}</p>
+            <p className="text-xs text-gray-500">Enrolled in {liveStats.lastEnrollment.courseTitle} • +{formatINR(liveStats.lastEnrollment.revenue)}</p>
           </div>
+          <p className="text-xs text-gray-600">
+            {liveStats.lastEnrollment.timestamp ? new Date(liveStats.lastEnrollment.timestamp).toLocaleTimeString() : ""}
+          </p>
         </div>
+      )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {kpiCards.map((kpi, index) => (
-          <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className={`p-3 rounded-xl ${kpi.bgColor}`}>
-                  <kpi.icon className={`h-6 w-6 ${kpi.iconColor}`} />
-                </div>
-                <div className={`flex items-center gap-1 text-sm font-medium ${
-                  kpi.change >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {kpi.change >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
-                  {Math.abs(kpi.change).toFixed(1)}%
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold text-gray-900 mb-1">{kpi.value}</div>
-              <p className="text-sm text-gray-600">{kpi.title}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <Tabs defaultValue="revenue" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="revenue" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Revenue Trend
-          </TabsTrigger>
-          <TabsTrigger value="courses" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Course Performance
-          </TabsTrigger>
-          <TabsTrigger value="categories" className="flex items-center gap-2">
-            <PieChart className="w-4 h-4" />
-            By Category
-          </TabsTrigger>
-          <TabsTrigger value="students" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Student Growth
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="revenue" className="space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                  Monthly Revenue Trend
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BarChart data={revenueData.monthlyData} title="Revenue by Month" color="blue" />
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-green-600" />
-                  Student Enrollment Trend
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BarChart 
-                  data={revenueData.monthlyData.map(d => ({ month: d.month, revenue: d.students }))} 
-                  title="Students by Month" 
-                  color="green" 
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="courses" className="space-y-6">
-          <Card className="border-0 shadow-lg bg-white">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-purple-600" />
-                Top Performing Courses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {revenueData.coursePerformance && revenueData.coursePerformance.length > 0 ? (
-                  revenueData.coursePerformance.map((course, index) => (
-                    <div key={course.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{course.title}</h4>
-                          <p className="text-sm text-gray-600">{course.students} students • {formatINR(course.price)}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-gray-900">{formatINR(course.revenue)}</div>
-                        <div className="text-sm text-gray-500">Revenue</div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p>No course performance data available</p>
-                    <p className="text-sm">Create courses to see performance metrics</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {kpiCards.map((kpi, i) => {
+          const a = accentMap[kpi.accent];
+          return (
+            <Card key={i} className={`${darkCard} hover:-translate-y-1 transition-all duration-300 hover:shadow-xl`}>
+              <CardHeader className="pb-2 pt-5 px-5">
+                <div className="flex items-center justify-between">
+                  <div className={`w-10 h-10 ${a.bg} rounded-xl flex items-center justify-center`}>
+                    <kpi.icon className={`w-5 h-5 ${a.text}`} />
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="categories" className="space-y-6">
-          <Card className="border-0 shadow-lg bg-white">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-orange-600" />
-                Revenue by Category
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PieChart data={revenueData.categoryRevenue} title="Revenue Distribution" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="students" className="space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  Student Growth Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <div className="text-4xl font-bold text-blue-600 mb-2">
-                    {studentGrowth >= 0 ? '+' : ''}{studentGrowth.toFixed(1)}%
-                  </div>
-                  <p className="text-gray-600">Month over Month Growth</p>
-                  <div className="mt-4 flex items-center justify-center gap-2">
-                    {studentGrowth >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-600" />
+                  <div className="flex items-center gap-2">
+                    {kpi.isLive && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                        <Activity className="w-2.5 h-2.5" />LIVE
+                      </span>
                     )}
-                    <span className={`text-sm font-medium ${
-                      studentGrowth >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {studentGrowth >= 0 ? 'Growing' : 'Declining'}
+                    <span className={`flex items-center gap-0.5 text-xs font-bold ${kpi.change >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {kpi.change >= 0 ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                      {Math.abs(kpi.change).toFixed(1)}%
                     </span>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent className="px-5 pb-5">
+                <div className="text-2xl font-black text-white mb-0.5">{kpi.value}</div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{kpi.title}</p>
+                {kpi.liveValue && <p className="text-xs text-emerald-500 font-semibold mt-1">{kpi.liveValue}</p>}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="realtime" className="space-y-5">
+        <TabsList className="grid w-full grid-cols-4 bg-[#0f172a]/80 border border-white/5 rounded-2xl p-1">
+          {[
+            { value:"realtime", icon:Activity,    label:"Live Data" },
+            { value:"trends",   icon:TrendingUp,  label:"Trends"    },
+            { value:"courses",  icon:BookOpen,    label:"Courses"   },
+            { value:"activity", icon:Clock,       label:"Activity"  },
+          ].map(({ value, icon: Icon, label }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="flex items-center gap-1.5 text-gray-500 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-xl text-xs font-bold transition-all"
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {/* Live Data Tab */}
+        <TabsContent value="realtime" className="space-y-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <Card className={darkCard}>
+              <CardHeader className="border-b border-white/5 px-5 py-4">
+                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-blue-400" /> Live Revenue Stream
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}   />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+                    <XAxis dataKey={xKey} stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                    <YAxis stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                    <Tooltip
+                      {...TOOLTIP_STYLE}
+                      formatter={(v) => [formatINR(Number(v)), "Revenue"]}
+                      labelFormatter={(l) => `${xLabel}: ${l}`}
+                    />
+                    <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} fill="url(#revGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-600" />
-                  Revenue per Student
+            <Card className={darkCard}>
+              <CardHeader className="border-b border-white/5 px-5 py-4">
+                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-emerald-400" /> Live Student Enrollments
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <div className="text-4xl font-bold text-green-600 mb-2">
-                    {formatINR(revenueData.averageRevenuePerStudent)}
+              <CardContent className="p-4">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+                    <XAxis dataKey={xKey} stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                    <YAxis stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                    <Tooltip
+                      {...TOOLTIP_STYLE}
+                      formatter={(v) => [Number(v), "Students"]}
+                      labelFormatter={(l) => `${xLabel}: ${l}`}
+                    />
+                    <Bar dataKey="students" fill="#10B981" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Trends Tab */}
+        <TabsContent value="trends" className="space-y-5">
+          <Card className={darkCard}>
+            <CardHeader className="border-b border-white/5 px-5 py-4">
+              <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-purple-400" /> Revenue vs Students Growth
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <ResponsiveContainer width="100%" height={380}>
+                <LineChart data={revenueData.dailyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+                  <XAxis dataKey="day" stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                  <YAxis yAxisId="left"  stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                  <YAxis yAxisId="right" orientation="right" stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                  <Tooltip
+                    {...TOOLTIP_STYLE}
+                    formatter={(v, name) => [name==="revenue"?formatINR(Number(v)):Number(v), name==="revenue"?"Revenue":"Students"]}
+                    labelFormatter={(l) => `Day: ${l}`}
+                  />
+                  <Legend wrapperStyle={{ color:"#9CA3AF", fontSize:12 }} />
+                  <Line yAxisId="left"  type="monotone" dataKey="revenue"  stroke="#3B82F6" strokeWidth={2.5} dot={false} name="Revenue (₹)" />
+                  <Line yAxisId="right" type="monotone" dataKey="students" stroke="#10B981" strokeWidth={2.5} dot={false} name="Students" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Courses Tab */}
+        <TabsContent value="courses" className="space-y-5">
+          <Card className={darkCard}>
+            <CardHeader className="border-b border-white/5 px-5 py-4">
+              <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-purple-400" /> Top Performing Courses
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 space-y-5">
+              {revenueData.coursePerformance.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={revenueData.coursePerformance.slice(0,5)} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+                      <XAxis type="number" stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                      <YAxis dataKey="title" type="category" width={130} stroke={AXIS_COLOR} tick={{ fill:"#6B7280", fontSize:11 }} />
+                      <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [formatINR(Number(v)), "Revenue"]} />
+                      <Bar dataKey="revenue" fill="#8B5CF6" radius={[0,4,4,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="space-y-2 mt-2">
+                    {revenueData.coursePerformance.map((course, idx) => (
+                      <div key={course.id} className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/8 rounded-xl transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400 font-black text-sm">{idx+1}</div>
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{course.title}</h4>
+                            <p className="text-xs text-gray-500">{course.students} students • {formatINR(course.price)}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-black text-emerald-400 text-base">{formatINR(course.revenue)}</div>
+                          <div className="text-xs text-gray-600">Revenue</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-gray-600">Average Revenue per Student</p>
-                  <div className="mt-4 bg-green-50 rounded-lg p-4">
-                    <p className="text-sm text-green-800">
-                      This metric helps you understand the value each student brings to your business.
-                    </p>
+                </>
+              ) : (
+                <div className="text-center py-14">
+                  <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="w-8 h-8 text-purple-400" />
                   </div>
+                  <p className="text-gray-400 font-semibold">No course data yet</p>
+                  <p className="text-sm text-gray-600 mt-1">Create courses to see performance metrics</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Activity Tab */}
+        <TabsContent value="activity" className="space-y-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <Card className={darkCard}>
+              <CardHeader className="border-b border-white/5 px-5 py-4">
+                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-400" /> Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {realTimeData.slice(0,10).map((event) => (
+                    <div key={event.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                      <div className="w-8 h-8 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                        <Users className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-sm truncate">{event.studentName}</p>
+                        <p className="text-xs text-gray-500 truncate">Enrolled in {event.courseTitle}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-bold text-emerald-400 text-sm">+{formatINR(event.revenue)}</p>
+                        <p className="text-xs text-gray-600">{event.timestamp.toLocaleTimeString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {realTimeData.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <Clock className="w-7 h-7 text-blue-400" />
+                      </div>
+                      <p className="text-gray-400 font-semibold text-sm">No recent activity</p>
+                      <p className="text-xs text-gray-600 mt-1">Enrollments will appear here in real-time</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className={darkCard}>
+              <CardHeader className="border-b border-white/5 px-5 py-4">
+                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-emerald-400" /> Live Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-7">
+                <div className="text-center">
+                  <div className="text-4xl font-black text-emerald-400 mb-1">{formatINR(liveStats.todayRevenue)}</div>
+                  <p className="text-sm text-gray-500">Today&apos;s Revenue</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-black text-blue-400 mb-1">{liveStats.todayStudents}</div>
+                  <p className="text-sm text-gray-500">Today&apos;s Enrollments</p>
+                </div>
+                <div className={`rounded-2xl p-4 ${connected ? "bg-emerald-500/5 border border-emerald-500/20" : "bg-white/5 border border-white/10"}`}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Zap className={`w-4 h-4 ${connected ? "text-emerald-400" : "text-gray-600"}`} />
+                    <span className={`font-bold text-sm ${connected ? "text-emerald-400" : "text-gray-500"}`}>
+                      {connected ? "Live Updates Active" : "Live Updates Offline"}
+                    </span>
+                  </div>
+                  <p className={`text-xs ${connected ? "text-emerald-600" : "text-gray-600"}`}>
+                    {connected ? "Real-time updates via WebSocket connection." : "Reconnecting to live updates..."}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -553,28 +508,8 @@ function RevenueAnalysis({ listOfCourses = [] }) {
       </Tabs>
     </div>
   );
-  } catch (error) {
-    console.error("RevenueAnalysis Error:", error);
-    return (
-      <div className="p-6 space-y-8">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <TrendingUp className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Revenue Analysis Error</h2>
-          <p className="text-gray-600 mb-4">There was an error loading the revenue analysis.</p>
-          <p className="text-sm text-gray-500">Please try refreshing the page or contact support if the issue persists.</p>
-          <div className="mt-4 p-4 bg-gray-100 rounded-lg text-left">
-            <p className="text-sm font-mono text-gray-700">Error: {error.message}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 }
 
-RevenueAnalysis.propTypes = {
-  listOfCourses: PropTypes.array,
-};
+RealTimeRevenueAnalysis.propTypes = { listOfCourses: PropTypes.array };
 
-export default RevenueAnalysis;
+export default RealTimeRevenueAnalysis;
