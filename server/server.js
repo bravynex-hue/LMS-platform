@@ -32,10 +32,7 @@ const notifyRoutes = require("./routes/notify-routes");
 const secureInstructorRoutes = require("./routes/instructor-routes/secure-instructor-routes");
 const instructorLiveSessionRoutes = require("./routes/instructor-routes/live-session-routes");
 const studentLiveSessionRoutes = require("./routes/student-routes/live-session-routes");
-const studentInternshipTaskRoutes = require("./routes/student-routes/internship-task-routes");
 const studentMessagingRoutes = require("./routes/student-routes/messaging-routes");
-const instructorInternshipRoutes = require("./routes/instructor-routes/internship-routes");
-const instructorInternshipTaskRoutes = require("./routes/instructor-routes/internship-task-routes");
 const instructorMessagingRoutes = require("./routes/instructor-routes/messaging-routes");
 const instructorQuizRoutes = require("./routes/instructor-routes/quiz-routes");
 const studentQuizRoutes = require("./routes/student-routes/quiz-routes");
@@ -262,7 +259,6 @@ app.use((req, res, next) => {
       req.path.startsWith('/student/course-progress/') ||
       req.path.startsWith('/student/course-progress/certificate/') ||
       req.path.startsWith('/student/live-sessions/') ||
-      req.path.startsWith('/student/internships/') ||
       req.path.startsWith('/student/messages/') ||
       // Skip CSRF for media upload endpoints (they handle their own security)
       req.path.startsWith('/media/upload') ||
@@ -271,7 +267,6 @@ app.use((req, res, next) => {
       req.path.startsWith('/instructor/course/') ||
       req.path.startsWith('/instructor/live-sessions/') ||
       req.path.startsWith('/instructor/quizzes/') ||
-      req.path.startsWith('/instructor/internships/') ||
       req.path.startsWith('/instructor/messages/') ||
       // Skip CSRF for secure instructor endpoints (bearer auth only)
       req.path.startsWith('/secure/instructor/') ||
@@ -333,10 +328,7 @@ app.use("/notify", notifyRoutes);
 app.use("/secure/instructor", secureInstructorRoutes);
 app.use("/instructor/live-sessions", instructorLiveSessionRoutes);
 app.use("/student/live-sessions", studentLiveSessionRoutes);
-app.use("/student/internships", studentInternshipTaskRoutes);
 app.use("/student/messages", studentMessagingRoutes);
-app.use("/instructor/internships", instructorInternshipRoutes);
-app.use("/instructor/internships", instructorInternshipTaskRoutes);
 app.use("/instructor/messages", instructorMessagingRoutes);
 app.use("/instructor/quizzes", instructorQuizRoutes);
 app.use("/student/quizzes", studentQuizRoutes);

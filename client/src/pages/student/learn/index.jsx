@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardTitle, CardFooter } from "@/components/ui/card";
 import { MessageCircle, Send, X, Trash2, CheckCircle, Download, Award } from "lucide-react";
-import { fetchStudentViewCourseDetailsService, listProgramSessionsStudentService, downloadCertificateService, joinLiveSessionService, checkCertificateEligibilityService, getStudentQuizForCourseService, submitStudentQuizAnswersService, getStudentInternshipTasksService, submitInternshipTaskService, sendMessageToInstructorService, getConversationWithInstructorService, clearConversationService } from "@/services";
+import { fetchStudentViewCourseDetailsService, listProgramSessionsStudentService, downloadCertificateService, joinLiveSessionService, checkCertificateEligibilityService, getStudentQuizForCourseService, submitStudentQuizAnswersService, sendMessageToInstructorService, getConversationWithInstructorService, clearConversationService } from "@/services";
 import { useAuth } from "@/context/auth-context";
 import { useSocket } from "@/context/socket-context";
 
@@ -32,13 +32,6 @@ function LearnPage() {
   const [mySubmission, setMySubmission] = useState(null);
   const [answers, setAnswers] = useState(Array.from({ length: 10 }).map(() => null));
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
-  const [internshipTasks, setInternshipTasks] = useState([]);
-  const [loadingTasks, setLoadingTasks] = useState(false);
-  const [showTaskSubmitDialog, setShowTaskSubmitDialog] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [taskSubmissionText, setTaskSubmissionText] = useState("");
-  const [submissionLinks, setSubmissionLinks] = useState({ github: "", project: "", other: "" });
-  const [submissionFiles, setSubmissionFiles] = useState([]);
 
   useEffect(() => {
     async function load() {
@@ -47,7 +40,6 @@ function LearnPage() {
       if (res?.success) setCourse(res.data);
       const sess = await listProgramSessionsStudentService(id);
       if (sess?.success) setSessions(sess.data || []);
-      loadInternshipTasks();
     }
     load();
   }, [id]);
@@ -78,55 +70,7 @@ function LearnPage() {
     loadQuiz();
   }, [id]);
 
-  async function loadInternshipTasks() {
-    if (!id) return;
-    setLoadingTasks(true);
-    try {
-      const res = await getStudentInternshipTasksService(id);
-      if (res?.success) {
-        const tasksWithSubmissionStatus = (res.data || []).map(task => ({
-          ...task,
-          hasSubmitted: task.submissions?.some(s => s.studentId === auth?.user?._id)
-        }));
-        setInternshipTasks(tasksWithSubmissionStatus);
-      }
-    } catch (error) {
-      console.error("Error loading internship tasks:", error);
-    } finally {
-      setLoadingTasks(false);
-    }
-  }
-
-  async function handleTaskSubmit(e) {
-    e.preventDefault();
-    if (!selectedTask || !taskSubmissionText.trim()) {
-      alert("Please provide submission details");
-      return;
-    }
-    
-    try {
-      // Build submission data
-      const submissionData = {
-        submissionText: taskSubmissionText,
-        links: submissionLinks,
-        fileNames: submissionFiles.map(f => f.name),
-      };
-
-      const res = await submitInternshipTaskService(selectedTask._id, submissionData);
-      if (res?.success) {
-        alert("Task submitted successfully!");
-        setShowTaskSubmitDialog(false);
-        setTaskSubmissionText("");
-        setSubmissionLinks({ github: "", project: "", other: "" });
-        setSubmissionFiles([]);
-        setSelectedTask(null);
-        loadInternshipTasks();
-      }
-    } catch (error) {
-      console.error("Error submitting task:", error);
-      alert(error?.response?.data?.message || "Failed to submit task");
-    }
-  }
+  // Internship task APIs removed – assignments tab now focuses on quizzes only.
 
   // Messaging functions
   async function loadMessages() {
@@ -488,85 +432,7 @@ function LearnPage() {
           )}
 
           {activeTab === "assignments" && (
-            <div className="space-y-6">
-              {/* Internship Tasks Section */}
-              <Card className="glass-card border-white/5">
-                <CardHeader className="border-b border-white/5 px-8 py-6">
-                  <CardTitle className="text-base font-black uppercase tracking-[0.2em] flex items-center gap-2 text-orange-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)]" />
-                    Neural Tasks
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-8">
-                  {loadingTasks ? (
-                    <div className="flex justify-center py-12">
-                      <div className="w-8 h-8 border-2 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
-                    </div>
-                  ) : internshipTasks.length === 0 ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">No directives assigned.</p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-4">
-                      {internshipTasks.map((task) => (
-                        <div key={task._id} className="p-6 bg-white/[0.03] border border-white/5 rounded-2xl space-y-4 hover:border-orange-500/30 transition-all">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="space-y-1">
-                              {task.phase && (
-                                <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full border border-orange-400/20">
-                                  Phase {task.phase}
-                                </span>
-                              )}
-                              <h4 className="font-black text-white text-lg uppercase tracking-tight">{task.title}</h4>
-                            </div>
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                              task.priority === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                              task.priority === 'medium' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                              'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                            }`}>
-                              {task.priority || 'standard'}
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-400 font-medium leading-relaxed">
-                            {task.description}
-                          </p>
-
-                          {task.projectTask && (
-                            <div className="rounded-xl bg-orange-500/5 border border-orange-500/20 p-4">
-                              <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Project task</p>
-                              <p className="text-sm text-gray-300 font-medium leading-relaxed">{task.projectTask}</p>
-                            </div>
-                          )}
-
-                          <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-white/5 gap-4">
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                              Deadline: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Awaiting sync'}
-                            </span>
-                            {task.hasSubmitted ? (
-                              <div className="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-tighter bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
-                                <CheckCircle className="w-4 h-4" />
-                                Submission Locked
-                              </div>
-                            ) : (
-                              <Button 
-                                onClick={() => {
-                                  setSelectedTask(task);
-                                  setShowTaskSubmitDialog(true);
-                                }}
-                                className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-black uppercase tracking-tighter h-10 px-6 shadow-lg shadow-orange-500/20"
-                              >
-                                Commit Files
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
+          <div className="space-y-6">
               {/* Quiz Section */}
               <Card className="glass-card border-white/5">
                 <CardHeader className="border-b border-white/5 px-8 py-6">
@@ -722,92 +588,6 @@ function LearnPage() {
           )}
         </div>
       </div>
-
-      {/* Task Submission Modal - Dark Refactor */}
-      {showTaskSubmitDialog && (
-        <div className="fixed inset-0 bg-[#020617]/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <Card className="max-w-2xl w-full glass-card border-white/10 shadow-3xl">
-            <CardHeader className="border-b border-white/5 p-6 flex flex-row items-center justify-between">
-              <CardTitle className="text-xl font-black text-white uppercase italic">Submit Deployment</CardTitle>
-              <button 
-                onClick={() => setShowTaskSubmitDialog(false)}
-                className="p-2 hover:bg-white/5 rounded-xl text-gray-500 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </CardHeader>
-            <CardContent className="p-8 space-y-6">
-              <form onSubmit={handleTaskSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Operation Briefing *</label>
-                  <textarea
-                    required
-                    value={taskSubmissionText}
-                    onChange={(e) => setTaskSubmissionText(e.target.value)}
-                    placeholder="Document your technical implementation and methodology..."
-                    rows={4}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all outline-none"
-                  />
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Source Cluster (GitHub)</label>
-                    <Input
-                      type="url"
-                      value={submissionLinks.github}
-                      onChange={(e) => setSubmissionLinks({ ...submissionLinks, github: e.target.value })}
-                      placeholder="https://github.com/..."
-                      className="bg-white/[0.03] border-white/10 text-white rounded-xl h-11"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Live Endpoint</label>
-                    <Input
-                      type="url"
-                      value={submissionLinks.project}
-                      onChange={(e) => setSubmissionLinks({ ...submissionLinks, project: e.target.value })}
-                      placeholder="https://..."
-                      className="bg-white/[0.03] border-white/10 text-white rounded-xl h-11"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                     <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none">Attachment Protocol</p>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={(e) => setSubmissionFiles(Array.from(e.target.files || []))}
-                    className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:transition-all mb-2"
-                  />
-                  <p className="text-[10px] text-gray-600 font-medium">Supported payloads: PDF, DOCX, ZIP, IMAGES. Max 50MB.</p>
-                </div>
-
-                <div className="flex gap-3 justify-end pt-4 border-t border-white/5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setShowTaskSubmitDialog(false)}
-                    className="text-gray-400 hover:text-white hover:bg-white/5 rounded-xl font-bold"
-                  >
-                    Abort
-                  </Button>
-                  <Button 
-                    type="submit"
-                    className="bg-orange-600 hover:bg-orange-500 text-white rounded-xl h-11 px-8 font-black uppercase tracking-widest shadow-lg shadow-orange-500/20"
-                  >
-                    Initialize Upload
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Floating Comms Terminal - Dark Refactor */}
       <div className="fixed bottom-8 right-8 z-[60]">

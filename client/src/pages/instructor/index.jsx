@@ -1,7 +1,6 @@
 import InstructorCourses from "@/components/instructor-view/courses";
 import InstructorLiveSessionsPage from "@/pages/instructor/live-sessions";
 import InstructorCertificatesPage from "@/pages/instructor/certificates";
-import InternshipTasksPage from "@/pages/instructor/evaluation";
 import CommunicationPage from "@/pages/instructor/communication";
 import InstructorFeedbackSupportPage from "@/pages/instructor/feedback-support";
 import { AuthContext } from "@/context/auth-context";
@@ -13,7 +12,6 @@ import {
   BookOpen, 
   Video, 
   Award, 
-  Briefcase, 
   MessageCircle, 
   HelpCircle,
 } from "lucide-react";
@@ -22,7 +20,6 @@ const INSTRUCTOR_MENU_ITEMS = [
   { id: "courses", label: "My Courses", icon: BookOpen },
   { id: "live", label: "Live Sessions", icon: Video },
   { id: "certificates", label: "Certificates", icon: Award },
-  { id: "internships", label: "Internship Tasks", icon: Briefcase },  // maps to evaluation page
   { id: "communication", label: "Communication", icon: MessageCircle },
   { id: "feedback", label: "Feedback & Support", icon: HelpCircle },
 ];
@@ -63,8 +60,6 @@ function InstructorDashboardpage() {
         return <InstructorCourses listOfCourses={filteredCourses} />;
       case "live":
         return <InstructorLiveSessionsPage />;
-      case "internships":
-        return <InternshipTasksPage />;
       case "communication":
         return <CommunicationPage />;
       case "certificates":

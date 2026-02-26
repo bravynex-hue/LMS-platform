@@ -69,8 +69,7 @@ function StudentViewCommonHeader() {
             <img
               src="/images/logo.png"
               alt="Bravynex Engineering"
-              className="h-12 w-auto object-contain"
-              style={{ maxHeight: '48px', maxWidth: '200px' }}
+              style={{ maxHeight: '80px', maxWidth: '250px' }}
             />
           </Link>
 

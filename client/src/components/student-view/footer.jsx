@@ -74,19 +74,9 @@ function Footer() {
         <div className="lg:col-span-1">
           {/* Logo mark */}
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #a855f7)" }}>
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-black tracking-tight"
-              style={{
-                background: "linear-gradient(135deg, #60a5fa, #c084fc)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>
-              BRAVYNEX
-            </span>
+           
+           <img src="/images/logo.png" alt="BravyNex Logo" className="w-48 h-20 object-contain" />
+            
           </div>
 
           <p className="text-sm font-semibold mb-1" style={{ color: "#94a3b8" }}>

@@ -1,5 +1,4 @@
 const Order = require("../../models/Order");
-const InternshipProgram = require("../../models/InternshipProgram");
 const User = require("../../models/User");
 
 // Get all transactions (admin only) - combines course orders and internship enrollments
@@ -19,11 +18,6 @@ const getAllTransactions = async (req, res) => {
       .populate("userId", "userName userEmail")
       .populate("courseId", "title")
       .sort({ orderDate: -1, createdAt: -1 })
-      .lean();
-
-    // Get all internship programs with students
-    const internships = await InternshipProgram.find({})
-      .populate("instructorId", "userName userEmail")
       .lean();
 
     // Transform orders into transaction format
@@ -56,50 +50,10 @@ const getAllTransactions = async (req, res) => {
       };
     });
 
-    // Transform internship enrollments into transaction format
-    const internshipTransactions = [];
-    for (const internship of internships) {
-      if (internship.students && internship.students.length > 0 && internship.pricing > 0) {
-        // Get all unique student IDs
-        const studentIds = [...new Set(internship.students.map(s => s.studentId).filter(Boolean))];
-        
-        // Fetch all student details at once
-        const studentUsers = await User.find({ _id: { $in: studentIds } })
-          .select("userName userEmail _id")
-          .lean();
-        
-        // Create student map
-        const studentMap = {};
-        studentUsers.forEach(user => {
-          studentMap[user._id.toString()] = {
-            userName: user.userName,
-            userEmail: user.userEmail,
-          };
-        });
-
-        for (const student of internship.students) {
-          const studentInfo = studentMap[student.studentId?.toString()] || {};
-          
-          internshipTransactions.push({
-            _id: `${internship._id}_${student.studentId}`,
-            studentName: studentInfo.userName || student.studentName || "Unknown",
-            studentEmail: studentInfo.userEmail || student.studentEmail || "",
-            type: "internship",
-            itemName: internship.title || "Unknown Internship",
-            amount: internship.pricing || 0,
-            status: "completed", // Internship enrollments are considered completed
-            date: student.enrolledAt || internship.createdAt || new Date(),
-            paymentMethod: "enrollment",
-            paymentId: null,
-            orderId: null,
-            internshipId: internship._id,
-          });
-        }
-      }
-    }
+    // (internship transactions removed – internships feature deprecated)
 
     // Combine and sort all transactions
-    const allTransactions = [...courseTransactions, ...internshipTransactions].sort(
+    const allTransactions = courseTransactions.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
 
@@ -151,9 +105,6 @@ const exportTransactionsReport = async (req, res) => {
       .sort({ orderDate: -1, createdAt: -1 })
       .lean();
 
-    const internships = await InternshipProgram.find({})
-      .populate("instructorId", "userName userEmail")
-      .lean();
 
     const courseTransactions = orders.map((order) => {
       const studentName = order.userId?.userName || order.userName || "Unknown";
@@ -179,44 +130,8 @@ const exportTransactionsReport = async (req, res) => {
       };
     });
 
-    const internshipTransactions = [];
-    for (const internship of internships) {
-      if (internship.students && internship.students.length > 0 && internship.pricing > 0) {
-        // Get all unique student IDs
-        const studentIds = [...new Set(internship.students.map(s => s.studentId).filter(Boolean))];
-        
-        // Fetch all student details at once
-        const studentUsers = await User.find({ _id: { $in: studentIds } })
-          .select("userName userEmail _id")
-          .lean();
-        
-        // Create student map
-        const studentMap = {};
-        studentUsers.forEach(user => {
-          studentMap[user._id.toString()] = {
-            userName: user.userName,
-            userEmail: user.userEmail,
-          };
-        });
-
-        for (const student of internship.students) {
-          const studentInfo = studentMap[student.studentId?.toString()] || {};
-          
-          internshipTransactions.push({
-            studentName: studentInfo.userName || student.studentName || "Unknown",
-            studentEmail: studentInfo.userEmail || student.studentEmail || "",
-            type: "internship",
-            itemName: internship.title || "Unknown Internship",
-            amount: internship.pricing || 0,
-            status: "completed",
-            date: student.enrolledAt || internship.createdAt || new Date(),
-            paymentMethod: "enrollment",
-          });
-        }
-      }
-    }
-
-    const allTransactions = [...courseTransactions, ...internshipTransactions].sort(
+    // Since internships feature removed, only course transactions remain
+    const allTransactions = courseTransactions.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
 

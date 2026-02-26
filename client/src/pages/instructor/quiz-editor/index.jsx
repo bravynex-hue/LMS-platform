@@ -99,8 +99,8 @@ function InstructorQuizEditorPage() {
             <span className="hidden sm:inline">Back</span>
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Quiz Editor</h1>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">Create and manage quiz questions (10 questions)</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Quiz Editor</h1>
+            <p className="text-xs sm:text-sm mt-1 text-gray-400">Create and manage quiz questions (10 questions)</p>
           </div>
           {quizExists && (
             <Button 
@@ -126,7 +126,7 @@ function InstructorQuizEditorPage() {
           <Button 
             onClick={handleSave} 
             disabled={saving}
-            className="bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-800 hover:to-gray-700 flex items-center gap-2"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 flex items-center gap-2"
           >
             {saving ? (
               <>
@@ -169,7 +169,7 @@ function InstructorQuizEditorPage() {
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
             {questions.map((q, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-xl p-4 sm:p-5 bg-gray-50 hover:shadow-md transition-shadow">
+              <div key={idx} className="border border-white/10 rounded-xl p-4 sm:p-5 bg-[#0a122d] hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white font-bold text-sm sm:text-base">{idx + 1}</span>
@@ -177,7 +177,7 @@ function InstructorQuizEditorPage() {
                   <Label className="text-sm sm:text-base font-semibold text-gray-900">Question {idx + 1}</Label>
                 </div>
                 <Input
-                  className="mb-3 sm:mb-4 text-sm sm:text-base"
+                  className="mb-3 sm:mb-4 text-sm sm:text-base bg-[#0c1025]"
                   value={q.questionText}
                   onChange={e => updateQuestion(idx, { questionText: e.target.value })}
                   placeholder="Enter question text"
@@ -205,7 +205,7 @@ function InstructorQuizEditorPage() {
                           value={opt} 
                           onChange={e => updateOption(idx, oIdx, e.target.value)} 
                           placeholder={`Option ${oIdx + 1}`}
-                          className={`flex-1 text-sm sm:text-base ${q.correctIndex === oIdx ? 'bg-green-50 border-green-200' : ''}`}
+                          className={`flex-1 text-sm sm:text-base ${q.correctIndex === oIdx ? 'bg-green-900/20 border-green-600' : ''}`}
                         />
                         {q.correctIndex === oIdx && (
                           <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
@@ -225,7 +225,7 @@ function InstructorQuizEditorPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg sm:text-xl">Student Submissions</CardTitle>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm text-gray-400 mt-1">
                   {submissions.length > 0 ? `${submissions.length} submission${submissions.length > 1 ? 's' : ''}` : 'No submissions yet'}
                 </p>
               </div>
@@ -235,8 +235,8 @@ function InstructorQuizEditorPage() {
             {Array.isArray(submissions) && submissions.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr className="text-left border-b border-gray-200">
+                  <thead className="bg-[#0a122d]">
+                    <tr className="text-left border-b border-white/10">
                       <th className="p-3 font-semibold text-gray-700">Student</th>
                       <th className="p-3 font-semibold text-gray-700">Score</th>
                       <th className="p-3 font-semibold text-gray-700">Submitted At</th>
@@ -245,7 +245,7 @@ function InstructorQuizEditorPage() {
                   <tbody>
                     {submissions.map((s) => (
                       <tr key={s._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="p-3 text-gray-900">{s.studentName || s.studentId}</td>
+                        <td className="p-3 text-gray-100">{s.studentName || s.studentId}</td>
                         <td className="p-3">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                             s.score >= 7 ? 'bg-green-100 text-green-800' : 
@@ -255,7 +255,7 @@ function InstructorQuizEditorPage() {
                             {s.score} / 10
                           </span>
                         </td>
-                        <td className="p-3 text-gray-600 text-xs sm:text-sm">{new Date(s.createdAt || s.submittedAt).toLocaleString()}</td>
+                        <td className="p-3 text-gray-400 text-xs sm:text-sm">{new Date(s.createdAt || s.submittedAt).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -263,10 +263,10 @@ function InstructorQuizEditorPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">📝</span>
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl text-gray-400">📝</span>
                 </div>
-                <p className="text-sm text-gray-600">No submissions yet.</p>
+                <p className="text-sm text-gray-400">No submissions yet.</p>
                 <p className="text-xs text-gray-500 mt-1">Student submissions will appear here once they complete the quiz.</p>
               </div>
             )}
