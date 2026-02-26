@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 
 // Resend API configuration
-const RESEND_API_KEY = process.env.RESEND_API_KEY || "re_P5R9xtaR_PunmmxtCDa4XrAaUXKmCXpzJ";
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ""; // leave blank in development if you don't have one
 const RESEND_API_URL = "https://api.resend.com/emails";
 // Resend requires onboarding@resend.dev for testing or your verified domain
 const FROM_EMAIL = process.env.FROM_EMAIL || "no-reply@bravynex.in";
@@ -23,6 +23,16 @@ async function sendAdminContactEmail({
 }) {
   console.log("📧 [RESEND] Sending contact form email...");
   
+  // if no API key is configured we simply log the data and return success
+  if (!RESEND_API_KEY) {
+    console.warn("⚠️ [RESEND] No API key found, skipping actual send (development mode)");
+    console.log("📨 email data", { fromEmail, fromName, phoneNumber, course, segment, institution, message, subject });
+    return {
+      messageId: "dev-contact-" + Date.now(),
+      success: true,
+      method: "console"
+    };
+  }
   try {
     // Process values
     const displayName = (fromName && fromName.trim() !== '') ? fromName : 'Not provided';
