@@ -3,13 +3,9 @@ import {
   LogOut, 
   Menu, 
   ChevronLeft, 
-  ChevronRight, 
   Search, 
-  Calendar,
   Bell,
-  User,
-  Settings,
-  HelpCircle
+  Settings
 } from "lucide-react";
 import { AuthContext } from "@/context/auth-context";
 import { useNavigate } from "react-router-dom";

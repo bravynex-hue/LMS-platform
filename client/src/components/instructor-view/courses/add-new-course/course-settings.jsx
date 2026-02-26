@@ -2,14 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InstructorContext } from "@/context/instructor-context";
 import { mediaUploadService } from "@/services";
 import { useContext, useState } from "react";
-import { Settings, Image, Target, ImageIcon } from "lucide-react";
+import { Settings, Image } from "lucide-react";
 import { SecureInstructorFileUpload } from "@/components/security/SecureInstructorForm";
 
 function CourseSettings() {
   const {
     courseLandingFormData,
     setCourseLandingFormData,
-    mediaUploadProgress,
     setMediaUploadProgress,
   } = useContext(InstructorContext);
 
