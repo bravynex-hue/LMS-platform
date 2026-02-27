@@ -64,11 +64,8 @@ export const initialSignUpFormData = {
 
 export const languageOptions = [
   { id: "english", label: "English" },
-  { id: "spanish", label: "Spanish" },
-  { id: "french", label: "French" },
-  { id: "german", label: "German" },
-  { id: "arabic", label: "Arabic" },
   { id: "malayalam", label: "Malayalam" },
+  { id: "kannada", label: "Kannada" },
 ];
 
 export const courseLevelOptions = [
