@@ -7,8 +7,7 @@ const Course = require("../../models/Course");
 const scheduleSession = async (req, res) => {
   try {
     const {
-      internshipProgramId,
-      courseId, // preferred
+      courseId,
       instructorId,
       instructorName,
       topic,
@@ -18,8 +17,8 @@ const scheduleSession = async (req, res) => {
       meetingLink: providedMeetingLink,
     } = req.body;
 
-    if (!instructorId || !topic || !startTime || !(courseId || internshipProgramId)) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    if (!instructorId || !topic || !startTime || !courseId) {
+      return res.status(400).json({ success: false, message: "Missing required fields (courseId required)" });
     }
 
     // validate time is in future
@@ -32,8 +31,7 @@ const scheduleSession = async (req, res) => {
     }
 
     // validate course exists and owned by instructor
-    const courseRefId = courseId || internshipProgramId;
-    const course = await Course.findById(courseRefId);
+    const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
@@ -46,7 +44,7 @@ const scheduleSession = async (req, res) => {
     const moderatorLink = meetingLink;
 
     const session = await LiveSession.create({
-      internshipProgramId: courseRefId,
+      internshipProgramId: courseId,
       instructorId,
       instructorName: instructorName || course.instructorName,
       topic,

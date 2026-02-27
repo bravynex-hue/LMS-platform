@@ -73,11 +73,11 @@ function Footer() {
         {/* Brand column */}
         <div className="lg:col-span-1">
           {/* Logo mark */}
-          <div className="flex items-center gap-2 mb-4">
+          {/* <div className="flex items-center gap-2 mb-4">
            
-           <img src="/images/logo.png" alt="BravyNex Logo" className="w-48 h-20 object-contain" />
+           <img src="/images/logo.png" alt="BravyNex Logo" style={{ maxHeight: '120px', maxWidth: '200px', objectFit: 'contain', transition: 'transform 0.2s'}} />
             
-          </div>
+          </div> */}
 
           <p className="text-sm font-semibold mb-1" style={{ color: "#94a3b8" }}>
             BRAVYNEX ENGINEERING

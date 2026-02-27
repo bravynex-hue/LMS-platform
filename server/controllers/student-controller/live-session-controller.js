@@ -3,6 +3,7 @@ const LiveSession = require("../../models/LiveSession");
 const listSessionsForProgram = async (req, res) => {
   try {
     const { programId } = req.params;
+    // programId is now treated as courseId since internship programs are removed
     const sessions = await LiveSession.find({ internshipProgramId: programId }).sort({ startTime: 1 });
     res.status(200).json({ success: true, data: sessions });
   } catch (error) {

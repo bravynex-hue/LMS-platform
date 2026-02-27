@@ -91,7 +91,7 @@ axiosInstance.interceptors.request.use(
     const isMediaUploadEndpoint = /\/media\/(upload|bulk-upload)/.test(url);
     
     // Check if this is an instructor course endpoint (excluded from CSRF)
-    const isInstructorCourseEndpoint = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/internships\//.test(url) || /\/instructor\/messages\//.test(url);
+    const isInstructorCourseEndpoint = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/messages\//.test(url);
     
     // Check if this is a student order endpoint (excluded from CSRF)
     const isStudentOrderEndpoint = /\/student\/order\//.test(url);
@@ -157,7 +157,7 @@ axiosInstance.interceptors.response.use(
     const isNotifyContact = /\/notify\/contact-admin($|\?|\/)/.test(url);
     const isVideoProgress = /\/course-progress\//.test(url) || /\/student\/course/.test(url);
     const isCourseRelated = /\/course\//.test(url) || /\/student\//.test(url);
-    const isInstructorCourse = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/internships\//.test(url) || /\/instructor\/messages\//.test(url);
+    const isInstructorCourse = /\/instructor\/course\//.test(url) || /\/instructor\/live-sessions\//.test(url) || /\/instructor\/messages\//.test(url);
     const isStudentOrder = /\/student\/order\//.test(url);
     const isSecureInstructor = /\/secure\/instructor\//.test(url);
     const isAdminEndpoint = /\/admin\//.test(url);

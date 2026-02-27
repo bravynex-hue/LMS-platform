@@ -119,23 +119,4 @@ export async function submitStudentQuizAnswersService(courseId, { studentId, stu
   return data;
 }
 
-// Internship tasks
-export async function getMyInternshipProgramsService() {
-  const { data } = await axiosInstance.get(`/student/internships/my-programs`);
-  return data;
-}
 
-export async function getStudentInternshipTasksService(programId) {
-  const { data } = await axiosInstance.get(`/student/internships/${programId}/tasks`);
-  return data;
-}
-
-export async function submitInternshipTaskService(taskId, submissionData) {
-  const { data } = await axiosInstance.post(`/student/internships/tasks/${taskId}/submit`, submissionData);
-  return data;
-}
-
-export async function getTaskSubmissionService(taskId) {
-  const { data } = await axiosInstance.get(`/student/internships/tasks/${taskId}/submission`);
-  return data;
-}

@@ -150,34 +150,4 @@ export async function deleteCourseQuizService(courseId) {
   return data;
 }
 
-// Internship programs - instructor
-export async function createInternshipProgramService(payload) {
-  const { data } = await axiosInstance.post(`/instructor/internships/create`, payload);
-  return data;
-}
 
-export async function listInstructorProgramsService(instructorId) {
-  const { data } = await axiosInstance.get(`/instructor/internships/list/${instructorId}`);
-  return data;
-}
-
-// Internship tasks - instructor
-export async function createInternshipTaskService(programId, taskData) {
-  const { data } = await axiosInstance.post(`/instructor/internships/${programId}/tasks`, taskData);
-  return data;
-}
-
-export async function getInternshipTasksService(programId) {
-  const { data } = await axiosInstance.get(`/instructor/internships/${programId}/tasks`);
-  return data;
-}
-
-export async function updateInternshipTaskService(taskId, taskData) {
-  const { data } = await axiosInstance.put(`/instructor/internships/tasks/${taskId}`, taskData);
-  return data;
-}
-
-export async function deleteInternshipTaskService(taskId) {
-  const { data } = await axiosInstance.delete(`/instructor/internships/tasks/${taskId}`);
-  return data;
-}

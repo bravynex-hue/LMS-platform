@@ -85,7 +85,11 @@ function AuthPage() {
             alt="Bravynex Engineering"
             className="w-full h-auto object-contain"
             style={{
-              maxHeight: '80px',
+              maxHeight: '120px',
+              maxWidth: '200px',
+              objectFit: 'contain',
+              transition: 'transform 0.2s',
+              marginTop: '10px',
               animation: 'slideLeft 4s ease-in-out infinite'
             }}
           />
@@ -134,13 +138,13 @@ function AuthPage() {
           style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)" }} />
 
         {/* Mobile logo (larger) */}
-        <a href="/home" className="flex items-center mb-8 lg:hidden"
+        <a href="/home" className="flex items-center justify-center mb-8 lg:hidden"
            style={{ position: 'relative' }}>
           <img
             src="/images/logo.png"
             alt="Bravynex Engineering"
             className="h-16 w-full object-contain"
-            style={{ maxHeight: '100px', animation: 'slideLeft 4s ease-in-out infinite' }}
+            style={{ maxHeight: '120px', maxWidth: '200px', objectFit: 'contain', transition: 'transform 0.2s', animation: 'slideLeft 4s ease-in-out infinite' }}
           />
         </a>
 
