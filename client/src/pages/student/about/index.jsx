@@ -1,41 +1,456 @@
-import { 
-  Building2,
-  Target, 
-  Eye,
-  CheckCircle,
-  Lightbulb,
-  Zap,
-  Globe,
-  Rocket,
-  Users,
-  Linkedin,
-  Github
-} from "lucide-react";
+
+
+// import React from "react";
+// import { Zap, Building2, Target, Users, Linkedin, Github, Rocket, Globe, Eye, Lightbulb } from "lucide-react";
+
+// // const TEAM = [
+// //   { id: "sahal", name: "Mohammed Sahal", role: "Lead Developer", photo: "/images/team/sahal.jpg", bio: "Lead Developer and Product Architect specialized in building scalable, high-performance systems. I bridge the gap between complex engineering and intuitive product design.", socials: { linkedin: "https://www.linkedin.com/in/mohammedsahalpk/", github: "https://github.com/Mohsahal" } },
+// //    { id: "rohith", name: "Mr. Rohith AR", role: "Chief Executive Officer", photo: "/images/team/rohith.jpg", bio: "", socials: {} },
+// //   { id: "likhith", name: "Mr. Likhith Kumar K", role: "Administrative Officer", photo: "/images/team/likhith-kumar.jpg", bio: "", socials: {} },
+// //   { id: "vaibhav", name: "Mr. Vaibhav", role: "Security Analyst", photo: "/images/team/vaibhav.jpg", bio: "", socials: {} },
+// //   { id: "nireeksha", name: "Ms. Nireeksha", role: "Technical Assistant", photo: "/images/team/IMG_1506.JPG", bio: "", socials: {} },
+// //   { id: "canice", name: "Ms. Canice C N", role: "Digital Marketing Head", photo: "/images/team/canice.jpg", bio: "", socials: {} },
+// //   { id: "akul", name: "Mr. Akul N S", role: "Manager", photo: "/images/team/akul.jpg", bio: "", socials: {} },
+// //   { id: "tony", name: "Mr. Tony Alex M", role: "Marketing Manager", photo: "/images/team/tony.jpg", bio: "", socials: {} },
+// //   { id: "ashwin", name: "Mr. Ashwin N R", role: "Managing Director", photo: "/images/team/ashwin.jpg", bio: "", socials: {} },
+ 
+// // ];
+
+// const TEAM = [
+//   { 
+//     id: "sahal", 
+//     name: "Mohammed Sahal PK", 
+//     role: "Lead Developer", 
+//     photo: "/images/team/sahal.jpg", 
+//     bio: "Lead Developer and Product Architect specialized in building scalable, high-performance systems. I bridge the gap between complex engineering and intuitive product design.", 
+//     socials: { linkedin: "https://www.linkedin.com/in/mohammedsahalpk/", github: "https://github.com/Mohsahal" } 
+//   },
+//   { 
+//     id: "rohith", 
+//     name: "Mr. Rohith AR", 
+//     role: "Chief Executive Officer", 
+//     photo: "/images/team/Rohith.jpeg", 
+//     bio: "Visionary leader driving the strategic direction of Bravynex through innovative business models. I am focused on fostering industrial growth and building global partnerships to empower engineers. My goal is to redefine how technology bridges the gap between dreams and reality.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "ashwin", 
+//     name: "Mr. Ashwin N R", 
+//     role: "Managing Director", 
+//     photo: "/images/team/Ashwin.jpeg", 
+//     bio: "Dedicated to operational excellence and organizational growth. Ashwin ensures that the company's mission aligns with industry standards and long-term sustainable development.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "likhith", 
+//     name: "Mr. Likhith Kumar K", 
+//     role: "Administrative Officer", 
+//     photo: "/images/team/Likhith.png", 
+//     bio: "Streamlining internal operations and organizational workflows. Likhith ensures a seamless environment for both the team and students to thrive and achieve excellence.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "vaibhav", 
+//     name: "Mr. Vaibhav", 
+//     role: "Security Analyst", 
+//     photo: "/images/team/Vaibhav.jpeg", 
+//     bio: "Expert in cybersecurity and systems integrity. Vaibhav focuses on safeguarding digital assets and training students on the critical importance of modern data protection.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "canice", 
+//     name: "Ms. Canice C N", 
+//     role: "Digital Marketing Head", 
+//     photo: "/images/team/Canice.jpeg", 
+//     bio: "Strategist behind our digital presence and brand identity. Canice leverages data-driven marketing to connect our innovative solutions with the global technology community.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "akul", 
+//     name: "Mr. Akul N S", 
+//     role: "Manager", 
+//     photo: "/images/team/Akul.jpeg", 
+//     bio: "Overseeing project lifecycles and team coordination. Akul ensures that every departmental goal is met with precision, efficiency, and a high standard of quality control.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "tony", 
+//     name: "Mr. Tony Alex M", 
+//     role: "Marketing Manager", 
+//     photo: "/images/team/Tony.jpeg", 
+//     bio: "Driving outreach and student engagement initiatives. Tony focuses on expanding our network and ensuring our educational programs reach those who need them most.", 
+//     socials: {} 
+//   },
+//   { 
+//     id: "nireeksha", 
+//     name: "Ms. Nireeksha", 
+//     role: "Technical Assistant", 
+//     photo: "/images/team/Nireeksha.jpeg", 
+//     bio: "Providing vital technical support and assisting in development projects. Nireeksha ensures that laboratory and project environments are optimized for student success.", 
+//     socials: {} 
+//   }
+// ];
+
+// function TeamCard({ member }) {
+//   return (
+//     <div className="group relative">
+//       <div className="absolute -inset-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500" />
+//       <div className="relative glass-card p-8 flex flex-col items-center text-center">
+//         <div className="w-32 h-32 rounded-2xl overflow-hidden mb-6 border-2 border-white/10 group-hover:border-blue-500/50 transition-colors">
+//           <img src={member.photo} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+//         </div>
+//         <h3 className="text-xl font-black text-white mb-1">{member.name}</h3>
+//         <p className="text-blue-400 text-sm font-bold tracking-widest uppercase mb-4">{member.role}</p>
+//         {member.bio ? <p className="text-gray-400 text-sm leading-relaxed mb-6">{member.bio}</p> : <div className="h-6 mb-6" />}
+//         <div className="flex gap-4">
+//           {member.socials?.linkedin && (
+//             <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110">
+//               <Linkedin className="w-4 h-4" />
+//             </a>
+//           )}
+//           {member.socials?.github && (
+//             <a href={member.socials.github} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110">
+//               <Github className="w-4 h-4" />
+//             </a>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function AboutPage() {
+//   return (
+//     <div className="min-h-screen text-gray-200" style={{ background: "var(--bg-dark, #0a0a0a)" }}>
+//       {/* Background elements */}
+//       <div className="orb orb-blue absolute w-[800px] h-[800px] -top-96 -left-96 opacity-[0.03] pointer-events-none" />
+//       <div className="orb orb-purple absolute w-[600px] h-[600px] bottom-0 right-0 opacity-[0.03] pointer-events-none" />
+//       <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none" />
+
+//       {/* Hero Section */}
+//       <div className="relative pt-32 pb-20 px-6 lg:px-12 text-center">
+//         <div className="max-w-4xl mx-auto">
+//           <span className="section-badge mb-6 inline-flex items-center gap-2">
+//             <Zap className="w-3 h-3" />
+//             Empowering Future Engineers
+//           </span>
+//           <h2 className="text-3xl sm:text-6xl font-black leading-tight mt-5 mb-6">
+//             <span style={{
+//               background: "linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)",
+//               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+//             }}>
+//               Our Journey &
+//             </span>
+//             <br className="hidden sm:block" />
+//             <span style={{ color: "#f0f9ff" }}> Innovation</span>
+//           </h2>
+//           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+//             Bravynex is a forward-thinking product and service-based company dedicated to delivering quality solutions that bridge the gap between academia and industry.
+//           </p>
+//         </div>
+//       </div>
+
+//       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pb-24">
+        
+//         {/* About & Objectives Grid */}
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
+//           <div className="glass-card p-8 group">
+//             <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+//               style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)" }}>
+//               <Building2 className="h-6 w-6 text-blue-400" />
+//             </div>
+//             <h2 className="text-2xl font-bold mb-4 text-white">About Bravynex</h2>
+//             <div className="space-y-4 text-gray-400 leading-relaxed">
+//               <p>
+//                 Product and service-based company dedicated to delivering quality solutions that meet customer needs across hardware and software domains.
+//               </p>
+//               <p>
+//                 Officially registered under the Ministry of Micro, Small and Medium Enterprises (MSME), Government of India, ensuring reliability and institutional excellence.
+//               </p>
+//             </div>
+//           </div>
+
+//           <div className="glass-card p-8 group">
+//             <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+//               style={{ background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.25)" }}>
+//               <Target className="h-6 w-6 text-purple-400" />
+//             </div>
+//             <h2 className="text-2xl font-bold mb-4 text-white">Our Objectives</h2>
+//             <div className="space-y-4 text-gray-400 leading-relaxed">
+//               <p>
+//                 To empower individuals with the skills and knowledge needed to excel in the tech industry by providing specialized training programs and real-world project exposure.
+//               </p>
+//               <p>
+//                 Focused on upskilling talent in IT and non-IT sectors, helping them secure dream placements through hands-on practice.
+//               </p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Registered Under Section */}
+//         <div className="glass-card p-10 mb-24 relative overflow-hidden">
+//           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[80px] -z-10" />
+//           <h2 className="text-3xl font-bold text-center text-white mb-10">Accredited & Recognized</h2>
+//           <p className="text-gray-400 leading-relaxed max-w-4xl mx-auto text-center mb-12">
+//             Registered under MSME and NSDC, we design impactful courses affiliated with <span className="text-blue-400 font-semibold">Visveswaraya Technological University (VTU)</span>. Our curriculum stays dynamic, blending industry expertise with innovation to help learners achieve meaningful career progress.
+//           </p>
+          
+//           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
+//             {[
+//               { id: 'nsdc', label: 'NSDC' },
+//               { id: 'msme', label: 'MSME' },
+//               { id: 'vtu', label: 'VTU' },
+//               { id: 'skill-india', label: 'Skill India' }
+//             ].map((logo) => (
+//               <div key={logo.id} className="flex flex-col items-center gap-3">
+//                 <div className="w-24 h-24 rounded-2xl flex items-center justify-center p-4"
+//                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
+//                   <img 
+//                     src={`/images/${logo.id}.png`} 
+//                     alt={logo.label} 
+//                     className="h-full w-full object-contain"
+//                   />
+//                 </div>
+//                 <span className="text-xs font-bold tracking-widest uppercase text-gray-600">{logo.label}</span>
+//               </div>
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Feature Sections */}
+//         <div className="space-y-32 mb-24">
+//           <div className="flex flex-col lg:flex-row items-center gap-12">
+//             <div className="flex-1 space-y-6">
+//               <span className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-widest uppercase">
+//                 <Rocket className="w-4 h-4" /> Mentorship
+//               </span>
+//               <h3 className="text-3xl font-black text-white">Expert Trainer Network</h3>
+//               <p className="text-gray-400 leading-relaxed text-lg">
+//                 Our trainers are industry veterans with <span className="text-white font-bold">over 15 years of practical experience</span>. They bring deep domain expertise, real-world case studies, and modern teaching methodologies to ensure you gain skills that are actually in demand.
+//               </p>
+//             </div>
+//             <div className="w-full lg:w-1/3 group">
+//               <div className="relative">
+//                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+//                 <img 
+//                   src="/images/pic4.webp" 
+//                   alt="Expert Trainer" 
+//                   className="relative rounded-2xl w-full object-cover border border-white/10"
+//                 />
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="flex flex-col lg:flex-row-reverse items-center gap-12">
+//             <div className="flex-1 space-y-6">
+//               <span className="flex items-center gap-2 text-purple-400 font-bold text-sm tracking-widest uppercase">
+//                 <Globe className="w-4 h-4" /> Success
+//               </span>
+//               <h3 className="text-3xl font-black text-white">Proven Track Record</h3>
+//               <p className="text-gray-400 leading-relaxed text-lg">
+//                 We take pride in having <span className="text-white font-bold">successfully trained over 500+ students</span> who are now working at leading technology firms. Our learners appreciate the flexibility, practical focus, and the personalized career support that transforms their aspirations into reality.
+//               </p>
+//             </div>
+//             <div className="w-full lg:w-1/3 group">
+//               <div className="relative">
+//                 <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+//                 <img 
+//                   src="/images/pic2.webp" 
+//                   alt="Student Success" 
+//                   className="relative rounded-2xl w-full object-cover border border-white/10"
+//                 />
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Vision & Mission */}
+//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-24">
+//           <div className="glass-card p-10 relative group border-t-2 border-blue-500/20">
+//             <div className="flex items-center gap-4 mb-6">
+//               <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500/10 border border-blue-500/20">
+//                 <Eye className="h-6 w-6 text-blue-400" />
+//               </div>
+//               <h2 className="text-2xl font-black text-white">Our Vision</h2>
+//             </div>
+//             <p className="text-gray-400 leading-relaxed text-lg">
+//               To be a global leader in delivering innovative products and reliable services that empower businesses and enrich lives through technology.
+//             </p>
+//           </div>
+
+//           <div className="glass-card p-10 relative group border-t-2 border-purple-500/20">
+//             <div className="flex items-center gap-4 mb-6">
+//               <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
+//                 <Lightbulb className="h-6 w-6 text-purple-400" />
+//               </div>
+//               <h2 className="text-2xl font-black text-white">Our Mission</h2>
+//             </div>
+//             <p className="text-gray-400 leading-relaxed text-lg">
+//               To create exceptional value for customers through quality products and personalized services. We foster lifelong innovation and integrity in every project.
+//             </p>
+//           </div>
+//         </div>
+
+//         {/* Leadership & Team Section */}
+//         <div className="mb-32">
+//           <div className="text-center mb-16">
+//             <span className="section-badge mb-4 inline-flex items-center gap-2">
+//               <Users className="w-3 h-3" />
+//               Our Leadership
+//             </span>
+//             <h2 className="text-3xl sm:text-4xl font-black text-white px-4">The Minds Behind <span className="text-blue-400">Bravynex</span></h2>
+//           </div>
+
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+//             {TEAM.map((member) => (
+//               <TeamCard key={member.id} member={member} />
+//             ))}
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default AboutPage;
+
+
+
+import React from "react";
+import { Zap, Building2, Target, Users, Linkedin, Github, Rocket, Globe, Eye, Lightbulb } from "lucide-react";
+
+const TEAM = [
+ { 
+    id: "sahal", 
+    name: "Mohammed Sahal PK", 
+    role: "Lead Developer", 
+    photo: "/images/team/sahal.jpg", 
+    bio: "Lead Developer and Product Architect focused on engineering high-performance, scalable systems that drive business growth. This role involves transforming complex technical requirements into elegant, user-centric digital products while leveraging modern tech stacks to deliver robust solutions that meet the highest possible industry standards and performance benchmarks.", 
+    socials: { 
+      linkedin: "https://www.linkedin.com/in/mohammedsahalpk/", 
+      github: "https://github.com/Mohsahal" 
+    } 
+  },
+  { 
+    id: "rohith", 
+    name: "Mr. Rohith AR", 
+    role: "Chief Executive Officer", 
+    photo: "/images/team/Rohith.jpeg", 
+    bio: "Visionary leader driving the strategic direction of Bravynex through innovative business models. Rohith focuses on fostering industrial growth and building global partnerships to empower future engineers. He is dedicated to creating a transformative ecosystem where technology and education meet.", 
+    socials: {} // No socials
+  },
+  { 
+    id: "ashwin", 
+    name: "Mr. Ashwin N R", 
+    role: "Managing Director", 
+    photo: "/images/team/Ashwin.jpeg", 
+    bio: "Dedicated to operational excellence and sustainable organizational growth within the tech industry. Ashwin ensures that the company's mission aligns with global standards and long-term development. He leads with a commitment to quality and institutional integrity for all our students.", 
+    socials: {} // No socials
+  },
+  { 
+    id: "likhith", 
+    name: "Mr. Likhith Kumar K", 
+    role: "Administrative Officer", 
+    photo: "/images/team/Likhith.png", 
+    bio: "Streamlining internal operations and organizational workflows to maintain peak corporate efficiency. Likhith ensures a seamless environment for both the team and students to thrive and achieve excellence. He manages core administrative pillars that uphold the company’s daily success.", 
+    socials: {} 
+  },
+  { 
+    id: "vaibhav", 
+    name: "Mr. Vaibhav", 
+    role: "Security Analyst", 
+    photo: "/images/team/Vaibhav.jpeg", 
+    bio: "Expert in cybersecurity and systems integrity focused on protecting critical digital infrastructure. Vaibhav safeguards corporate assets while training students on the vital importance of modern data protection. He ensures every project delivered by the firm meets the highest possible safety standards.", 
+    socials: {} 
+  },
+  { 
+    id: "canice", 
+    name: "Ms. Canice C N", 
+    role: "Digital Marketing Head", 
+    photo: "/images/team/Canice.jpeg", 
+    bio: "Creative strategist behind our digital presence and global brand identity across all platforms. Canice leverages data-driven marketing to connect our innovative solutions with the wider technology community. She is passionate about building meaningful engagement and telling the story of our journey.", 
+    socials: {} 
+  },
+  { 
+    id: "akul", 
+    name: "Mr. Akul N S", 
+    role: "Manager", 
+    photo: "/images/team/Akul.jpeg", 
+    bio: "Overseeing project lifecycles and departmental coordination to ensure the highest results. Akul ensures that every goal is met with precision, efficiency, and a high standard of quality control. He acts as the vital link between strategic planning and successful project execution.", 
+    socials: {} 
+  },
+  { 
+    id: "tony", 
+    name: "Mr. Tony Alex M", 
+    role: "Marketing Manager", 
+    photo: "/images/team/Tony.jpeg", 
+    bio: "Driving outreach initiatives and student engagement to expand our network across the industry. Tony focuses on building community relations and ensuring our programs reach those who need them most. He is dedicated to creating opportunities for professional growth through strategic communication.", 
+    socials: {} 
+  },
+  { 
+    id: "nireeksha", 
+    name: "Ms. Nireeksha", 
+    role: "Technical Assistant", 
+    photo: "/images/team/Nireeksha.jpeg", 
+    bio: "Providing vital technical support and assisting in diverse development projects across the company. Nireeksha ensures that laboratory and project environments are optimized for student and team success. She plays a key role in maintaining technical standards and assisting in daily operations.", 
+    socials: {} 
+  }
+];
+
+function TeamCard({ member }) {
+  const hasSocials = member.socials?.linkedin || member.socials?.github;
+
+  return (
+    <div className="group relative flex h-full">
+      <div className="absolute -inset-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500" />
+      <div className="relative glass-card p-8 flex flex-col items-center text-center w-full">
+        <div className="w-32 h-32 rounded-2xl overflow-hidden mb-6 border-2 border-white/10 group-hover:border-blue-500/50 transition-colors flex-shrink-0">
+          <img src={member.photo} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+        </div>
+        <h3 className="text-xl font-black text-white mb-1">{member.name}</h3>
+        <p className="text-blue-400 text-sm font-bold tracking-widest uppercase mb-4">{member.role}</p>
+        
+        {/* flex-grow ensures this area stretches to keep the card bottoms aligned */}
+        <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-grow">
+          {member.bio}
+        </p>
+
+        {/* This div always has a min-height of 40px, even if empty, to keep card sizes equal */}
+        <div className="flex gap-4 min-h-[40px] items-center justify-center">
+          {member.socials?.linkedin && (
+            <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110">
+              <Linkedin className="w-4 h-4" />
+            </a>
+          )}
+          {member.socials?.github && (
+            <a href={member.socials.github} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110">
+              <Github className="w-4 h-4" />
+            </a>
+          )}
+          {/* Spacer logic: if no socials exist, we render nothing, but the min-h-[40px] above holds the space */}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AboutPage() {
   return (
-    <div className="min-h-screen text-gray-200" style={{ background: "var(--bg-dark)" }}>
-      {/* Background elements */}
+    <div className="min-h-screen text-gray-200 overflow-x-hidden" style={{ background: "var(--bg-dark, #0a0a0a)" }}>
+      {/* Background Decor */}
       <div className="orb orb-blue absolute w-[800px] h-[800px] -top-96 -left-96 opacity-[0.03] pointer-events-none" />
       <div className="orb orb-purple absolute w-[600px] h-[600px] bottom-0 right-0 opacity-[0.03] pointer-events-none" />
       <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none" />
 
-      {/* Hero Section */}
+      {/* Hero */}
       <div className="relative pt-32 pb-20 px-6 lg:px-12 text-center">
         <div className="max-w-4xl mx-auto">
-          <span className="section-badge mb-6 inline-flex">
-            <Zap className="w-3 h-3" />
-            Empowering Future Engineers
+          <span className="section-badge mb-6 inline-flex items-center gap-2">
+            <Zap className="w-3 h-3" /> Empowering Future Engineers
           </span>
-          <h2 className="text-3xl sm:text-6xl font-black leading-tight mt-5 mb-6">
-            <span style={{
-              background: "linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            }}>
-              Our Journey &
-            </span>
-            <br className="hidden sm:block" />
-            <span style={{ color: "#f0f9ff" }}> Innovation</span>
+          <h2 className="text-4xl sm:text-6xl font-black leading-tight mt-5 mb-6">
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">Our Journey &</span>
+            <br /> Innovation
           </h2>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
             Bravynex is a forward-thinking product and service-based company dedicated to delivering quality solutions that bridge the gap between academia and industry.
@@ -44,228 +459,90 @@ function AboutPage() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pb-24">
-        
-        {/* About & Objectives Grid */}
+        {/* Objectives Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-          <div className="glass-card p-8 group">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-              style={{ background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)" }}>
+          <div className="glass-card p-8 group h-full flex flex-col">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-blue-500/10 border border-blue-500/20">
               <Building2 className="h-6 w-6 text-blue-400" />
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">About Bravynex</h2>
-            <div className="space-y-4 text-gray-400 leading-relaxed">
-              <p>
-                Product and service-based company dedicated to delivering quality solutions that meet customer needs across hardware and software domains.
-              </p>
-              <p>
-                Officially registered under the Ministry of Micro, Small and Medium Enterprises (MSME), Government of India, ensuring reliability and institutional excellence.
-              </p>
-            </div>
+            <p className="text-gray-400 leading-relaxed">Product and service-based company dedicated to delivering quality solutions officially registered under MSME, Government of India, ensuring institutional excellence.</p>
           </div>
-
-          <div className="glass-card p-8 group">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-              style={{ background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.25)" }}>
+          <div className="glass-card p-8 group h-full flex flex-col">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-purple-500/10 border border-purple-500/20">
               <Target className="h-6 w-6 text-purple-400" />
             </div>
             <h2 className="text-2xl font-bold mb-4 text-white">Our Objectives</h2>
-            <div className="space-y-4 text-gray-400 leading-relaxed">
-              <p>
-                To empower individuals with the skills and knowledge needed to excel in the tech industry by providing specialized training programs and real-world project exposure.
-              </p>
-              <p>
-                Focused on upskilling talent in IT and non-IT sectors, helping them secure dream placements through hands-on practice.
-              </p>
-            </div>
+            <p className="text-gray-400 leading-relaxed">To empower individuals with skills needed to excel in tech by providing specialized training and real-world project exposure for IT and non-IT sectors.</p>
           </div>
         </div>
 
-        {/* Registered Under Section */}
-        <div className="glass-card p-10 mb-24 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[80px] -z-10" />
-          <h2 className="text-3xl font-bold text-center text-white mb-10">Accredited & Recognized</h2>
-          <p className="text-gray-400 leading-relaxed max-w-4xl mx-auto text-center mb-12">
-            Registered under MSME and NSDC, we design impactful courses affiliated with <span className="text-blue-400 font-semibold">Visveswaraya Technological University (VTU)</span>. Our curriculum stays dynamic, blending industry expertise with innovation to help learners achieve meaningful career progress.
-          </p>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-            {[
-              { id: 'nsdc', label: 'NSDC' },
-              { id: 'msme', label: 'MSME' },
-              { id: 'vtu', label: 'VTU' },
-              { id: 'skill-india', label: 'Skill India' }
-            ].map((logo) => (
-              <div key={logo.id} className="flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-2xl flex items-center justify-center p-4"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <img 
-                    src={`/images/${logo.id}.png`} 
-                    alt={logo.label} 
-                    className="h-full w-full object-contain"
-                  />
+        {/* Accreditation */}
+        <div className="glass-card p-10 mb-24 text-center relative overflow-hidden">
+          <h2 className="text-3xl font-bold text-white mb-6">Accredited & Recognized</h2>
+          <p className="text-gray-400 max-w-3xl mx-auto mb-12">Registered under MSME and NSDC, affiliated with Visveswaraya Technological University (VTU) to ensure high-quality industrial standards.</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {['nsdc', 'msme', 'vtu', 'skill-india'].map((id) => (
+              <div key={id} className="flex flex-col items-center">
+                <div className="w-20 h-20 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center mb-2">
+                  <img src={`/images/${id}.png`} alt={id} className="w-full h-full object-contain" />
                 </div>
-                <span className="text-xs font-bold tracking-widest uppercase text-gray-600">{logo.label}</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{id}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Feature Sections with Alternating Layouts */}
-        <div className="space-y-32 mb-24">
-          {/* Trainer Expertise */}
+        {/* Mentorship & Success */}
+        <div className="space-y-32 mb-32">
           <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 space-y-6">
-              <span className="flex items-center gap-2 text-blue-400 font-bold text-sm tracking-widest uppercase">
-                <Rocket className="w-4 h-4" /> Mentorship
-              </span>
-              <h3 className="text-3xl font-black text-white">Expert Trainer Network</h3>
-              <p className="text-gray-400 leading-relaxed text-lg">
-                Our trainers are industry veterans with <span className="text-white font-bold">over 15 years of practical experience</span>. They bring deep domain expertise, real-world case studies, and modern teaching methodologies to ensure you gain skills that are actually in demand.
-              </p>
+            <div className="flex-1">
+              <span className="text-blue-400 font-bold text-sm uppercase tracking-[0.2em] mb-4 block">Mentorship</span>
+              <h3 className="text-3xl font-black text-white mb-6">Expert Trainer Network</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">Our trainers are industry veterans with <span className="text-white font-bold">15+ years of experience</span>, bringing real-world case studies to help you gain skills that are actually in demand.</p>
             </div>
-            <div className="w-full lg:w-1/3 group">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                <img 
-                  src="/images/pic4.webp" 
-                  alt="Expert Trainer" 
-                  className="relative rounded-2xl w-full object-cover border border-white/10"
-                />
-              </div>
+            <div className="w-full lg:w-1/3 rounded-2xl overflow-hidden border border-white/10">
+              <img src="/images/pic4.webp" alt="Training" className="w-full h-full object-cover" />
             </div>
           </div>
-
-          {/* Student Success */}
           <div className="flex flex-col lg:flex-row-reverse items-center gap-12">
-            <div className="flex-1 space-y-6">
-              <span className="flex items-center gap-2 text-purple-400 font-bold text-sm tracking-widest uppercase">
-                <Globe className="w-4 h-4" /> Success
-              </span>
-              <h3 className="text-3xl font-black text-white">Proven Track Record</h3>
-              <p className="text-gray-400 leading-relaxed text-lg">
-                We take pride in having <span className="text-white font-bold">successfully trained over 500+ students</span> who are now working at leading technology firms. Our learners appreciate the flexibility, practical focus, and the personalized career support that transforms their aspirations into reality.
-              </p>
+            <div className="flex-1">
+              <span className="text-purple-400 font-bold text-sm uppercase tracking-[0.2em] mb-4 block">Success</span>
+              <h3 className="text-3xl font-black text-white mb-6">Proven Track Record</h3>
+              <p className="text-gray-400 text-lg leading-relaxed">We have <span className="text-white font-bold">successfully trained 500+ students</span> who are now working at leading technology firms globally, thanks to our personalized career support.</p>
             </div>
-            <div className="w-full lg:w-1/3 group">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                <img 
-                  src="/images/pic2.webp" 
-                  alt="Student Success" 
-                  className="relative rounded-2xl w-full object-cover border border-white/10"
-                />
-              </div>
+            <div className="w-full lg:w-1/3 rounded-2xl overflow-hidden border border-white/10">
+              <img src="/images/pic2.webp" alt="Success" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
 
-        {/* Vision & Mission */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-24">
-          <div className="glass-card p-10 relative group border-t-2 border-blue-500/20">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500/10 border border-blue-500/20">
-                <Eye className="h-6 w-6 text-blue-400" />
-              </div>
-              <h2 className="text-2xl font-black text-white">Our Vision</h2>
-            </div>
-            <p className="text-gray-400 leading-relaxed text-lg">
-              To be a global leader in delivering innovative products and reliable services that empower businesses and enrich lives through technology.
-            </p>
+        {/* Vision/Mission */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-32">
+          <div className="glass-card p-10 border-t-2 border-blue-500/20">
+            <Eye className="w-8 h-8 text-blue-400 mb-6" />
+            <h2 className="text-2xl font-black text-white mb-4">Our Vision</h2>
+            <p className="text-gray-400">To be a global leader in delivering innovative products and reliable services that empower businesses and enrich lives through technology.</p>
           </div>
-
-          <div className="glass-card p-10 relative group border-t-2 border-purple-500/20">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
-                <Lightbulb className="h-6 w-6 text-purple-400" />
-              </div>
-              <h2 className="text-2xl font-black text-white">Our Mission</h2>
-            </div>
-            <p className="text-gray-400 leading-relaxed text-lg">
-              To create exceptional value for customers through quality products and personalized services. We foster lifelong innovation and integrity in every project.
-            </p>
+          <div className="glass-card p-10 border-t-2 border-purple-500/20">
+            <Lightbulb className="w-8 h-8 text-purple-400 mb-6" />
+            <h2 className="text-2xl font-black text-white mb-4">Our Mission</h2>
+            <p className="text-gray-400">To create exceptional value for customers through quality products and personalized services, fostering lifelong innovation and integrity.</p>
           </div>
         </div>
 
-        {/* Leadership & Team Section */}
-        <div className="mb-32">
+        {/* Team Grid */}
+        <div className="mb-20">
           <div className="text-center mb-16">
-            <span className="section-badge mb-4 inline-flex">
-              <Users className="w-3 h-3" />
-              Our Leadership
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white px-4">The Minds Behind <span className="text-blue-400">Bravynex</span></h2>
+            <span className="section-badge mb-4 inline-flex items-center gap-2"><Users className="w-3 h-3" /> Our Leadership</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white">The Minds Behind <span className="text-blue-400">Bravynex</span></h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-            {/* Lead Developer Card */}
-            <div className="group relative">
-              <div className="absolute -inset-1 bg-gradient-to-b from-blue-500 to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-              <div className="relative glass-card p-8 flex flex-col items-center text-center">
-                <div className="w-32 h-32 rounded-2xl overflow-hidden mb-6 border-2 border-white/10 group-hover:border-blue-500/50 transition-colors">
-                  <img 
-                    src="/images/lead-dev.jpg" 
-                    alt="Lead Developer" 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <h3 className="text-xl font-black text-white mb-1">Mohammed Sahal</h3>
-                <p className="text-blue-400 text-sm font-bold tracking-widest uppercase mb-4">Lead Developer </p>
-                <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                  Specialized in full-stack architecture and interactive engineering systems. Driving the technical vision and premium user experience of the Bravynex platform.
-                </p>
-                <div className="flex gap-4">
-                  <a
-                    href="https://www.linkedin.com/in/mohammedsahalpk/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                  <a 
-                    href="https://github.com/Mohsahal" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all hover:scale-110"
-                  >
-                    <Github className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Services Checklist */}
-        {/* <div className="glass-card p-10 mb-20 scroll-reveal">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-500/10 border border-green-500/20">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-            </div>
-            <h2 className="text-3xl font-black text-white">Offered Services</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              "Product Development",
-              "Soft Skill Training",
-              "IT Training",
-              "Innovation & Entrepreneurship",
-              "Internship & Live Projects",
-              "Training & Placements",
-              "Paid Certification Courses",
-              "Intensive Boot Camps",
-              "Expert Consultancy"
-            ].map((service, index) => (
-              <div key={index} className="flex items-center gap-3 p-4 rounded-xl transition-all duration-300 hover:bg-white/5 border border-transparent hover:border-white/10 group">
-                <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center transition-colors group-hover:bg-green-500">
-                  <CheckCircle className="h-3 w-3 text-green-400 group-hover:text-white" />
-                </div>
-                <span className="text-gray-300 font-semibold group-hover:text-white transition-colors">{service}</span>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+            {TEAM.map((member) => (
+              <TeamCard key={member.id} member={member} />
             ))}
           </div>
-        </div> */}
-
+        </div>
       </div>
     </div>
   );
