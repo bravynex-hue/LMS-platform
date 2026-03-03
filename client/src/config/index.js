@@ -84,7 +84,6 @@ export const courseCategories = [
   { id: "cyber-security", label: "Cyber Security", description: "Protect networks and systems from digital attacks with offensive and defensive strategies." },
   { id: "frontend-development", label: "Front End Development", description: "Build stunning, responsive user interfaces using modern web technologies." },
   { id: "fullstack-development", label: "Full Stack Development", description: "Master both client-side and server-side development to build complete web applications." },
-
   { id: "ai-data-engineer", label: "AI Data Engineer", description: "Design and implement data pipelines for large-scale AI and ML systems." },
   { id: "web-development", label: "Web Development", description: "Learn the core languages and frameworks of the modern web ecosystem." },
   { id: "basic-cpp-programming", label: "Basic C++ Programming", description: "Understand object-oriented programming and memory management with C++." },
