@@ -1,0 +1,1 @@
+import{k as c}from"./index-Df-ezPnP.js";async function n(t){const{data:a}=await c.post("/notify/contact-admin",t);return a}async function s(t){const{data:a}=await c.post("/feedback",t);return a}async function i(){const{data:t}=await c.get("/feedback");return t}export{n as c,i as g,s};

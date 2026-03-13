@@ -1,0 +1,337 @@
+const Course = require("../../models/Course");
+const User = require("../../models/User");
+
+
+const addNewCourse = async (req, res) => {
+  try {
+    const courseData = req.body;
+    const newlyCreatedCourse = new Course(courseData);
+    const saveCourse = await newlyCreatedCourse.save();
+
+    if (saveCourse) {
+      res.status(201).json({
+        success: true,
+        message: "Course saved successfully",
+        data: saveCourse,
+      });
+    }
+  } catch (e) {
+    console.error('Error adding new course:', e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
+  }
+};
+
+const getAllCourses = async (req, res) => {
+  try {
+    // Get instructor ID from authenticated user
+    const instructorId = req.user?._id || req.user?.id;
+    
+    if (!instructorId) {
+      console.error("❌ No instructor ID found in request");
+      return res.status(401).json({
+        success: false,
+        message: "Instructor ID not found in request",
+      });
+    }
+
+    // Fetch all courses for this instructor
+    const coursesList = await Course.find({ instructorId: instructorId.toString() });
+
+    // Populate student details for each course and fix missing names
+    for (let course of coursesList) {
+      if (course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.studentId).filter(Boolean);
+        
+        if (studentIds.length > 0) {
+          const users = await User.find({ _id: { $in: studentIds } }).select('userName userEmail studentId createdAt');
+          const userMap = {};
+          users.forEach(user => {
+            userMap[user._id.toString()] = {
+              userName: user.userName,
+              userEmail: user.userEmail,
+              studentId: user.studentId,
+              enrollmentDate: user.createdAt // Use user creation date as fallback
+            };
+          });
+
+          // Track if we need to update the course document
+          let needsUpdate = false;
+          const updatedStudents = [];
+
+          // Enrich students array with user details and enrollment dates
+          course.students.forEach(student => {
+            const userInfo = userMap[student.studentId];
+            if (userInfo) {
+              const updatedStudent = {
+                ...student.toObject ? student.toObject() : student,
+                studentName: student.studentName || userInfo.userName || "",
+                studentEmail: student.studentEmail || userInfo.userEmail || "",
+                userName: userInfo.userName || "",
+                userEmail: userInfo.userEmail || "",
+                enrollmentDate: student.enrollmentDate || userInfo.enrollmentDate || new Date(),
+              };
+              
+              // Check if we need to update missing data in database
+              if (!student.studentName && userInfo.userName) {
+                needsUpdate = true;
+                console.log(`🔄 Updating missing student name for ${userInfo.userName} in course ${course.title}`);
+              }
+              if (!student.studentEmail && userInfo.userEmail) {
+                needsUpdate = true;
+                console.log(`🔄 Updating missing student email for ${userInfo.userEmail} in course ${course.title}`);
+              }
+              if (!student.enrollmentDate) {
+                needsUpdate = true;
+                console.log(`🔄 Adding missing enrollment date for ${userInfo.userName} in course ${course.title}`);
+              }
+              
+              updatedStudents.push(updatedStudent);
+            } else {
+              updatedStudents.push({
+                ...student.toObject ? student.toObject() : student,
+                enrollmentDate: student.enrollmentDate || new Date(),
+              });
+            }
+          });
+
+          // Update course document if needed
+          if (needsUpdate) {
+            try {
+              await Course.findByIdAndUpdate(course._id, {
+                students: updatedStudents.map(s => ({
+                  studentId: s.studentId,
+                  studentName: s.studentName || s.userName || "",
+                  studentEmail: s.studentEmail || s.userEmail || "",
+                  paidAmount: s.paidAmount || "",
+                  enrollmentDate: s.enrollmentDate || new Date(),
+                }))
+              });
+              console.log(`✅ Updated course ${course.title} with missing student data`);
+            } catch (updateError) {
+              console.error(`❌ Failed to update course ${course.title}:`, updateError);
+            }
+          }
+
+          // Set the enriched students data for response
+          course.students = updatedStudents;
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: coursesList,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
+  }
+};
+
+const getCourseDetailsByID = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const courseDetails = await Course.findById(id);
+
+    if (!courseDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found!",
+      });
+    }
+
+    // Fetch user details for all students to populate missing names and emails
+    if (courseDetails.students && courseDetails.students.length > 0) {
+      const studentIds = courseDetails.students.map(s => s.studentId).filter(Boolean);
+      
+      if (studentIds.length > 0) {
+        const users = await User.find({ _id: { $in: studentIds } }).select('userName userEmail studentId');
+        const userMap = {};
+        users.forEach(user => {
+          userMap[user._id.toString()] = {
+            userName: user.userName,
+            userEmail: user.userEmail,
+            studentId: user.studentId
+          };
+        });
+
+        // Enrich students array with user details
+        courseDetails.students = courseDetails.students.map(student => {
+          const userInfo = userMap[student.studentId];
+          if (userInfo) {
+            return {
+              ...student.toObject ? student.toObject() : student,
+              studentName: student.studentName || userInfo.userName || "",
+              studentEmail: student.studentEmail || userInfo.userEmail || "",
+              userName: userInfo.userName || "",
+              userEmail: userInfo.userEmail || "",
+            };
+          }
+          return student.toObject ? student.toObject() : student;
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: courseDetails,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
+  }
+};
+
+const updateCourseByID = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedCourseData = req.body;
+
+    // Preserve critical fields that shouldn't be overwritten during course edits
+    // Remove students array from update data to prevent resetting enrolled students
+    const { students, ...safeUpdateData } = updatedCourseData;
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      id,
+      { $set: safeUpdateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found!",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Course updated successfully",
+      data: updatedCourse,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
+  }
+};
+
+const deleteCourseByID = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { force } = req.query; // Add force delete option
+    
+    // Check if course exists
+    const course = await Course.findById(id);
+    if (!course) {
+      console.log('Course not found with ID:', id);
+      return res.status(404).json({
+        success: false,
+        message: "Course not found!",
+      });
+    }
+    
+    console.log('Course found:', {
+      id: course._id,
+      title: course.title,
+      instructorId: course.instructorId,
+      studentsCount: course.students?.length || 0
+    });
+
+    // Check if course has students enrolled
+    if (course.students && course.students.length > 0) {
+      if (force === 'true') {
+        // Force delete: Remove all students first, then delete course
+        try {
+          // Remove all students from the course
+          await Course.findByIdAndUpdate(id, { $set: { students: [] } });
+          console.log(`Force delete: Removed ${course.students.length} students from course before deletion`);
+        } catch (removeError) {
+          console.error('Error removing students from course:', removeError);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to remove students from course. Please try again.",
+          });
+        }
+      } else {
+        // Normal delete: Prevent deletion if students exist
+        return res.status(400).json({
+          success: false,
+          message: `Cannot delete course with ${course.students.length} enrolled students. Use force=true to force delete.`,
+        });
+      }
+    }
+
+    // Store course data before deletion for notification and cleanup
+    const courseData = {
+      instructorId: course.instructorId,
+      title: course.title,
+      _id: course._id,
+      students: course.students || []
+    };
+
+    // Delete the course
+    const deletedCourse = await Course.findByIdAndDelete(id);
+    
+    if (deletedCourse) {
+      try {
+        // Clean up StudentCourses collection - remove this course from all students
+        if (courseData.students && courseData.students.length > 0) {
+          const StudentCourses = require("../../models/StudentCourses");
+          const CourseProgress = require("../../models/CourseProgress");
+          
+          // Remove course from all students' purchased courses
+          await StudentCourses.updateMany(
+            { "courses.courseId": id },
+            { $pull: { courses: { courseId: id } } }
+          );
+          console.log(`Cleaned up StudentCourses for ${courseData.students.length} students`);
+          
+          // Remove course progress for all students
+          await CourseProgress.deleteMany({ courseId: id });
+          console.log(`Cleaned up CourseProgress for course ${id}`);
+        }
+      } catch (cleanupError) {
+        console.error('Error during cleanup:', cleanupError);
+        // Continue with deletion even if cleanup fails
+      }
+
+      console.log('Course deleted successfully:', deletedCourse._id);
+      res.status(200).json({
+        success: true,
+        message: "Course deleted successfully",
+        data: deletedCourse,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete course",
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occurred while deleting course!",
+    });
+  }
+};
+
+module.exports = {
+  addNewCourse,
+  getAllCourses,
+  updateCourseByID,
+  getCourseDetailsByID,
+  deleteCourseByID,
+};

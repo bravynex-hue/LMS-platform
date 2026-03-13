@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" style="background-color: #020617;">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/images/icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bravynex LMS</title>
+  <script>
+    // Critical: Capture the PWA install prompt at the very beginning
+    window.deferredPWAPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPWAPrompt = e;
+      window.dispatchEvent(new CustomEvent('pwa-prompt-ready'));
+    });
+    window.addEventListener('appinstalled', () => {
+      window.deferredPWAPrompt = null;
+    });
+  </script>
+  <script type="module" crossorigin src="/assets/index-Df-ezPnP.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CETaaOX1.css">
+<link rel="manifest" href="/manifest.webmanifest"></head>
+
+<body style="background-color: #020617;">
+  <div id="root"></div>
+</body>
+
+</html>
