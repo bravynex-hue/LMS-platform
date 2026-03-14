@@ -314,14 +314,22 @@ function StudentViewCourseDetailsPage() {
                     <Layers className="w-4 h-4 text-purple-400" />
                     <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">{studentViewCourseDetails?.level}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <PlayCircle className="w-4 h-4 text-orange-400" />
-                    <span className="text-sm font-bold text-gray-400">Duration: Self-Paced</span>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-2xl group/stat hover:border-blue-500/30 transition-all">
+                    <PlayCircle className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-bold text-gray-400">Progression: Self-Paced</span>
                   </div>
+                  {studentViewCourseDetails?.duration && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-2xl group/stat hover:bg-blue-600/20 transition-all animate-pulse">
+                      <Zap className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm font-black text-blue-300 uppercase tracking-widest whitespace-nowrap">
+                        {studentViewCourseDetails.duration.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} Program
+                      </span>
+                    </div>
+                  )}
                   {studentViewCourseDetails?.certificateEnabled && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-sm font-bold text-gray-400">Certificate Included</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-2xl group/stat hover:border-green-500/30 transition-all">
+                      <CheckCircle className="w-4 h-4 text-green-400 group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-bold text-gray-400">Certified Track</span>
                     </div>
                   )}
                 </div>

@@ -43,11 +43,13 @@ const CourseSchema = new mongoose.Schema({
   curriculum: [LectureSchema],
   whatsappLink: String,
   isPublised: Boolean,
+  duration: String,
 });
 
 CourseSchema.index({ category: 1 });
 CourseSchema.index({ level: 1 });
 CourseSchema.index({ primaryLanguage: 1 });
 CourseSchema.index({ pricing: 1 });
+CourseSchema.index({ duration: 1 });
 
 module.exports = mongoose.model("Course", CourseSchema);

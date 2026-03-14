@@ -48,15 +48,18 @@ export function SpinnerFullPage({ message = "Loading..." }) {
         </div>
 
         {/* Branding */}
-        <h2 className="text-3xl sm:text-4xl font-black tracking-widest uppercase mb-4 shadow-black drop-shadow-lg">
-          <span style={{ color: "#f8fafc" }}>Bravy</span>
-          <span style={{
-            background: "linear-gradient(135deg, #60a5fa 0%, #c084fc 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}>nex</span>
-        </h2>
+        <div className="flex flex-col items-center">
+          <h2 className="text-4xl sm:text-6xl font-black tracking-[-0.05em] uppercase mb-1 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <span style={{ color: "#ffffff", opacity: 0.9 }}>Bravy</span>
+            <span style={{
+              background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>nex</span>
+          </h2>
+          <div className="w-12 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-40 rounded-full mb-6" />
+        </div>
 
         {/* Loading Message */}
         <div className="flex items-center gap-3 mt-2 px-6 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm shadow-xl">

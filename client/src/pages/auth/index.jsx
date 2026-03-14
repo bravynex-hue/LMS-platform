@@ -17,13 +17,21 @@ function AuthPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const authContext = useContext(AuthContext);
+
+  // Safety check to prevent crash if context is null
   const {
-    signInFormData, setSignInFormData,
-    signUpFormData, setSignUpFormData,
-    handleRegisterUser, handleLoginUser,
-    activeTab, handleTabChange,
-    isRegistering, isLoggingIn,
-  } = useContext(AuthContext);
+    signInFormData = {},
+    setSignInFormData = () => {},
+    signUpFormData = {},
+    setSignUpFormData = () => {},
+    handleRegisterUser = () => {},
+    handleLoginUser = () => {},
+    activeTab = "signin",
+    handleTabChange = () => {},
+    isRegistering = false,
+    isLoggingIn = false,
+  } = authContext || {};
 
   useEffect(() => {
     const path = location.pathname;

@@ -21,7 +21,7 @@ import {
   checkCoursePurchaseInfoService,
   fetchStudentViewCourseListService,
 } from "@/services";
-import { ArrowUpDownIcon, BookOpen, Filter, X, Zap, ChevronRight, Search, Play } from "lucide-react";
+import { ArrowUpDownIcon, BookOpen, Filter, X, Zap, ChevronRight, Search, Play, Star, Clock } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState, useRef, Suspense, lazy } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SpinnerOverlay } from "@/components/ui/spinner";
@@ -98,44 +98,77 @@ function StudentViewCoursesPage() {
     sessionStorage.removeItem("filters");
   }
 
-  const FilterContent = () => (
-    <div className="space-y-8">
-      {Object.keys(filterOptions).map((ketItem) => (
-        <div key={ketItem} className="border-b border-white/5 pb-6 last:border-0 last:pb-0">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4 px-2">
-            {ketItem}
-          </h3>
-          <div className="space-y-1">
-            {filterOptions[ketItem].map((option) => (
-              <Label 
-                key={`${ketItem}-${option.id}`} 
-                className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2.5 rounded-xl transition-all duration-200 group"
-              >
-                <Checkbox
-                  checked={
-                    filters && filters[ketItem] && filters[ketItem].indexOf(option.id) > -1
-                  }
-                  onCheckedChange={() => handleFilterOnChange(ketItem, option)}
-                  className="border-white/20 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 rounded"
-                />
-                <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors">
-                  {option.label}
-                </span>
-              </Label>
-            ))}
+  const FilterContent = () => {
+    const sectionIcons = {
+      category: <BookOpen className="w-3.5 h-3.5" />,
+      level: <Star className="w-3.5 h-3.5" />,
+      primaryLanguage: <Zap className="w-3.5 h-3.5" />,
+      duration: <Clock className="w-3.5 h-3.5" />,
+    };
+
+    return (
+      <div className="space-y-10">
+        {Object.keys(filterOptions).map((ketItem) => (
+          <div key={ketItem} className="relative">
+            <div className="flex items-center gap-2.5 mb-5 px-1">
+              <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                {sectionIcons[ketItem] || <Filter className="w-3.5 h-3.5" />}
+              </div>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
+                {ketItem === "duration" ? "Internship Duration" : ketItem === "primaryLanguage" ? "Primary Language" : ketItem}
+              </h3>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-2">
+              {filterOptions[ketItem].map((option) => {
+                const isActive = filters && filters[ketItem] && filters[ketItem].indexOf(option.id) > -1;
+                return (
+                  <Label 
+                    key={`${ketItem}-${option.id}`} 
+                    className={`relative flex items-center gap-3 cursor-pointer p-3.5 rounded-2xl border transition-all duration-300 group
+                      ${isActive 
+                        ? 'bg-blue-600/10 border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]' 
+                        : 'bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.05]'}`}
+                  >
+                    <div className="relative flex items-center justify-center">
+                      <Checkbox
+                        checked={isActive}
+                        onCheckedChange={() => handleFilterOnChange(ketItem, option)}
+                        className={`w-5 h-5 border-2 rounded-md transition-all duration-300
+                          ${isActive 
+                            ? 'bg-blue-600 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+                            : 'bg-transparent border-white/20 group-hover:border-white/40'}`}
+                      />
+                      {isActive && <div className="absolute inset-0 bg-blue-400 blur-sm opacity-50 rounded-md animate-pulse pointer-events-none" />}
+                    </div>
+                    
+                    <div className="flex-1">
+                       <span className={`text-[13px] font-bold tracking-tight transition-colors duration-300
+                         ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                         {option.label}
+                       </span>
+                    </div>
+
+                    {isActive && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
+                    )}
+                  </Label>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  };
 
   const fetchAllStudentViewCourses = useCallback(async (filtersArg, sortArg, searchArg) => {
     setLoadingState(true);
-    const query = new URLSearchParams({
-      ...filtersArg,
-      sortBy: sortArg,
-      ...(searchArg ? { search: searchArg } : {}),
-    });
+    const buildQueryString = createSearchParamsHelper(filtersArg);
+    const query = new URLSearchParams(buildQueryString);
+    query.set("sortBy", sortArg);
+    if (searchArg) query.set("search", searchArg);
+
     const response = await fetchStudentViewCourseListService(query.toString());
     if (response?.success) {
       setStudentViewCoursesList(response?.data);
@@ -343,51 +376,103 @@ function StudentViewCoursesPage() {
             </div>
 
             {loadingState ? (
-              <div className="flex flex-col items-center justify-center py-24 space-y-4">
-                 <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-                 <span className="text-gray-500 font-bold tracking-widest uppercase text-xs">Accessing Database...</span>
+              <div className="flex flex-col items-center justify-center py-32 space-y-10">
+                <div className="relative w-24 h-24">
+                  <div className="absolute inset-0 rounded-full border-2 border-blue-500/10 border-t-blue-500 animate-spin" />
+                  <div className="absolute inset-2 rounded-full border-2 border-purple-500/10 border-b-purple-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Zap className="w-8 h-8 text-blue-400 animate-pulse" />
+                  </div>
+                  <div className="absolute -inset-4 bg-blue-500/5 blur-2xl rounded-full" />
+                </div>
+                <div className="space-y-2 text-center">
+                  <span className="block text-[10px] font-black tracking-[0.4em] uppercase text-blue-500/60 animate-pulse">Initializing Hub</span>
+                  <p className="text-gray-500 font-bold tracking-widest uppercase text-[11px]">Synchronizing Active Registry...</p>
+                </div>
               </div>
             ) : studentViewCoursesList?.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {studentViewCoursesList.slice(0, visibleResults).map((c) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {studentViewCoursesList.slice(0, visibleResults).map((c, index) => (
                   <div
                     key={c._id}
                     onClick={() => handleCourseNavigate(c._id)}
-                    className="course-card-anim glass-card group flex flex-col h-full overflow-hidden border-white/10 hover:border-blue-500/30 transition-all duration-500 cursor-pointer"
+                    className="course-card-anim relative group cursor-pointer animate-on-scroll"
                   >
-                    <div className="relative h-40 overflow-hidden">
-                      <img src={c.image} alt={c.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                      <div className="absolute top-4 left-4">
-                        <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/10 text-blue-400">
-                          {c.level}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-4 right-4 translate-y-12 group-hover:translate-y-0 transition-transform duration-300">
-                         <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/40">
-                            <ChevronRight className="w-5 h-5 text-white" />
-                         </div>
-                      </div>
-                    </div>
+                    {/* Dynamic Ambient Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/0 via-blue-600/5 to-purple-600/0 opacity-0 group-hover:opacity-100 blur-2xl transition-all duration-1000 pointer-events-none" />
                     
-                    <div className="p-4 flex flex-col flex-1">
-                      <h3 className="text-base font-black text-white group-hover:text-blue-400 transition-colors mb-4 line-clamp-2">
-                        {c.title}
-                      </h3>
-                      <div className="mt-auto space-y-4">
-                        <div className="flex items-center gap-4 text-xs font-bold text-gray-500">
-                          <span className="flex items-center gap-1.5 uppercase tracking-widest">
-                            <BookOpen className="w-3.5 h-3.5 text-blue-500" />
-                            {c.curriculum?.length || 0} Modules
-                          </span>
+                    <div className="relative h-full flex flex-col bg-[#0f172a]/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden group-hover:border-blue-500/20 group-hover:bg-[#0f172a]/60 transition-all duration-500 ease-out">
+                      
+                      {/* Image Frame with Cinematic Zoom */}
+                      <div className="relative h-40 overflow-hidden">
+                        <img 
+                          src={c.image} 
+                          alt={c.title} 
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a]/90 via-transparent to-transparent group-hover:opacity-60 transition-opacity duration-500" />
+                        
+                        {/* Elite Level Badge */}
+                        <div className="absolute top-4 left-4">
+                          <div className="px-3 py-1 bg-blue-600/90 text-[8px] font-black tracking-widest uppercase rounded-full border border-blue-400/30">
+                            {c.level}
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                           <span className="text-xl font-black text-white">
-                             ₹{Number(c.pricing).toLocaleString("en-IN")}
-                           </span>
-                           <Button variant="ghost" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 group-hover:text-white transition-colors">
-                             View Details
-                           </Button>
+
+                        {/* Interactive Play Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-110 group-hover:scale-100">
+                           <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+                              <Play className="w-5 h-5 text-white fill-white/20" />
+                           </div>
+                        </div>
+                      </div>
+                      
+                      {/* Premium Content Body */}
+                      <div className="p-5 flex flex-col flex-1">
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
+                            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                              {c.category.replace("-", " ")}
+                            </span>
+                          </div>
+                          <h3 className="text-sm sm:text-base font-black text-white group-hover:text-blue-200 transition-colors leading-[1.3] line-clamp-2">
+                            {c.title}
+                          </h3>
+                        </div>
+
+                        {/* Metadata Pills */}
+                        <div className="mt-auto space-y-4">
+                          <div className="flex items-center gap-2">
+                             <div className="flex-1 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 group-hover:bg-white/[0.06] transition-colors">
+                                <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+                                <span className="text-[10px] font-bold text-gray-400 capitalize truncate">
+                                  {c.curriculum?.length || 0} Modules
+                                </span>
+                             </div>
+                             {c.duration && (
+                               <div className="flex-1 px-3 py-2 rounded-xl bg-purple-500/[0.07] border border-purple-500/10 flex items-center gap-2 group-hover:bg-purple-500/[0.12] transition-colors">
+                                 <Zap className="w-3.5 h-3.5 text-purple-400" />
+                                 <span className="text-[10px] font-bold text-purple-300 truncate">
+                                   {c.duration.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                                 </span>
+                               </div>
+                             )}
+                          </div>
+
+                          {/* Action Footer */}
+                          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                             <div className="flex flex-col">
+                               <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Tuition Fee</span>
+                               <span className="text-lg font-black text-white flex items-baseline leading-none">
+                                 <span className="text-[11px] font-bold text-blue-400 mr-0.5">₹</span>
+                                 {Number(c.pricing).toLocaleString("en-IN")}
+                               </span>
+                             </div>
+                             <button className="h-10 w-10 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-400 transition-all duration-300 transform group-hover:rotate-2">
+                                <ChevronRight className="w-5 h-5 text-blue-400 group-hover:text-white" />
+                             </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -395,26 +480,26 @@ function StudentViewCoursesPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-32 glass-card border-dashed border-white/10">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
-                  <Zap className="w-8 h-8 text-gray-700" />
+              <div className="text-center py-32 glass-card border-dashed border-white/10 rounded-[3rem]">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-8 border border-white/5">
+                  <Zap className="w-10 h-10 text-gray-700" />
                 </div>
-                <h3 className="text-xl font-black text-white mb-2">No Matches Found</h3>
-                <p className="text-gray-500 mb-8 max-w-xs mx-auto">None of our current programs match these specific filters. Try expanding your search criteria.</p>
-                <Button onClick={handleClearFilters} className="bg-white text-black hover:bg-gray-200 font-black uppercase tracking-widest text-xs px-8 h-12">
-                  Reset Filters
+                <h3 className="text-2xl font-black text-white mb-3">No Programs Syncing</h3>
+                <p className="text-gray-500 mb-10 max-w-sm mx-auto leading-relaxed">None of our current technical tracks match these specific search parameters. Try expanding your registry criteria.</p>
+                <Button onClick={handleClearFilters} className="bg-blue-600 text-white hover:bg-blue-500 font-black uppercase tracking-widest text-xs px-10 h-14 rounded-2xl shadow-xl transition-all">
+                  Synchronize Filters
                 </Button>
               </div>
             )}
 
             {canLoadMoreResults && (
-              <div className="mt-16 flex justify-center">
+              <div className="mt-20 flex justify-center">
                 <Button
                   onClick={() => setVisibleResults((n) => n + RESULTS_CHUNK)}
                   variant="outline"
-                  className="glass-card border-white/10 px-12 h-14 font-black uppercase tracking-[0.3em] text-[10px] text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                  className="bg-white/5 border-white/10 px-16 h-16 rounded-2xl font-black uppercase tracking-[0.4em] text-[10px] text-gray-400 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                 >
-                  Fetch More Results
+                  Access More Data
                 </Button>
               </div>
             )}

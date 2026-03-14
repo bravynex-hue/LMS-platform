@@ -13,6 +13,7 @@ const getAllStudentViewCourses = async (req, res) => {
       category = [],
       level = [],
       primaryLanguage = [],
+      duration = [],
       sortBy = "price-lowtohigh",
       search = "",
       page = 1,
@@ -30,6 +31,9 @@ const getAllStudentViewCourses = async (req, res) => {
     }
     if (primaryLanguage.length) {
       filters.primaryLanguage = { $in: primaryLanguage.split(",") };
+    }
+    if (duration.length) {
+      filters.duration = { $in: duration.split(",") };
     }
     if (typeof search === "string" && search.trim()) {
       const term = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

@@ -38,7 +38,7 @@ function AddNewCoursePage() {
   }
 
   function validateFormData() {
-    const requiredFields = ["title", "category", "level", "primaryLanguage", "subtitle", "description", "pricing", "image"];
+    const requiredFields = ["title", "category", "level", "primaryLanguage", "subtitle", "description", "pricing", "image", "duration"];
     for (const key of requiredFields) {
       const value = courseLandingFormData[key];
       if (isEmpty(value) || (typeof value === "string" && value.trim() === "")) return false;

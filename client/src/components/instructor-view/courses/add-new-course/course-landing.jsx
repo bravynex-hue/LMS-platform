@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { courseLandingPageFormControls } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
 import { useContext } from "react";
-import { BookOpen, Eye, Star } from "lucide-react";
+import { BookOpen, Eye, Star, Zap } from "lucide-react";
 
 function CourseLanding() {
   const { courseLandingFormData, setCourseLandingFormData } = useContext(InstructorContext);
@@ -70,15 +70,24 @@ function CourseLanding() {
                     {courseLandingFormData?.description || "Course description will be displayed here. This gives students a comprehensive overview of what they'll learn."}
                   </p>
 
-                  {/* Stats */}
-                  <div className="flex items-center gap-4 pt-3 border-t border-white/5 mt-3">
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                      <span>4.8 (120 reviews)</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <BookOpen className="w-3.5 h-3.5 text-blue-500" />
-                      <span>12 lectures</span>
+                  {/* Performance Metadata Container */}
+                  <div className="pt-4 border-t border-white/5 mt-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {courseLandingFormData?.duration && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-xl group/dur hover:bg-blue-600/20 transition-all">
+                          <Zap className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+                          <span className="text-[10px] font-black text-blue-300 uppercase tracking-widest">
+                            {courseLandingFormData.duration.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/5 rounded-xl">
+                        <BookOpen className="w-3.5 h-3.5 text-gray-500" />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                          Curriculum Ready
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

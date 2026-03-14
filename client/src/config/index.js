@@ -64,6 +64,15 @@ export const courseLevelOptions = [
   { id: "advanced", label: "Advanced" },
 ];
 
+export const internshipDurationOptions = [
+  { id: "1-month", label: "1 Month" },
+  { id: "2-months", label: "2 Months" },
+  { id: "3-months", label: "3 Months" },
+  { id: "4-months", label: "4 Months" },
+  { id: "5-months", label: "5 Months" },
+  { id: "6-months", label: "6 Months" },
+];
+
 export const courseCategories = [
   // Engineering & Technology
   { id: "vlsi", label: "VLSI", description: "Design complex integrated circuits and systems using advanced EDA tools." },
@@ -166,6 +175,7 @@ export const courseLandingInitialFormData = {
   objectives: "",
   welcomeMessage: "",
   whatsappLink: "",
+  duration: "",
   image: "",
   sequentialAccess: true,
   // Certificate defaults (optional)
@@ -194,6 +204,7 @@ export const sortOptions = [
 
 export const filterOptions = {
   category: courseCategories,
+  duration: internshipDurationOptions,
   level: courseLevelOptions,
   primaryLanguage: languageOptions,
 };
