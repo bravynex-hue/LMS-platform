@@ -115,7 +115,11 @@ function StudentViewCoursesPage() {
                 {sectionIcons[ketItem] || <Filter className="w-3.5 h-3.5" />}
               </div>
               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
-                {ketItem === "duration" ? "Internship Duration" : ketItem === "primaryLanguage" ? "Primary Language" : ketItem}
+                {ketItem === "duration" 
+                  ? "Internship Duration" 
+                  : ketItem === "primaryLanguage" 
+                    ? "Primary Language" 
+                    : ketItem.charAt(0).toUpperCase() + ketItem.slice(1)}
               </h3>
             </div>
             
