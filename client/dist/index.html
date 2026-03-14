@@ -8,7 +8,7 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0b1220" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bravynex LMS</title>
+  <title>Bravynex LMS </title>
   <script>
     // Critical: Capture the PWA install prompt at the very beginning
     window.deferredPWAPrompt = null;
@@ -21,12 +21,56 @@
       window.deferredPWAPrompt = null;
     });
   </script>
-  <script type="module" crossorigin src="/assets/index-BXgS3rjl.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CETaaOX1.css">
+  <script type="module" crossorigin src="/assets/index-Cono4X9L.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-X-hno6su.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 
 <body style="background-color: #020617;">
-  <div id="root"></div>
+  <div id="root">
+    <style>
+      .splash-bg { background-color: #020617; position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; z-index: 10000; }
+      .splash-orb-1 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; background: rgba(37, 99, 235, 0.1); border-radius: 50%; filter: blur(120px); animation: splash-pulse 4s infinite; }
+      .splash-orb-2 { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: rgba(147, 51, 234, 0.1); border-radius: 50%; filter: blur(100px); animation: splash-pulse 6s infinite reverse; }
+      .splash-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(59,130,246,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.02) 1px, transparent 1px); background-size: 60px 60px; opacity: 0.3; pointer-events: none; }
+      .splash-rings { position: relative; width: 112px; height: 112px; margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; }
+      .splash-ring { position: absolute; border-radius: 50%; border: 1px solid transparent; }
+      .splash-ring-1 { inset: 0; border-color: rgba(59,130,246,0.1); border-top-color: rgba(59,130,246,0.8); animation: splash-spin 2.5s linear infinite; }
+      .splash-ring-2 { inset: 8px; border-color: rgba(168,85,247,0.1); border-bottom-color: rgba(168,85,247,0.7); animation: splash-spin 2s linear infinite reverse; }
+      .splash-ring-3 { inset: 16px; border-color: rgba(34,211,238,0.1); border-right-color: rgba(34,211,238,0.6); animation: splash-spin 3s linear infinite; }
+      .splash-core { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(to top right, #2563eb, #9333ea); filter: blur(12px); animation: splash-pulse 2s infinite; }
+      .splash-core-inner { position: absolute; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(to top right, #60a5fa, #c084fc); opacity: 0.9; box-shadow: 0 0 20px rgba(96,165,250,0.8); }
+      .splash-brand { font-family: system-ui, -apple-system, sans-serif; font-size: 2.25rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; color: #f8fafc; text-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+      .splash-brand span { background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .splash-msg-box { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; padding: 0.5rem 1.5rem; border-radius: 9999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+      .splash-dot { width: 6px; height: 6px; border-radius: 50%; }
+      .splash-dot-1 { background-color: #3b82f6; animation: splash-ping 1s cubic-bezier(0,0,0.2,1) infinite; }
+      .splash-dot-2 { background-color: #a855f7; animation: splash-ping 1s cubic-bezier(0,0,0.2,1) infinite 0.4s; }
+      .splash-text { color: #cbd5e1; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; font-size: 10px; margin: 0; }
+      @keyframes splash-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+      @keyframes splash-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes splash-ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+    </style>
+    <div class="splash-bg">
+      <div class="splash-orb-1"></div>
+      <div class="splash-orb-2"></div>
+      <div class="splash-grid"></div>
+      <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center;">
+        <div class="splash-rings">
+          <div class="splash-ring splash-ring-1"></div>
+          <div class="splash-ring splash-ring-2"></div>
+          <div class="splash-ring splash-ring-3"></div>
+          <div class="splash-core"></div>
+          <div class="splash-core-inner"></div>
+        </div>
+        <h2 class="splash-brand">Bravy<span>nex</span></h2>
+        <div class="splash-msg-box">
+          <div class="splash-dot splash-dot-1"></div>
+          <p class="splash-text">Loading...</p>
+          <div class="splash-dot splash-dot-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
