@@ -36,7 +36,18 @@ if (process.env.NODE_ENV === "production" || process.env.ENABLE_WORKERS === "tru
       },
       { 
         connection: redisClient,
-        // Add more robust error handling
+        // === Upstash Free Tier Optimizations ===
+        // 1. Reduced Polling: Wait 5 minutes (300 seconds) when the queue is empty 
+        //    before making another BZPOPMIN request. By default, it's 5 seconds.
+        drainDelay: 300, 
+        
+        // 2. Reduce EVALSHA commands check: BullMQ checks for stalled jobs.
+        //    Default is 30000ms (30s), which burns Upstash free-tier limits.
+        //    Increase to 5 minutes (300000ms).
+        stalledInterval: 300000,
+        
+        // 3. Prevent retries of stalled jobs, reduces Redis command overhead
+        maxStalledCount: 0,
       }
     );
 

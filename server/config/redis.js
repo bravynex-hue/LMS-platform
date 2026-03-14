@@ -17,6 +17,7 @@ if (isProd) {
       return Math.min(times * 50, 2000);
     },
     maxRetriesPerRequest: null,
+    enableReadyCheck: false,
   };
 
   if (redisUrl && redisUrl.startsWith('rediss://')) {

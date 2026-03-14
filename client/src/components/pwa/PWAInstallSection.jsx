@@ -101,6 +101,10 @@ export default function PWAInstallSection() {
   const isIOSEnv = deviceKind === "ios";
   const isDesktopEnv = deviceKind === "desktop";
 
+  if (isStandalone) {
+    return null;
+  }
+
   return (
     <section className="relative py-28 px-6 sm:px-8 overflow-hidden" style={{ background: "var(--bg-dark)" }}>
       {/* Background */}
