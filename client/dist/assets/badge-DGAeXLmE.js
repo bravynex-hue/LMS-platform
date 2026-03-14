@@ -1,0 +1,1 @@
+import{r as a,j as n}from"./index-xlZ-WNeW.js";const o=a.forwardRef(({className:e="",children:s,...r},t)=>n.jsx("span",{ref:t,className:`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${e}`,...r,children:s}));o.displayName="Badge";export{o as B};

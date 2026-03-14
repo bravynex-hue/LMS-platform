@@ -38,8 +38,13 @@ export function SpinnerFullPage({ message = "Loading..." }) {
           <div className="absolute inset-4 rounded-full border border-cyan-400/10 border-r-cyan-400/60 animate-spin" style={{ animationDuration: '3s' }} />
           
           {/* Core */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 blur-md animate-pulse" style={{ animationDuration: '2s' }} />
-          <div className="absolute w-6 h-6 rounded-full bg-gradient-to-tr from-blue-400 to-purple-400 opacity-90 shadow-[0_0_20px_rgba(96,165,250,0.8)]" />
+          <img 
+            src="/icons/icon-192.png" 
+            alt="Bravynex" 
+            className="absolute w-12 h-12 z-20 mix-blend-screen drop-shadow-[0_0_12px_rgba(59,130,246,0.6)] animate-pulse" 
+            style={{ animationDuration: '3s' }}
+          />
+          <div className="w-12 h-12 rounded-full bg-blue-500/10 blur-xl animate-pulse" />
         </div>
 
         {/* Branding */}

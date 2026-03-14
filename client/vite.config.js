@@ -15,11 +15,9 @@ export default defineConfig({
       injectRegister: null,
       includeAssets: [
         "manifest.json",
-        "icons/icon-192.svg",
         "icons/icon-512.svg",
         "icons/icon-192.png",
         "icons/icon-512.png",
-        "images/icon.svg",
       ],
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,jpg,jpeg,webp,woff2,json}"],
