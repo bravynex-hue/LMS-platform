@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="0.5" stop-color="#020617"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.25" r="0.75">
+      <stop offset="0" stop-color="#4f46e5" stop-opacity="0.6"/>
+      <stop offset="0.45" stop-color="#0f172a" stop-opacity="0.0"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bolt-face" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a5b4fc"/>
+      <stop offset="0.3" stop-color="#818cf8"/>
+      <stop offset="0.7" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="bolt-side" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#312e81"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="shadow-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0b1120" flood-opacity="0.9"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="36" flood-color="#4f46e5" flood-opacity="0.55"/>
+    </filter>
+    <filter id="inner" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
+      <feOffset dy="4" result="offsetBlur"/>
+      <feComposite in="SourceGraphic" in2="offsetBlur" operator="arithmetic" k2="1" k3="-1"/>
+    </filter>
+  </defs>
+
+  <!-- Base rounded square -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+
+  <!-- Soft radial glow -->
+  <circle cx="256" cy="196" r="210" fill="url(#glow)" opacity="0.85"/>
+
+  <!-- Floating plate -->
+  <rect x="72" y="96" width="368" height="320" rx="96"
+        fill="#020617"
+        stroke="rgba(148, 163, 184, 0.16)"
+        stroke-width="2"
+        filter="url(#inner)"/>
+
+  <!-- 3D lightning bolt group -->
+  <g filter="url(#shadow-soft)" transform="translate(0,-6)">
+    <!-- back side -->
+    <path
+      d="M210 142L320 142L280 234L346 234L220 382L250 288L192 288Z"
+      fill="url(#bolt-side)"
+      opacity="0.9"
+    />
+    <!-- front face -->
+    <path
+      d="M202 134L316 134L276 230L344 230L214 386L246 284L186 284Z"
+      fill="url(#bolt-face)"
+    />
+    <!-- highlight edge -->
+    <path
+      d="M202 134L316 134L276 230L344 230L214 386L246 284L186 284Z"
+      fill="none"
+      stroke="rgba(248,250,252,0.65)"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Outer ring accent -->
+  <circle cx="256" cy="256" r="210"
+          fill="none"
+          stroke="rgba(148,163,184,0.12)"
+          stroke-width="2"/>
+</svg>
