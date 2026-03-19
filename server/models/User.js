@@ -31,7 +31,7 @@ const UserSchema = new mongoose.Schema({
   avatar: String,
   provider: {
     type: String,
-    enum: ['local', 'google', 'github'],
+    enum: ['local', 'github'],
     default: 'local'
   },
   providerId: {
@@ -137,16 +137,7 @@ const UserSchema = new mongoose.Schema({
       default: false
     }
   },
-  // Google OAuth
-  google: {
-    connected: { type: Boolean, default: false },
-    access_token: String,
-    refresh_token: String,
-    scope: String,
-    token_type: String,
-    expiry_date: Number,
-    profileId: String
-  },
+
   // GitHub OAuth
   github: {
     connected: { type: Boolean, default: false },
