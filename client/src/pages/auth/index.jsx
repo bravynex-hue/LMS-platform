@@ -28,9 +28,15 @@ function AuthPage() {
   // Safety check to prevent crash if context is null
   const {
     signInFormData,
+    setSignInFormData,
     signUpFormData,
+    setSignUpFormData,
+    handleRegisterUser,
+    handleLoginUser,
     activeTab = "signin",
     handleTabChange = () => {},
+    isRegistering,
+    isLoggingIn,
   } = authContext || {};
 
   useEffect(() => {
