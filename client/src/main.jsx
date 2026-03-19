@@ -104,7 +104,7 @@ function Root() {
   );
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "dummy_client_id_to_prevent_crash";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
