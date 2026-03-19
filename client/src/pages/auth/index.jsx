@@ -270,11 +270,6 @@ function AuthPage() {
                   <div className="w-full border-t border-white/5" />
                   <span className="absolute px-3 bg-[#0a1628] text-[10px] uppercase tracking-widest text-[#475569] font-bold">Or continue with</span>
                 </div>
-                
-                <div className="relative flex items-center justify-center py-2">
-                  <div className="w-full border-t border-white/5" />
-                  <span className="absolute px-3 bg-[#0a1628] text-[10px] uppercase tracking-widest text-[#475569] font-bold">Or continue with</span>
-                </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   {/* Visual-only Google button as requested */}
