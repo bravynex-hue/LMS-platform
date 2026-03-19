@@ -105,7 +105,7 @@ function Root() {
 }
 
 // Fallback to the known public Client ID if the environment variable is not defined in the build
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "502928607703-vi0r6033aaunqurs9p4iq388dmromohf.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "112022316336-k6rpmr3jn7459gfl96locf636r43olte.apps.googleusercontent.com";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>

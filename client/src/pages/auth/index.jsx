@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import axiosInstance from "@/api/axiosInstance";
 
 const FuturisticHeroScene = lazy(() =>
   import("@/components/student-view/futuristic-hero-scene")
@@ -41,6 +41,7 @@ function AuthPage() {
     handleTabChange = () => {},
     isRegistering = false,
     isLoggingIn = false,
+    checkAuthUser = () => {},
   } = authContext || {};
 
   const handleGoogleResponse = async (tokenResponse) => {
@@ -48,24 +49,32 @@ function AuthPage() {
       const idToken = tokenResponse?.id_token;
       if (!idToken) return;
 
-      const apiBase =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
-      const res = await axios.post(
-        `${apiBase}/secure-auth/google`,
-        { idToken },
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        "/secure/google",
+        { idToken }
       );
 
       if (res.data?.success && res.data?.data?.accessToken) {
-        // Optional: mirror cookie token in localStorage if your app uses it
+        // Essential: store the token so checkAuthUser can find it
         localStorage.setItem("accessToken", res.data.data.accessToken);
+        
+        // Critical: Update global auth state
+        const authResult = await checkAuthUser();
+        
         toast({
           title: "Google login successful",
           description: "You are now signed in.",
         });
-        // Let your existing auth-context checkAuthUser + routing handle redirects
-        navigate("/");
+
+        // Use the same role-based redirect as standard login
+        const user = authResult?.data?.user || res.data.data.user;
+        if (user?.role === "admin") {
+          navigate("/admin");
+        } else if (user?.role === "instructor") {
+          navigate("/instructor");
+        } else {
+          navigate("/");
+        }
       } else {
         toast({
           title: "Google login failed",
