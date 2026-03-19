@@ -7,16 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import ForgotPassword from "@/components/auth/forgot-password";
 import ResetPassword from "@/components/auth/reset-password";
 import {
-  Zap,
-  Sparkles,
   ArrowLeft,
   Lock,
   UserPlus,
   KeyRound,
   ShieldCheck,
 } from "lucide-react";
-import axiosInstance from "@/api/axiosInstance";
-import tokenManager from "@/utils/tokenManager";
 
 const FuturisticHeroScene = lazy(() =>
   import("@/components/student-view/futuristic-hero-scene")
@@ -31,17 +27,10 @@ function AuthPage() {
 
   // Safety check to prevent crash if context is null
   const {
-    signInFormData = {},
-    setSignInFormData = () => {},
-    signUpFormData = {},
-    setSignUpFormData = () => {},
-    handleRegisterUser = () => {},
-    handleLoginUser = () => {},
+    signInFormData,
+    signUpFormData,
     activeTab = "signin",
     handleTabChange = () => {},
-    isRegistering = false,
-    isLoggingIn = false,
-    checkAuthUser = () => {},
   } = authContext || {};
 
   useEffect(() => {
@@ -73,7 +62,7 @@ function AuthPage() {
       toast({ title: "Account not found", description: "You don't have an account yet. Please sign up first.", variant: "destructive" });
       navigate(path === "/signup" ? "/signup" : "/signup", { replace: true });
     }
-  }, [location, searchParams]);
+  }, [location, searchParams, activeTab, handleTabChange, navigate, toast]);
 
   function isSignInValid() {
     return signInFormData?.userEmail !== "" && signInFormData?.password !== "";

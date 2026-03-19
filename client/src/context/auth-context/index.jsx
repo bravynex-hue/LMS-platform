@@ -1,10 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { initialSignInFormData, initialSignUpFormData } from "@/config";
 import { checkAuthService, loginService, registerService } from "@/services";
 import { createContext, useEffect, useState, useCallback, useContext } from "react";
 import PropTypes from "prop-types";
 import validator from "validator";
 import { useToast } from "@/hooks/use-toast";
+import axiosInstance from "@/api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { SpinnerFullPage } from "@/components/ui/spinner";
 import tokenManager from "@/utils/tokenManager";
