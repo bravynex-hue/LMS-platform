@@ -382,76 +382,85 @@ function StudentViewCourseDetailsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Brochure / syllabus PDF */}
+                {/* Brochure / syllabus PDF - Premium Redesign */}
                 {studentViewCourseDetails?.brochureUrl && (
-                  <Card className="glass-card border-white/5 bg-white/[0.02]">
-                    <CardHeader className="border-b border-white/5 p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center border border-blue-500/30">
-                          <FileText className="w-6 h-6 text-blue-400" />
+                  <div className="relative group overflow-hidden rounded-[2rem] p-px">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-blue-500/30 opacity-70 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-x" />
+                    
+                    <div className="relative bg-[#0f172a]/90 backdrop-blur-2xl rounded-[2rem] p-8 sm:p-10">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                        <div className="flex items-start gap-6">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30 group-hover:scale-110 transition-transform duration-500">
+                              <FileText className="w-8 h-8 text-blue-400 group-hover:animate-pulse" />
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-purple-600/30 rounded-lg flex items-center justify-center border border-purple-500/30 backdrop-blur-xl">
+                              <Zap className="w-3 h-3 text-purple-400" />
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/80">Program Registry</span>
+                            <h3 className="text-2xl font-black text-white leading-tight uppercase tracking-tighter">
+                              Course Curriculum Brochure
+                            </h3>
+                            <p className="text-gray-400 text-sm max-w-md leading-relaxed">
+                              Access the comprehensive technical track outline, learning objectives, 
+                              and project deliverables in an industry-standard format.
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-xl font-black text-white uppercase tracking-wider">
-                            Course brochure
-                          </CardTitle>
-                          <p className="text-gray-500 text-sm font-medium">
-                            Download the detailed syllabus and program outline
-                            as a PDF.
-                          </p>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                           <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 p-4 rounded-2xl w-full sm:w-auto">
+                              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                <FileText className="w-5 h-5 text-blue-400" />
+                              </div>
+                              <div className="flex flex-col pr-4">
+                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Source File</span>
+                                <span className="text-sm font-bold text-gray-300 truncate max-w-[120px]">
+                                  {studentViewCourseDetails.brochureFileName || "course-brochure.pdf"}
+                                </span>
+                              </div>
+                           </div>
+
+                           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                              <Button
+                                onClick={() => window.open(studentViewCourseDetails.brochureUrl, '_blank')}
+                                variant="ghost"
+                                className="h-14 px-8 rounded-2xl border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all font-black uppercase tracking-widest text-[10px] text-gray-400 hover:text-white"
+                              >
+                                View Live
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  let url = studentViewCourseDetails.brochureUrl;
+                                  if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
+                                    url = url.replace('/upload/', '/upload/fl_attachment/');
+                                  }
+                                  const link = document.createElement("a");
+                                  link.href = url;
+                                  link.target = "_blank";
+                                  link.rel = "noopener noreferrer";
+                                  link.download = studentViewCourseDetails.brochureFileName || "course-brochure.pdf";
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                                className="h-14 px-8 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group/btn"
+                              >
+                                <Download className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
+                                Download PDF
+                              </Button>
+                           </div>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-blue-300" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">
-                            {studentViewCourseDetails.brochureFileName ||
-                              "course-brochure.pdf"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            PDF file • opens in a new tab
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => window.open(studentViewCourseDetails.brochureUrl, '_blank')}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
-                        >
-                          <FileText className="w-4 h-4" />
-                          <span>View brochure</span>
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            let url = studentViewCourseDetails.brochureUrl;
-                            if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
-                              url = url.replace('/upload/', '/upload/fl_attachment/');
-                            }
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.target = "_blank";
-                            link.rel = "noopener noreferrer";
-                            link.download =
-                              studentViewCourseDetails.brochureFileName ||
-                              "course-brochure.pdf";
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          }}
-                          className="w-full sm:w-auto flex items-center justify-center gap-2"
-                        >
-                          <Download className="w-4 h-4" />
-                          <span>Download</span>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      
+                      {/* Sub-surface decoration */}
+                      <div className="absolute right-0 bottom-0 w-64 h-64 bg-blue-600/5 blur-[80px] pointer-events-none" />
+                      <div className="absolute left-1/4 top-0 w-32 h-32 bg-purple-600/5 blur-[60px] pointer-events-none" />
+                    </div>
+                  </div>
                 )}
 
                 {/* Course Description */}

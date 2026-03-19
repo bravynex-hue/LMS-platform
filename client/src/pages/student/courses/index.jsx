@@ -21,7 +21,7 @@ import {
   checkCoursePurchaseInfoService,
   fetchStudentViewCourseListService,
 } from "@/services";
-import { ArrowUpDownIcon, BookOpen, Filter, X, Zap, ChevronRight, Search, Play, Star, Clock } from "lucide-react";
+import { ArrowUpDownIcon, BookOpen, Filter, X, Zap, ChevronRight, Search, Play, Star, Clock, FileText, Download as DownloadIcon } from "lucide-react";
 import { useCallback, useContext, useEffect, useMemo, useState, useRef, Suspense, lazy } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SpinnerOverlay } from "@/components/ui/spinner";
@@ -465,9 +465,44 @@ function StudentViewCoursesPage() {
                                  {Number(c.pricing).toLocaleString("en-IN")}
                                </span>
                              </div>
-                             <button className="h-10 w-10 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-400 transition-all duration-300 transform group-hover:rotate-2">
-                                <ChevronRight className="w-5 h-5 text-blue-400 group-hover:text-white" />
-                             </button>
+                             <div className="flex items-center gap-1.5">
+                               {c.brochureUrl && (
+                                 <button 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     let url = c.brochureUrl;
+                                     if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
+                                       url = url.replace('/upload/', '/upload/fl_attachment/');
+                                     }
+                                     const link = document.createElement("a");
+                                     link.href = url;
+                                     link.target = "_blank";
+                                     link.rel = "noopener noreferrer";
+                                     link.download = c.brochureFileName || "course-brochure.pdf";
+                                     document.body.appendChild(link);
+                                     link.click();
+                                     document.body.removeChild(link);
+                                   }}
+                                   className="h-8 px-2.5 rounded-lg relative group/brochure overflow-hidden transition-all duration-500 border border-blue-500/30 hover:border-blue-400 bg-white/[0.05] backdrop-blur-md flex items-center justify-center gap-1.5 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] active:scale-95"
+                                   title="Download Brochure"
+                                 >
+                                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/brochure:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                   
+                                   <FileText className="w-3 h-3 text-blue-400 group-hover/brochure:scale-110 transition-transform duration-300 relative z-10" />
+                                   <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover/brochure:text-white transition-colors hidden sm:inline relative z-10">Brochure</span>
+                                   <DownloadIcon className="w-2.5 h-2.5 text-blue-400 opacity-0 -translate-y-1 group-hover/brochure:opacity-100 group-hover/brochure:translate-y-0 transition-all duration-500 relative z-10" />
+                                 </button>
+                               )}
+                               <button 
+                                 className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center hover:bg-blue-600 hover:border-blue-400 transition-all duration-500 transform hover:rotate-6 shadow-lg shadow-blue-900/40 active:scale-90 group/access"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleCourseNavigate(c._id);
+                                 }}
+                               >
+                                 <ChevronRight className="w-4 h-4 text-blue-400 group-hover/access:text-white transition-all duration-300 group-hover/access:scale-110" />
+                               </button>
+                             </div>
                           </div>
                         </div>
                       </div>
