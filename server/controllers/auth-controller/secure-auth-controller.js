@@ -3,11 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const crypto = require("crypto");
-const { OAuth2Client } = require("google-auth-library");
 const { validatePasswordStrength, validateEmail, markSuspiciousIP } = require("../../middleware/security-middleware");
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClient = googleClientId ? new OAuth2Client(googleClientId) : null;
 
 // Enhanced user registration with comprehensive security
 const secureRegisterUser = async (req, res) => {
@@ -544,118 +541,10 @@ const secureVerifyPasswordReset = async (req, res) => {
   }
 };
 
-// Frontend-first Google OAuth: accept ID token, verify with Google, issue JWT
-const secureGoogleLogin = async (req, res) => {
-  try {
-    if (!googleClient) {
-      return res.status(500).json({
-        success: false,
-        message: "Google OAuth is not configured on the server",
-        code: "GOOGLE_NOT_CONFIGURED",
-      });
-    }
-
-    const { idToken } = req.body || {};
-    if (!idToken) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing Google idToken",
-        code: "MISSING_ID_TOKEN",
-      });
-    }
-
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: googleClientId,
-    });
-
-    const payload = ticket.getPayload();
-    const googleId = payload.sub;
-    const email = payload.email;
-    const name = payload.name;
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Google account has no verified email",
-        code: "NO_EMAIL",
-      });
-    }
-
-    let user =
-      (await User.findOne({ googleId })) ||
-      (await User.findOne({ userEmail: email }));
-
-    if (!user) {
-      user = await User.create({
-        userName: name || email.split("@")[0],
-        userEmail: email,
-        googleId,
-        role: "user",
-        isEmailVerified: true,
-        registrationIP: req.ip,
-        registrationUserAgent: req.headers["user-agent"],
-        createdAt: new Date(),
-      });
-    } else if (!user.googleId) {
-      user.googleId = googleId;
-      await user.save();
-    }
-
-    const tokenPayload = {
-      _id: user._id,
-      userName: user.userName,
-      userEmail: user.userEmail,
-      role: user.role,
-      loginIP: req.ip,
-      loginTime: new Date(),
-    };
-
-    const accessToken = jwt.sign(
-      tokenPayload,
-      process.env.JWT_SECRET || "JWT_SECRET",
-      {
-        expiresIn: "2h",
-        issuer: "bravynex-platform",
-        audience: "bravynex-users",
-      }
-    );
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 2 * 60 * 60 * 1000,
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Google login successful",
-      code: "GOOGLE_LOGIN_SUCCESS",
-      data: {
-        accessToken,
-        user: {
-          _id: user._id,
-          userName: user.userName,
-          userEmail: user.userEmail,
-          role: user.role,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Secure Google login error:", error);
-    return res.status(401).json({
-      success: false,
-      message: "Invalid Google token",
-      code: "INVALID_GOOGLE_TOKEN",
-    });
-  }
-};
 
 module.exports = {
   secureRegisterUser,
   secureLoginUser,
   secureInitiatePasswordReset,
   secureVerifyPasswordReset,
-  secureGoogleLogin,
 };
