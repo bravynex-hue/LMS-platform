@@ -59,6 +59,12 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
+// ----------------- Request Logging -----------------
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - Origin: ${req.get('origin') || 'none'}`);
+  next();
+});
+
 // ----------------- CORS (must be before maintenance mode) -----------------
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || "")
   .split(",")
@@ -328,9 +334,11 @@ mongoose.connect(MONGO_URI, {
   });
 
 // ----------------- API Routes -----------------
-app.use("/public", publicRoutes); // Public routes - no auth required
+console.log("🛠️  Registering API routes...");
+app.use("/public", publicRoutes); 
 app.use("/auth", authRoutes);
 app.use("/secure", secureAuthRoutes);
+console.log("✅ Main Auth routes registered (/auth, /secure)");
 app.use("/media", mediaRoutes);
 app.use("/instructor/course", instructorCourseRoutes);
 app.use("/instructor/analytics", instructorAnalyticsRoutes);
@@ -353,6 +361,7 @@ app.use("/feedback", feedbackRoutes);
 
 app.get("/favicon.ico", (req, res) => res.sendStatus(204));
 app.get("/health", (req, res) => {
+  console.log("🏥 Health check requested");
   res.status(200).json({ 
     status: IS_MAINTENANCE_MODE ? "MAINTENANCE" : "OK", 
     timestamp: new Date().toISOString(), 
@@ -360,6 +369,7 @@ app.get("/health", (req, res) => {
     maintenance: IS_MAINTENANCE_MODE
   });
 });
+console.log("✅ Health route registered (/health)");
 
 // Test endpoint to verify CSRF protection is working
 app.post("/test-csrf", (req, res) => {

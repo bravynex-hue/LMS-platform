@@ -5,9 +5,9 @@ import { createContext, useEffect, useState, useCallback, useContext } from "rea
 import PropTypes from "prop-types";
 import validator from "validator";
 import { useToast } from "@/hooks/use-toast";
-import axiosInstance from "@/api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { SpinnerFullPage } from "@/components/ui/spinner";
+import tokenManager from "@/utils/tokenManager";
 
 export const AuthContext = createContext(null);
 
@@ -104,11 +104,8 @@ export default function AuthProvider({ children }) {
       const data = await loginService(signInFormData);
 
       if (data.success) {
-        // Store token in session storage
-        localStorage.setItem(
-          "accessToken",
-          data.data.accessToken
-        );
+        // Store token with tokenManager for standard storage + keepAlive
+        tokenManager.setToken(data.data.accessToken);
         
         // Update auth state
         setAuth({
@@ -154,21 +151,21 @@ export default function AuthProvider({ children }) {
 
   const checkAuthUser = useCallback(async () => {
     try {
-      // Check if there's a token in localStorage
-      const token = localStorage.getItem("accessToken");
+      // Check if there's a token via tokenManager
+      const token = tokenManager.getCurrentToken();
       
-      if (!token) {
-        // No token - immediately set to not authenticated (no loading needed)
+      if (!token || tokenManager.isTokenExpired(token)) {
+        // No token or expired - immediately set to not authenticated
+        tokenManager.removeToken();
         setAuth({
           authenticate: false,
           user: null,
         });
         setLoading(false);
-        return;
+        return null;
       }
 
       // Token exists - verify it with server
-      // This is necessary for security and to get fresh user data
       const data = await checkAuthService();
       
       if (data.success) {
@@ -179,7 +176,7 @@ export default function AuthProvider({ children }) {
         return data;
       } else {
         // Token invalid or expired - clear it
-        localStorage.removeItem("accessToken");
+        tokenManager.removeToken();
         setAuth({
           authenticate: false,
           user: null,
@@ -187,13 +184,15 @@ export default function AuthProvider({ children }) {
         return data;
       }
     } catch (error) {
-      // Network error or server error - clear token to be safe
+      // Network error or server error - clear token to be safe if strictly 401
+      if (error?.response?.status === 401) {
+        tokenManager.removeToken();
+        setAuth({
+          authenticate: false,
+          user: null,
+        });
+      }
       console.warn("Auth check failed:", error?.message);
-      localStorage.removeItem("accessToken");
-      setAuth({
-        authenticate: false,
-        user: null,
-      });
     } finally {
       // Always set loading to false, regardless of outcome
       setLoading(false);
@@ -208,8 +207,8 @@ export default function AuthProvider({ children }) {
   }
 
   function logout() {
-    // Clear session storage
-    localStorage.removeItem("accessToken");
+    // Clear token with manager
+    tokenManager.removeToken();
     
     // Reset auth state
     setAuth({

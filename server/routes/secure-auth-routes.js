@@ -4,7 +4,6 @@ const {
   secureLoginUser, 
   secureInitiatePasswordReset, 
   secureVerifyPasswordReset,
-  secureGoogleLogin,
 } = require("../controllers/auth-controller/secure-auth-controller");
 const { secureContactSubmission } = require("../controllers/secure-contact-controller");
 const { 
@@ -27,7 +26,6 @@ router.use(sanitizeInput);
 // Authentication routes with enhanced security
 router.post("/register", registrationProtection, secureRegisterUser);
 router.post("/login", bruteForceProtection, secureLoginUser);
-router.post("/google", secureGoogleLogin);
 router.post("/forgot-password", passwordResetProtection, secureInitiatePasswordReset);
 router.post("/reset-password", passwordResetProtection, secureVerifyPasswordReset);
 

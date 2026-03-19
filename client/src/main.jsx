@@ -10,7 +10,7 @@ import { Toaster } from "./components/ui/toaster.jsx";
 import { SocketProvider } from "./context/socket-context/index.jsx";
 import { SpinnerFullPage } from "./components/ui/spinner.jsx";
 import MaintenancePage from "./pages/maintenance/index.jsx";
-import { GoogleOAuthProvider } from "@react-oauth/google";
+
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -104,13 +104,8 @@ function Root() {
   );
 }
 
-// Fallback to the known public Client ID if the environment variable is not defined in the build
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "112022316336-k6rpmr3jn7459gfl96locf636r43olte.apps.googleusercontent.com";
-
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Root />
-    </GoogleOAuthProvider>
+    <Root />
   </BrowserRouter>
 );

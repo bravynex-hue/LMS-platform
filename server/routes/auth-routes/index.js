@@ -47,62 +47,6 @@ router.post("/forgot-password", moderateActionLimiter, initiatePasswordReset);
 router.post("/reset-password", moderateActionLimiter, verifyOTPAndResetPassword);
 
 // OAuth Routes
-router.get("/google", (req, res, next) => {
-  const mode = req.query.mode || 'signin';
-  passport.authenticate("google", { 
-    scope: ["profile", "email"],
-    state: mode
-  })(req, res, next);
-});
-router.get(
-  "/google/callback",
-  (req, res, next) => {
-    passport.authenticate("google", { session: false }, (err, user, info) => {
-      if (err) return next(err);
-      if (!user) {
-        const base = getFrontendBase();
-        if (info && info.message === 'not_registered') {
-          return res.redirect(`${base}/signup?error=not_registered`);
-        }
-        return res.redirect(`${base}/signin?error=google_failed`);
-      }
-      req.user = user;
-      next();
-    })(req, res, next);
-  },
-  (req, res) => {
-    // req.user is populated by passport
-    const user = req.user;
-    const token = jwt.sign(
-      {
-        _id: user._id,
-        userName: user.userName,
-        userEmail: user.userEmail,
-        role: user.role,
-        studentId: user.studentId,
-        avatar: user.avatar,
-      },
-      process.env.JWT_SECRET || "JWT_SECRET",
-      { expiresIn: "120m" }
-    );
-    
-    // Redirect to frontend with token
-    const mode = req.query.state || 'signin';
-    // If it's signup mode, redirect to signin page to force login
-    if (mode === 'signup') {
-      const base = getFrontendBase();
-      if (user.isNewUser) {
-        res.redirect(`${base}/auth/success?token=${token}&isNewUser=true`);
-      } else {
-        res.redirect(`${base}/auth/success?token=${token}&alreadyRegistered=true`);
-      }
-    } else {
-      const base = getFrontendBase();
-      res.redirect(`${base}/auth/success?token=${token}&isNewUser=false`);
-    }
-  }
-);
-
 router.get("/github", (req, res, next) => {
   const mode = req.query.mode || 'signin';
   passport.authenticate("github", { 
