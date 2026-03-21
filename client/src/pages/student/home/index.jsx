@@ -370,15 +370,14 @@ function StudentHomePage() {
   const { studentViewCoursesList, setStudentViewCoursesList } = useContext(StudentContext);
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
-  const pageRef = usePageTransition();
+  const pageRef = useRef(null);
   const heroRef = useRef(null);
 
-
-  function handleNavigateToCoursesPage(getCurrentId) {
+  const handleNavigateToCoursesPage = useCallback((getCurrentId) => {
     sessionStorage.removeItem("filters");
     sessionStorage.setItem("filters", JSON.stringify({ category: [getCurrentId] }));
     navigate("/courses");
-  }
+  }, [navigate]);
 
   const fetchAllStudentViewCourses = useCallback(async () => {
     const response = await fetchStudentViewCourseListService();
@@ -397,7 +396,9 @@ function StudentHomePage() {
       ? navEntry.type === "reload"
       : performance.navigation?.type === 1;
 
-    if (isReload) pageRef.enter("fade");
+    if (isReload && pageRef.current) {
+      gsap.fromTo(pageRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" });
+    }
 
     const tl = gsap.timeline({ delay: isReload ? 0.15 : 0 });
     tl.fromTo(".hero-badge-anim", { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" })
@@ -433,10 +434,10 @@ function StudentHomePage() {
       tl.kill();
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [pageRef]);
+  }, []);
 
   return (
-    <div style={{ background: "var(--bg-dark)", color: "var(--text-primary)", minHeight: "100vh" }}>
+    <div ref={pageRef} style={{ background: "var(--bg-dark)", color: "var(--text-primary)", minHeight: "100vh" }}>
 
       {/* ══════════════════════════════════════════════════════
            HERO SECTION

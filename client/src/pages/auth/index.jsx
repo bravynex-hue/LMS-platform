@@ -249,36 +249,33 @@ function AuthPage() {
             )}
             
             {(activeTab === "signin" || activeTab === "signup") && (
-              <div className="mt-4 space-y-4">
+              <div className="mt-6 space-y-4">
                 <div className="relative flex items-center justify-center py-2">
                   <div className="w-full border-t border-white/5" />
-                  <span className="absolute px-3 bg-[#0a1628] text-[10px] uppercase tracking-widest text-[#475569] font-bold">Or continue with</span>
+                  <span className="absolute px-4 bg-[#0a1628] text-[10px] uppercase tracking-[0.2em] text-[#475569] font-black italic">OR CONTINUE WITH</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Google Button - High Fidelity Symbol */}
+                <div className="grid grid-cols-2 gap-3 pb-2">
+                  {/* Perfectly Matched Google Button */}
                   <button
                     type="button"
                     onClick={() => login()}
-                    className="flex items-center justify-center gap-4 py-3.5 px-6 rounded-xl transition-all duration-300 hover:bg-[#161b22] hover:shadow-xl active:scale-95 group relative overflow-hidden flex-1"
-                    style={{
-                      background: "#010409",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
+                    className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 hover:bg-white/[0.05] border border-white/[0.08] active:scale-95 group relative overflow-hidden flex-1"
+                    style={{ background: "rgba(255, 255, 255, 0.02)" }}
                   >
-                    <div className="flex items-center justify-center w-6 h-6 flex-shrink-0 transition-transform group-hover:scale-110">
-                      <svg viewBox="0 0 48 48" className="w-full h-full shadow-sm">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110 relative z-10">
+                      <svg viewBox="0 0 48 48" className="w-full h-full drop-shadow-sm">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
                         <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.13-.45-4.63H24v9.03h12.91c-.58 3.12-2.32 5.76-4.96 7.53l7.7 5.97c4.5-4.15 7.33-10.27 7.33-17.9z" />
                         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z" />
                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.7-5.97c-2.19 1.48-5.01 2.36-8.19 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                        <path fill="none" d="M0 0h48v48H0z" />
                       </svg>
                     </div>
-                    <span className="text-[15px] font-bold tracking-tight text-[#f0f6fc]">Google</span>
+                    <span className="text-[13px] font-bold tracking-tight text-white/80 relative z-10">Google</span>
                   </button>
 
-                  {/* High Fidelity GitHub Button */}
+                  {/* Perfectly Matched GitHub Button */}
                   <button
                     type="button"
                     onClick={() =>
@@ -287,23 +284,16 @@ function AuthPage() {
                         "http://localhost:5000"
                       }/auth/github?mode=${activeTab}`)
                     }
-                    className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 hover:bg-[#161b22] hover:shadow-lg active:scale-95 group relative overflow-hidden"
-                    style={{
-                      background: "#010409",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
+                    className="flex items-center justify-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 hover:bg-white/[0.05] border border-white/[0.08] active:scale-95 group relative overflow-hidden flex-1"
+                    style={{ background: "rgba(255, 255, 255, 0.02)" }}
                   >
-                    <div className="flex items-center justify-center w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110">
-                      <svg 
-                        className="w-full h-full fill-[#f0f6fc]" 
-                        viewBox="0 0 24 24"
-                      >
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110 relative z-10">
+                      <svg className="w-full h-full fill-white/90" viewBox="0 0 24 24">
                         <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
                       </svg>
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-[#f0f6fc]">
-                      GitHub
-                    </span>
+                    <span className="text-[13px] font-bold tracking-tight text-white/80 relative z-10">GitHub</span>
                   </button>
                 </div>
               </div>

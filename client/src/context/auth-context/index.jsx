@@ -118,9 +118,9 @@ export default function AuthProvider({ children }) {
     try {
       let response;
       if (isAccessToken) {
-        response = await axiosInstance.post("/auth/google", { accessToken: token });
+        response = await axiosInstance.post("/auth/google", { accessToken: token, mode });
       } else {
-        response = await axiosInstance.post("/auth/google", { idToken: token });
+        response = await axiosInstance.post("/auth/google", { idToken: token, mode });
       }
       
       const { success, message, data } = response.data;

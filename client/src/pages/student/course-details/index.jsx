@@ -384,70 +384,79 @@ function StudentViewCourseDetailsPage() {
 
                 {/* Brochure / syllabus PDF - Premium Redesign */}
                 {studentViewCourseDetails?.brochureUrl && (
-                  <div className="relative group overflow-hidden rounded-[2rem] p-px">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-blue-500/30 opacity-70 group-hover:opacity-100 transition-opacity duration-700 animate-gradient-x" />
+                  <div className="relative group overflow-hidden rounded-3xl p-[1px]">
+                    {/* Living background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-indigo-500/30 to-purple-500/20 opacity-40 group-hover:opacity-100 transition-opacity duration-700 blur-xl animate-pulse" />
                     
-                    <div className="relative bg-[#0f172a]/90 backdrop-blur-2xl rounded-[2rem] p-8 sm:p-10">
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-                        <div className="flex items-start gap-6">
+                    <div className="relative bg-slate-950/40 backdrop-blur-3xl rounded-3xl p-6 sm:p-10 border border-white/10 overflow-hidden">
+                      {/* Decorative elements */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 blur-[40px] rounded-full pointer-events-none" />
+                      
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+                        <div className="flex items-start gap-5">
                           <div className="relative flex-shrink-0">
-                            <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30 group-hover:scale-110 transition-transform duration-500">
-                              <FileText className="w-8 h-8 text-blue-400 group-hover:animate-pulse" />
+                            <div className="w-16 h-16 bg-gradient-to-br from-blue-600/20 to-indigo-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30 group-hover:border-blue-400 group-hover:scale-105 transition-all duration-500 shadow-lg shadow-blue-500/10">
+                              <FileText className="w-8 h-8 text-blue-400" />
                             </div>
-                            <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-purple-600/30 rounded-lg flex items-center justify-center border border-purple-500/30 backdrop-blur-xl">
-                              <Zap className="w-3 h-3 text-purple-400" />
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-slate-900 rounded-lg flex items-center justify-center border border-white/10">
+                              <Zap className="w-3 h-3 text-yellow-400 animate-pulse" />
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/80">Program Registry</span>
-                            <h3 className="text-2xl font-black text-white leading-tight uppercase tracking-tighter">
-                              Course Curriculum Brochure
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400/80 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Official Registry</span>
+                            </div>
+                            <h3 className="text-2xl font-black text-white leading-tight tracking-tight">
+                              Curriculum <span className="text-blue-400">Brochure</span>
                             </h3>
-                            <p className="text-gray-400 text-sm max-w-md leading-relaxed">
-                              Access the comprehensive technical track outline, learning objectives, 
-                              and project deliverables in an industry-standard format.
+                            <p className="text-slate-400 text-sm max-w-sm leading-relaxed font-medium">
+                              Download the technical syllabus, industry objectives, and certified track roadmaps.
                             </p>
                           </div>
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                           <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 p-4 rounded-2xl w-full sm:w-auto">
-                              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                                <FileText className="w-5 h-5 text-blue-400" />
+                           {/* File Info Box */}
+                           <div className="flex items-center gap-3 bg-white/[0.03] border border-white/5 p-3.5 rounded-2xl w-full sm:w-auto hover:bg-white/[0.05] transition-colors group/info">
+                              <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center border border-white/10 group-hover/info:border-blue-500/30 transition-all">
+                                <FileText className="w-4 h-4 text-blue-400" />
                               </div>
                               <div className="flex flex-col pr-4">
-                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Source File</span>
-                                <span className="text-sm font-bold text-gray-300 truncate max-w-[120px]">
-                                  {studentViewCourseDetails.brochureFileName || "course-brochure.pdf"}
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Source Registry</span>
+                                <span className="text-xs font-bold text-slate-300 truncate max-w-[140px]">
+                                  {studentViewCourseDetails.brochureFileName || "syllabus-v1.pdf"}
                                 </span>
                               </div>
                            </div>
 
-                           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                           <div className="flex items-center gap-3 w-full sm:w-auto">
                               <Button
                                 onClick={() => window.open(studentViewCourseDetails.brochureUrl, '_blank')}
                                 variant="ghost"
-                                className="h-14 px-8 rounded-2xl border border-white/10 hover:bg-white/5 hover:border-white/20 transition-all font-black uppercase tracking-widest text-[10px] text-gray-400 hover:text-white"
+                                className="h-12 px-6 rounded-xl border border-white/10 hover:bg-white/5 hover:text-white transition-all font-bold uppercase tracking-widest text-[10px] text-slate-400"
                               >
-                                View Live
+                                Preview
                               </Button>
                               <Button
                                 onClick={() => {
                                   let url = studentViewCourseDetails.brochureUrl;
-                                  if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
+                                  // Enhanced Cloudinary attachment logic
+                                  if (url.includes('/upload/') && !url.includes('fl_attachment')) {
                                     url = url.replace('/upload/', '/upload/fl_attachment/');
                                   }
+                                  
                                   const link = document.createElement("a");
                                   link.href = url;
+                                  link.setAttribute("download", studentViewCourseDetails.brochureFileName || "course-brochure.pdf");
                                   link.target = "_blank";
                                   link.rel = "noopener noreferrer";
-                                  link.download = studentViewCourseDetails.brochureFileName || "course-brochure.pdf";
                                   document.body.appendChild(link);
                                   link.click();
                                   document.body.removeChild(link);
                                 }}
-                                className="h-14 px-8 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group/btn"
+                                className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 group/btn"
                               >
                                 <Download className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
                                 Download PDF
@@ -455,10 +464,6 @@ function StudentViewCourseDetailsPage() {
                            </div>
                         </div>
                       </div>
-                      
-                      {/* Sub-surface decoration */}
-                      <div className="absolute right-0 bottom-0 w-64 h-64 bg-blue-600/5 blur-[80px] pointer-events-none" />
-                      <div className="absolute left-1/4 top-0 w-32 h-32 bg-purple-600/5 blur-[60px] pointer-events-none" />
                     </div>
                   </div>
                 )}

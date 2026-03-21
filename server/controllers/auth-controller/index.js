@@ -143,10 +143,26 @@ const loginUser = async (req, res) => {
 
   const checkUser = await User.findOne({ userEmail: normalizedEmail });
 
-  if (!checkUser || !(await bcrypt.compare(password, checkUser.password))) {
+  if (!checkUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  // If user exists but has no password, they likely used Google/GitHub to sign up
+  if (!checkUser.password) {
     return res.status(401).json({
       success: false,
-      message: "Wrong email or password",
+      message: "This account uses social login. Please sign in with Google or GitHub.",
+    });
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, checkUser.password);
+  if (!isPasswordValid) {
+    return res.status(401).json({
+      success: false,
+      message: "Incorrect password",
     });
   }
 
@@ -185,7 +201,7 @@ const loginUser = async (req, res) => {
 };
 
 const googleLogin = async (req, res) => {
-  const { idToken, accessToken } = req.body || {};
+  const { idToken, accessToken, mode = "signin" } = req.body || {};
 
   if (!idToken && !accessToken) {
     return res.status(400).json({
@@ -256,7 +272,7 @@ const googleLogin = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: "User already exists", // Explicitly telling frontend the user already exists
+        message: "User already exists", 
         data: {
           accessToken: token,
           user: {
@@ -270,7 +286,15 @@ const googleLogin = async (req, res) => {
         },
       });
     } else {
-      // New user, generate student ID
+      // User doesn't exist
+      if (mode === "signin") {
+        return res.status(404).json({
+          success: false,
+          message: "Account not found. Please sign up to create a new account.",
+        });
+      }
+
+      // New user registration (only allowed if mode is 'signup')
       const studentId = await generateUniqueStudentId();
       
       let baseUserName = (name || email.split("@")[0]).trim().replace(/\s+/g, "_").toLowerCase();
@@ -309,7 +333,7 @@ const googleLogin = async (req, res) => {
 
       return res.status(201).json({
         success: true,
-        message: "Account created successfully", // Explicitly telling frontend a new account was created
+        message: "Account created successfully",
         data: {
           accessToken: token,
           user: {
