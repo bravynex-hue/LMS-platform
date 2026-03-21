@@ -9,7 +9,10 @@ import StudentProvider from "./context/student-context/index.jsx";
 import { Toaster } from "./components/ui/toaster.jsx";
 import { SocketProvider } from "./context/socket-context/index.jsx";
 import { SpinnerFullPage } from "./components/ui/spinner.jsx";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import MaintenancePage from "./pages/maintenance/index.jsx";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 
 if ("serviceWorker" in navigator) {
@@ -91,16 +94,18 @@ function Root() {
   }
 
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <InstructorProvider>
-          <StudentProvider>
-            <App />
-            <Toaster />
-          </StudentProvider>
-        </InstructorProvider>
-      </SocketProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <SocketProvider>
+          <InstructorProvider>
+            <StudentProvider>
+              <App />
+              <Toaster />
+            </StudentProvider>
+          </InstructorProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

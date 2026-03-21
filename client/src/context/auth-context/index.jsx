@@ -39,18 +39,17 @@ export default function AuthProvider({ children }) {
 
   async function handleRegisterUser(event) {
     event.preventDefault();
-    // Client-side validation
     const { userName, userEmail, password } = signUpFormData || {};
     if (!userName || userName.trim().length < 3) {
-      toast({ title: "Invalid name", description: "Name must be at least 3 characters" });
+      toast({ title: "Invalid input", description: "Name must be at least 3 characters", variant: "destructive" });
       return;
     }
     if (!validator.isEmail(userEmail || "")) {
-      toast({ title: "Invalid email", description: "Please enter a valid email address" });
+      toast({ title: "Invalid input", description: "Please enter a valid email address", variant: "destructive" });
       return;
     }
     if (!validator.isStrongPassword(password || "", { minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1 })) {
-      toast({ title: "Weak password", description: "Include upper, lower, number, special symbol, min length 8" });
+      toast({ title: "Weak password", description: "Password must be stronger (min 8 chars, 1 upper, 1 lower, 1 number, 1 symbol)", variant: "destructive" });
       return;
     }
     setIsRegistering(true);
@@ -59,29 +58,21 @@ export default function AuthProvider({ children }) {
       const data = await registerService(signUpFormData);
       
       if (data.success) {
-        // Registration successful
         setRegistrationSuccess(true);
-        
-        // Clear the signup form
         setSignUpFormData(initialSignUpFormData);
-        
-        // Switch to login tab
         handleTabChange("signin");
+        toast({ title: "Success", description: "Account created successfully" });
+        navigate("/signin");
         
-        toast({ title: "Registration successful", description: "Please sign in" });
-        
-        // Reset success state after a delay
         setTimeout(() => {
           setRegistrationSuccess(false);
         }, 5000);
       } else {
-        console.error("❌ Registration failed:", data.message);
-        toast({ title: "Registration failed", description: data.message || "Please try again" });
+        toast({ title: "Error", description: data.message || "Registration failed", variant: "destructive" });
       }
     } catch (error) {
       console.error("❌ Registration error:", error);
-      const message = error?.response?.data?.message || error?.message || "Registration failed";
-      toast({ title: "Registration error", description: message });
+      toast({ title: "Error", description: error?.response?.data?.message || "Registration failed", variant: "destructive" });
     } finally {
       setIsRegistering(false);
     }
@@ -89,14 +80,13 @@ export default function AuthProvider({ children }) {
 
   async function handleLoginUser(event) {
     event.preventDefault();
-    // Client-side validation
     const { userEmail, password } = signInFormData || {};
     if (!validator.isEmail(userEmail || "")) {
-      toast({ title: "Invalid email", description: "Please enter a valid email" });
+      toast({ title: "Invalid input", description: "Please enter a valid email", variant: "destructive" });
       return;
     }
     if (!password || password.length < 6) {
-      toast({ title: "Invalid password", description: "Please enter your password" });
+      toast({ title: "Invalid input", description: "Please enter your password", variant: "destructive" });
       return;
     }
     setIsLoggingIn(true);
@@ -104,58 +94,72 @@ export default function AuthProvider({ children }) {
       const data = await loginService(signInFormData);
 
       if (data.success) {
-        // Store token with tokenManager for standard storage + keepAlive
         tokenManager.setToken(data.data.accessToken);
-        
-        // Update auth state
         setAuth({
           authenticate: true,
           user: data.data.user,
         });
-
-        // Clear form data
         setSignInFormData(initialSignInFormData);
-        
-        toast({ title: "Login successful", description: `Welcome back, ${data.data.user.userName || "student"}!` });
-        
-        // Redirect based on user role immediately
-        if (data.data.user.role === "admin") {
-          navigate("/admin");
-        } else if (data.data.user.role === "instructor") {
-          navigate("/instructor");
-        } else {
-          navigate("/");
-        }
+        toast({ title: "Success", description: "Login successful" });
+        navigate("/");
       } else {
-        console.error("❌ Login failed:", data.message);
-        toast({ title: "Login failed", description: data.message || "Check your credentials" });
-        setAuth({
-          authenticate: false,
-          user: null,
-        });
+        toast({ title: "Error", description: data.message || "Login failed", variant: "destructive" });
       }
     } catch (error) {
       console.error("❌ Login error:", error);
-      const message = error?.response?.data?.message || error?.message || "Login failed";
-      toast({ title: "Login error", description: message });
-      setAuth({
-        authenticate: false,
-        user: null,
-      });
+      toast({ title: "Error", description: error?.response?.data?.message || "Login failed", variant: "destructive" });
     } finally {
       setIsLoggingIn(false);
     }
   }
 
-  //check auth user
+  async function handleGoogleLogin(token, isAccessToken = false, mode = "signin") {
+    setIsLoggingIn(true);
+    try {
+      let response;
+      if (isAccessToken) {
+        response = await axiosInstance.post("/auth/google", { accessToken: token });
+      } else {
+        response = await axiosInstance.post("/auth/google", { idToken: token });
+      }
+      
+      const { success, message, data } = response.data;
+      
+      if (success) {
+        if (mode === "signup") {
+          if (message === "Account created successfully") {
+            toast({ title: "Success", description: "Account created successfully" });
+          } else if (message === "User already exists") {
+            toast({ title: "Info", description: "Account already exists, please login", variant: "destructive" });
+          }
+          handleTabChange("signin");
+          navigate("/signin");
+          return;
+        }
+
+        const { accessToken, user } = data;
+        tokenManager.setToken(accessToken);
+        setAuth({
+          authenticate: true,
+          user: user,
+        });
+        toast({ title: "Success", description: "Login successful" });
+        navigate("/");
+      } else {
+        toast({ title: "Error", description: message || "Google authentication failed", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      toast({ title: "Error", description: error?.response?.data?.message || "Google authentication failed", variant: "destructive" });
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }
 
   const checkAuthUser = useCallback(async () => {
     try {
-      // Check if there's a token via tokenManager
       const token = tokenManager.getCurrentToken();
-      
       if (!token || tokenManager.isTokenExpired(token)) {
-        // No token or expired - immediately set to not authenticated
         tokenManager.removeToken();
         setAuth({
           authenticate: false,
@@ -165,9 +169,7 @@ export default function AuthProvider({ children }) {
         return null;
       }
 
-      // Token exists - verify it with server
       const data = await checkAuthService();
-      
       if (data.success) {
         setAuth({
           authenticate: true,
@@ -175,7 +177,6 @@ export default function AuthProvider({ children }) {
         });
         return data;
       } else {
-        // Token invalid or expired - clear it
         tokenManager.removeToken();
         setAuth({
           authenticate: false,
@@ -184,7 +185,6 @@ export default function AuthProvider({ children }) {
         return data;
       }
     } catch (error) {
-      // Network error or server error - clear token to be safe if strictly 401
       if (error?.response?.status === 401) {
         tokenManager.removeToken();
         setAuth({
@@ -194,7 +194,6 @@ export default function AuthProvider({ children }) {
       }
       console.warn("Auth check failed:", error?.message);
     } finally {
-      // Always set loading to false, regardless of outcome
       setLoading(false);
     }
   }, []);
@@ -207,26 +206,16 @@ export default function AuthProvider({ children }) {
   }
 
   function logout() {
-    // Clear token with manager
     tokenManager.removeToken();
-    
-    // Reset auth state
     setAuth({
       authenticate: false,
       user: null,
     });
-    
-    // Clear form data
     setSignInFormData(initialSignInFormData);
     setSignUpFormData(initialSignUpFormData);
-    
-    // Reset other states
     handleTabChange("signin");
     setRegistrationSuccess(false);
     setIsRegistering(false);
-    
-    // Use React Router navigation instead of window.location.href
-    // This will be handled by the RouteGuard component
   }
 
   function handleTabChange(tab) {
@@ -246,22 +235,13 @@ export default function AuthProvider({ children }) {
     try {
       setIsRequestingOTP(true);
       const response = await axiosInstance.post("/auth/forgot-password", { email });
-      
       if (response.data.success) {
-        toast({
-          title: "OTP Sent",
-          description: "Please check your email for the OTP code",
-        });
+        toast({ title: "Success", description: "Please check your email for the OTP code" });
         setForgotPasswordEmail(email);
         return true;
       }
     } catch (error) {
-      const message = error?.response?.data?.message || "Failed to send OTP";
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to send OTP", variant: "destructive" });
       return false;
     } finally {
       setIsRequestingOTP(false);
@@ -271,28 +251,19 @@ export default function AuthProvider({ children }) {
   async function handleResetPassword(otp, newPassword) {
     try {
       setIsResettingPassword(true);
-      const response = await axiosInstance.post("/auth/reset-password", { // 使用axiosInstance
+      const response = await axiosInstance.post("/auth/reset-password", {
         email: forgotPasswordEmail,
         otp,
         newPassword,
       });
-
       if (response.data.success) {
-        toast({
-          title: "Success",
-          description: "Password reset successful. Please login with your new password.",
-        });
+        toast({ title: "Success", description: "Password reset successful. Please login." });
         setForgotPasswordEmail("");
         handleTabChange("signin");
         return true;
       }
     } catch (error) {
-      const message = error?.response?.data?.message || "Failed to reset password";
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error?.response?.data?.message || "Failed to reset password", variant: "destructive" });
       return false;
     } finally {
       setIsResettingPassword(false);
@@ -301,14 +272,9 @@ export default function AuthProvider({ children }) {
 
   async function handleResendOTP() {
     if (!forgotPasswordEmail) {
-      toast({
-        title: "Error",
-        description: "Email not found. Please restart the password reset process.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Email not found. Please restart process.", variant: "destructive" });
       return false;
     }
-    
     return await handleForgotPassword(forgotPasswordEmail);
   }
 
@@ -337,6 +303,7 @@ export default function AuthProvider({ children }) {
         handleResetPassword,
         handleResendOTP,
         checkAuthUser,
+        handleGoogleLogin,
       }}
     >
       {loading ? (

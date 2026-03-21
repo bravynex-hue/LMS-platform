@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../../controllers/auth-controller/index");
+const { registerUser, loginUser, googleLogin } = require("../../controllers/auth-controller/index");
 const { initiatePasswordReset, verifyOTPAndResetPassword } = require("../../controllers/auth-controller/forgot-password-controller");
 const { strictAuthLimiter, moderateActionLimiter } = require("../../middleware/rate-limiters");
 const authenticateMiddleware = require("../../middleware/auth-middleware");
@@ -14,6 +14,7 @@ const getFrontendBase = () => FRONTEND_URL.replace(/\/$/, "");
 
 router.post("/register", moderateActionLimiter, registerUser);
 router.post("/login", strictAuthLimiter, loginUser);
+router.post("/google", strictAuthLimiter, googleLogin);
 router.get("/check-auth", authenticateMiddleware, async (req, res) => {
   try {
     const User = require("../../models/User");

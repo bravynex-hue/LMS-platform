@@ -273,6 +273,7 @@ app.use((req, res, next) => {
       // Skip CSRF for authentication endpoints
       req.path === '/auth/login' ||
       req.path === '/auth/register' ||
+      req.path === '/auth/google' ||
       req.path === '/auth/forgot-password' ||
       req.path === '/auth/reset-password' ||
       req.path === '/secure/login' ||

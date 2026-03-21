@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { generateUniqueStudentId } = require("../../helpers/studentIdGenerator");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
 const registerUser = async (req, res) => {
@@ -182,4 +184,156 @@ const loginUser = async (req, res) => {
   });
 };
 
-module.exports = { registerUser, loginUser };
+const googleLogin = async (req, res) => {
+  const { idToken, accessToken } = req.body || {};
+
+  if (!idToken && !accessToken) {
+    return res.status(400).json({
+      success: false,
+      message: "Google ID Token or Access Token is required",
+    });
+  }
+
+  try {
+    let email, name, picture, googleId;
+
+    if (idToken) {
+      // Standard ID Token verification
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+      googleId = payload.sub;
+    } else {
+      // Access Token flow - fetch from userinfo endpoint
+      const axios = require("axios");
+      const googleResponse = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = googleResponse.data;
+      email = data.email;
+      name = data.name;
+      picture = data.picture;
+      googleId = data.sub;
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email not provided by Google",
+      });
+    }
+
+    let user = await User.findOne({ userEmail: email.toLowerCase() });
+
+    if (user) {
+      // User exists
+      const isNewUser = !user.providerId; // If providerId wasn't set, it's their first time with Google
+      if (isNewUser) {
+        user.provider = "google";
+        user.providerId = googleId;
+        user.avatar = user.avatar || picture;
+        await user.save();
+      }
+
+      const token = jwt.sign(
+        {
+          _id: user._id,
+          userName: user.userName,
+          userEmail: user.userEmail,
+          role: user.role,
+          studentId: user.studentId,
+          avatar: user.avatar,
+        },
+        process.env.JWT_SECRET || "JWT_SECRET",
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "User already exists", // Explicitly telling frontend the user already exists
+        data: {
+          accessToken: token,
+          user: {
+            _id: user._id,
+            userName: user.userName,
+            userEmail: user.userEmail,
+            role: user.role,
+            studentId: user.studentId,
+            avatar: user.avatar,
+          },
+        },
+      });
+    } else {
+      // New user, generate student ID
+      const studentId = await generateUniqueStudentId();
+      
+      let baseUserName = (name || email.split("@")[0]).trim().replace(/\s+/g, "_").toLowerCase();
+      let uniqueUserName = baseUserName.substring(0, 13);
+      
+      const isUserNameTaken = await User.findOne({ userName: uniqueUserName });
+      if (isUserNameTaken) {
+        uniqueUserName = `${baseUserName.substring(0, 9)}_${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+
+      user = new User({
+        userName: uniqueUserName,
+        userEmail: email.toLowerCase(),
+        role: "user",
+        provider: "google",
+        providerId: googleId,
+        avatar: picture,
+        studentId: studentId,
+        isEmailVerified: true,
+      });
+
+      await user.save();
+
+      const token = jwt.sign(
+        {
+          _id: user._id,
+          userName: user.userName,
+          userEmail: user.userEmail,
+          role: user.role,
+          studentId: user.studentId,
+          avatar: user.avatar,
+        },
+        process.env.JWT_SECRET || "JWT_SECRET",
+        { expiresIn: "7d" }
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Account created successfully", // Explicitly telling frontend a new account was created
+        data: {
+          accessToken: token,
+          user: {
+            _id: user._id,
+            userName: user.userName,
+            userEmail: user.userEmail,
+            role: user.role,
+            studentId: user.studentId,
+            avatar: user.avatar,
+          },
+        },
+      });
+    }
+  } catch (error) {
+    console.error("❌ Google login error:", {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Google authentication failed",
+    });
+  }
+};
+
+module.exports = { registerUser, loginUser, googleLogin };
