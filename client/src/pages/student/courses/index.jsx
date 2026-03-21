@@ -471,13 +471,20 @@ function StudentViewCoursesPage() {
                                    onClick={(e) => {
                                      e.stopPropagation();
                                      let url = c.brochureUrl;
+                                     if (!url) return;
+                                     
+                                     // Ensure HTTPS for cross-origin downloads
+                                     if (url.startsWith('http://')) {
+                                       url = url.replace('http://', 'https://');
+                                     }
+
                                      if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
                                        url = url.replace('/upload/', '/upload/fl_attachment/');
                                      }
                                      const link = document.createElement("a");
                                      link.href = url;
-                                     link.target = "_blank";
-                                     link.rel = "noopener noreferrer";
+                                     // Use _self to trigger direct download and avoid blank loading tabs in browsers
+                                     link.target = "_self";
                                      link.download = c.brochureFileName || "course-brochure.pdf";
                                      document.body.appendChild(link);
                                      link.click();

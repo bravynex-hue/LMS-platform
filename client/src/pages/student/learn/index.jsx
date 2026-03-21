@@ -261,7 +261,11 @@ function LearnPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => window.open(course.brochureUrl, '_blank')}
+                          onClick={() => {
+                            let url = course.brochureUrl;
+                            if (url && url.startsWith('http://')) url = url.replace('http://', 'https://');
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          }}
                           className="w-full sm:w-auto flex items-center justify-center gap-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
                         >
                           <FileText className="w-4 h-4" />
@@ -271,13 +275,19 @@ function LearnPage() {
                           type="button"
                           onClick={() => {
                             let url = course.brochureUrl;
+                            if (!url) return;
+
+                            // Ensure HTTPS 
+                            if (url.startsWith('http://')) {
+                              url = url.replace('http://', 'https://');
+                            }
+
                             if (url.includes('/upload/') && !url.includes('/upload/fl_attachment/')) {
                               url = url.replace('/upload/', '/upload/fl_attachment/');
                             }
                             const link = document.createElement("a");
                             link.href = url;
-                            link.target = "_blank";
-                            link.rel = "noopener noreferrer";
+                            link.target = "_self";
                             link.download = course.brochureFileName || "course-brochure.pdf";
                             document.body.appendChild(link);
                             link.click();

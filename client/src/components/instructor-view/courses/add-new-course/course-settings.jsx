@@ -34,7 +34,7 @@ function CourseSettings() {
       setMediaUploadProgress(true);
       const response = await mediaUploadService(imageFormData, () => {});
       if (response.success) {
-        setCourseLandingFormData({ ...courseLandingFormData, image: response.data.url });
+        setCourseLandingFormData({ ...courseLandingFormData, image: response.data.secure_url || response.data.url });
       } else {
         setUploadError("Failed to upload image");
       }
@@ -150,7 +150,7 @@ function CourseSettings() {
                         if (res.success) {
                           setCourseLandingFormData({
                             ...courseLandingFormData,
-                            brochureUrl: res.data.url,
+                            brochureUrl: res.data.secure_url || res.data.url,
                             brochureFileName: selected.name,
                             brochurePublicId: res.data.public_id,
                           });

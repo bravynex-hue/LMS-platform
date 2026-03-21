@@ -433,7 +433,11 @@ function StudentViewCourseDetailsPage() {
 
                            <div className="flex items-center gap-3 w-full sm:w-auto">
                               <Button
-                                onClick={() => window.open(studentViewCourseDetails.brochureUrl, '_blank')}
+                                onClick={() => {
+                                  let url = studentViewCourseDetails.brochureUrl;
+                                  if (url && url.startsWith('http://')) url = url.replace('http://', 'https://');
+                                  window.open(url, '_blank', 'noopener,noreferrer');
+                                }}
                                 variant="ghost"
                                 className="h-12 px-6 rounded-xl border border-white/10 hover:bg-white/5 hover:text-white transition-all font-bold uppercase tracking-widest text-[10px] text-slate-400"
                               >
@@ -441,24 +445,25 @@ function StudentViewCourseDetailsPage() {
                               </Button>
                                 <Button
                                   onClick={(e) => {
-                                    e.preventDefault();
-                                    let url = studentViewCourseDetails.brochureUrl;
                                     const brochureName = studentViewCourseDetails.brochureFileName || "course-brochure.pdf";
+                                    let url = studentViewCourseDetails.brochureUrl;
                                     
-                                    // Ensure HTTPS
+                                    if (!url) return;
+
+                                    // Ensure HTTPS (critical for deployed environments)
                                     if (url.startsWith('http://')) {
                                       url = url.replace('http://', 'https://');
                                     }
 
-                                    // Cloudinary-specific download flag
+                                    // Cloudinary-specific download flag to force attachment header
                                     if (url.includes('/upload/') && !url.includes('fl_attachment')) {
                                       url = url.replace('/upload/', '/upload/fl_attachment/');
                                     }
 
-                                    // Most compatible way to trigger download of cross-origin files with content-disposition
                                     const link = document.createElement("a");
                                     link.href = url;
                                     link.setAttribute("download", brochureName);
+                                    // Use _self to trigger download in same window context and avoid "loading" blank tabs
                                     link.target = "_self";
                                     document.body.appendChild(link);
                                     link.click();
