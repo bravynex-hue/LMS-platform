@@ -439,28 +439,51 @@ function StudentViewCourseDetailsPage() {
                               >
                                 Preview
                               </Button>
-                              <Button
-                                onClick={() => {
-                                  let url = studentViewCourseDetails.brochureUrl;
-                                  // Enhanced Cloudinary attachment logic
-                                  if (url.includes('/upload/') && !url.includes('fl_attachment')) {
-                                    url = url.replace('/upload/', '/upload/fl_attachment/');
-                                  }
-                                  
-                                  const link = document.createElement("a");
-                                  link.href = url;
-                                  link.setAttribute("download", studentViewCourseDetails.brochureFileName || "course-brochure.pdf");
-                                  link.target = "_blank";
-                                  link.rel = "noopener noreferrer";
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                }}
-                                className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 group/btn"
-                              >
-                                <Download className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
-                                Download PDF
-                              </Button>
+                                <Button
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    const brochureUrl = studentViewCourseDetails.brochureUrl;
+                                    const brochureName = studentViewCourseDetails.brochureFileName || "course-brochure.pdf";
+                                    
+                                    try {
+                                      // Force download via Cloudinary flag if possible, but also use fetch blob for maximum reliability
+                                      let finalUrl = brochureUrl;
+                                      if (finalUrl.includes('/upload/')) {
+                                        finalUrl = finalUrl.replace('/upload/', '/upload/fl_attachment/');
+                                      }
+
+                                      const response = await fetch(finalUrl, {
+                                        mode: 'cors',
+                                        cache: 'no-cache',
+                                      });
+                                      
+                                      if (!response.ok) throw new Error('Network response was not ok');
+                                      
+                                      const blob = await response.blob();
+                                      const blobUrl = window.URL.createObjectURL(blob);
+                                      
+                                      const link = document.createElement("a");
+                                      link.href = blobUrl;
+                                      link.download = brochureName;
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      
+                                      // Cleanup
+                                      setTimeout(() => {
+                                        document.body.removeChild(link);
+                                        window.URL.revokeObjectURL(blobUrl);
+                                      }, 100);
+                                    } catch (error) {
+                                      console.error("Download failed, falling back to direct link", error);
+                                      // Fallback to simple window.open if fetch fails (e.g. CORS)
+                                      window.open(brochureUrl, '_blank');
+                                    }
+                                  }}
+                                  className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 group/btn"
+                                >
+                                  <Download className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
+                                  Download PDF
+                                </Button>
                            </div>
                         </div>
                       </div>
