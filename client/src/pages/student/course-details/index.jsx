@@ -440,44 +440,29 @@ function StudentViewCourseDetailsPage() {
                                 Preview
                               </Button>
                                 <Button
-                                  onClick={async (e) => {
+                                  onClick={(e) => {
                                     e.preventDefault();
-                                    const brochureUrl = studentViewCourseDetails.brochureUrl;
+                                    let url = studentViewCourseDetails.brochureUrl;
                                     const brochureName = studentViewCourseDetails.brochureFileName || "course-brochure.pdf";
                                     
-                                    try {
-                                      // Force download via Cloudinary flag if possible, but also use fetch blob for maximum reliability
-                                      let finalUrl = brochureUrl;
-                                      if (finalUrl.includes('/upload/')) {
-                                        finalUrl = finalUrl.replace('/upload/', '/upload/fl_attachment/');
-                                      }
-
-                                      const response = await fetch(finalUrl, {
-                                        mode: 'cors',
-                                        cache: 'no-cache',
-                                      });
-                                      
-                                      if (!response.ok) throw new Error('Network response was not ok');
-                                      
-                                      const blob = await response.blob();
-                                      const blobUrl = window.URL.createObjectURL(blob);
-                                      
-                                      const link = document.createElement("a");
-                                      link.href = blobUrl;
-                                      link.download = brochureName;
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      
-                                      // Cleanup
-                                      setTimeout(() => {
-                                        document.body.removeChild(link);
-                                        window.URL.revokeObjectURL(blobUrl);
-                                      }, 100);
-                                    } catch (error) {
-                                      console.error("Download failed, falling back to direct link", error);
-                                      // Fallback to simple window.open if fetch fails (e.g. CORS)
-                                      window.open(brochureUrl, '_blank');
+                                    // Ensure HTTPS
+                                    if (url.startsWith('http://')) {
+                                      url = url.replace('http://', 'https://');
                                     }
+
+                                    // Cloudinary-specific download flag
+                                    if (url.includes('/upload/') && !url.includes('fl_attachment')) {
+                                      url = url.replace('/upload/', '/upload/fl_attachment/');
+                                    }
+
+                                    // Most compatible way to trigger download of cross-origin files with content-disposition
+                                    const link = document.createElement("a");
+                                    link.href = url;
+                                    link.setAttribute("download", brochureName);
+                                    link.target = "_self";
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
                                   }}
                                   className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-95 flex items-center gap-2 group/btn"
                                 >
