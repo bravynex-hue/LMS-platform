@@ -15,13 +15,10 @@ const { Server } = require("socket.io");
 const { initializeSocket } = require("./socket");
 const { generalApiLimiter } = require("./middleware/rate-limiters");
 const { cspOptions, securityLoggerMiddleware } = require("./middleware/security-middleware");
-const cookieParser = require("cookie-parser");
-const csrf = require("csurf");
 const mongoSanitize = require("express-mongo-sanitize");
 const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
-const session = require("express-session");
 const passport = require("passport");
 
 // ----------------- Routes -----------------
@@ -201,23 +198,11 @@ app.use(compression({
 }));
 
 app.use(securityLoggerMiddleware);
-app.use(cookieParser());
 app.use(express.json({ limit: "100kb" }));
 app.use(mongoSanitize());
 
-// ----------------- Session & Passport -----------------
-app.use(session({
-  secret: process.env.SESSION_SECRET || "bravynex_secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
+// ----------------- Passport (Stateless) -----------------
 app.use(passport.initialize());
-app.use(passport.session());
 
 // ----------------- Rate limiting -----------------
 const authLimiter = rateLimit({
@@ -242,83 +227,8 @@ app.use((req, res, next) => {
   return generalApiLimiter(req, res, next);
 });
 
-// ----------------- CSRF -----------------
-const csrfProtection = csrf({
-  cookie: { 
-    key: "csrfToken", 
-    httpOnly: false, 
-    sameSite: "lax", 
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  },
-  ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-  value: (req) => {
-    // Check both header and body for CSRF token
-    return req.headers['x-csrf-token'] || req.body._csrf;
-  }
-});
-
-// Apply CSRF protection to all routes except static files, health checks, and auth endpoints
-app.use((req, res, next) => {
-  // Skip CSRF for static files, health checks, auth endpoints, and CSRF token endpoint
-  if (req.path === '/csrf-token' || 
-      req.path === '/health' || 
-      req.path === '/favicon.ico' ||
-      req.path.startsWith('/static/') ||
-      req.path.startsWith('/assets/') ||
-      // Skip CSRF for public endpoints (no authentication required)
-      req.path.startsWith('/public/') ||
-      // Skip CSRF for notify contact endpoint (public form submission)
-      req.path === '/notify/contact-admin' ||
-      // Skip CSRF for authentication endpoints
-      req.path === '/auth/login' ||
-      req.path === '/auth/register' ||
-      req.path === '/auth/google' ||
-      req.path === '/auth/forgot-password' ||
-      req.path === '/auth/reset-password' ||
-      req.path === '/secure/login' ||
-      req.path === '/secure/register' ||
-      req.path === '/secure/forgot-password' ||
-      req.path === '/secure/reset-password' ||
-      req.path === '/secure/contact' ||
-      // Skip CSRF for course progress endpoints (they handle their own security)
-      req.path.startsWith('/student/course-progress/') ||
-      // Skip CSRF for media upload endpoints (they handle their own security)
-      req.path.startsWith('/media/upload') ||
-      req.path.startsWith('/media/bulk-upload') ||
-      // Skip CSRF for instructor course endpoints (they handle their own security)
-      req.path.startsWith('/instructor/course/') ||
-      // Skip CSRF for secure instructor endpoints (bearer auth only)
-      req.path.startsWith('/secure/instructor/') ||
-      // Skip CSRF for student order endpoints (they handle their own security)
-      req.path.startsWith('/student/order/') ||
-      // Skip CSRF for admin endpoints (they use bearer token authentication)
-      req.path.startsWith('/admin/') ||
-      // Skip CSRF for feedback endpoints (they use bearer token authentication)
-      req.path.startsWith('/feedback') ||
-      // Skip CSRF for messaging routes (bearer auth only)
-      req.path.startsWith('/student/messages/') ||
-      req.path.startsWith('/instructor/messages/')) {
-    return next();
-  }
-  return csrfProtection(req, res, next);
-});
-
-app.get("/csrf-token", (req, res) => {
-  try {
-    const token = typeof req.csrfToken === "function" ? req.csrfToken() : null;
-    res.status(200).json({ 
-      csrfToken: token,
-      success: true 
-    });
-  } catch (error) {
-    console.error('CSRF token generation error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Failed to generate CSRF token" 
-    });
-  }
-});
+// CSRF protection is not needed for stateless JWT-based authentication
+app.get("/health", (req, res) => res.status(200).send("OK"));
 
 // ----------------- Database -----------------
 // Optimized MongoDB connection with pooling for better performance

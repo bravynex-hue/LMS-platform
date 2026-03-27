@@ -76,8 +76,12 @@ const checkEligibility = async (req, res) => {
 
 const bulkApproveCertificates = async (req, res) => {
   try {
-    const { courseId, studentIds, approverId: bodyApproverId } = req.body;
-    const approverId = bodyApproverId || req.user?._id || req.user?.id;
+    // Handle potential casing issues or missing body
+    const courseId = req.body.courseId || req.body.courseid;
+    const studentIds = req.body.studentIds || req.body.studentids;
+    const approverId = req.body.approverId || req.body.approverid || req.user?._id || req.user?.id;
+    
+    console.log('Bulk approve check:', { courseId, studentIds, isArray: Array.isArray(studentIds) });
     
     if (!courseId) {
       return res.status(400).json({ success: false, message: "courseId is required" });
@@ -95,7 +99,12 @@ const bulkApproveCertificates = async (req, res) => {
     }
     const courseTitle = course?.certificateCourseName || course?.title || undefined;
 
+    const mongoose = require("mongoose");
     const docs = await Promise.all(studentIds.map(async (studentId) => {
+      if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
+        console.warn('Skipping invalid studentId:', studentId);
+        return null;
+      }
       const user = await User.findById(studentId);
       const studentName = user?.userName || user?.userEmail || String(studentId);
       const studentEmail = user?.userEmail || undefined;
@@ -119,7 +128,7 @@ const bulkApproveCertificates = async (req, res) => {
       );
     }));
 
-    res.status(200).json({ success: true, count: docs.length });
+    res.status(200).json({ success: true, count: docs.filter(Boolean).length });
   } catch (e) {
     console.error('Bulk approve error:', e);
     res.status(500).json({ success: false, message: "Failed to bulk approve certificates", error: e.message });

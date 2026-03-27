@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Award, CheckCircle, XCircle, Users } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 
 function InstructorCertificatesPage() {
   const { auth } = useAuth();
+  const { toast } = useToast();
   const [courses, setCourses] = useState([]);
   const [courseId, setCourseId] = useState("");
   const [students, setStudents] = useState([]);
@@ -114,8 +116,14 @@ function InstructorCertificatesPage() {
     if (!ids.length) return;
     setWorking(true);
     try {
-      await approveCertificatesBulkService({ courseId, studentIds: ids, approverId: auth?.user?._id });
+      const payload = { courseId, studentIds: ids, approverId: auth?.user?._id };
+      console.log("Bulk approve payload being sent:", payload);
+      const res = await approveCertificatesBulkService(payload);
+      if (res?.success) toast({ title: "Success", description: `${res.count || ids.length} certificates approved` });
       await loadCourseStudentsAndApprovals(courseId);
+    } catch (err) {
+      console.error("Bulk approve error:", err);
+      toast({ title: "Error", description: err?.response?.data?.message || "Bulk approval failed", variant: "destructive" });
     } finally {
       setWorking(false);
     }
@@ -127,8 +135,12 @@ function InstructorCertificatesPage() {
     if (!ids.length) return;
     setWorking(true);
     try {
-      await revokeCertificatesBulkService({ courseId, studentIds: ids });
+      const res = await revokeCertificatesBulkService({ courseId, studentIds: ids });
+      if (res?.success) toast({ title: "Success", description: "Certificates revoked successfully" });
       await loadCourseStudentsAndApprovals(courseId);
+    } catch (err) {
+      console.error("Bulk revoke error:", err);
+      toast({ title: "Error", description: err?.response?.data?.message || "Bulk revocation failed", variant: "destructive" });
     } finally {
       setWorking(false);
     }

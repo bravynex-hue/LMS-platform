@@ -85,6 +85,10 @@ const sanitizeInput = (req, res, next) => {
   const sanitizeObject = (obj) => {
     if (typeof obj !== 'object' || obj === null) return obj;
     
+    if (Array.isArray(obj)) {
+      return obj.map(item => sanitizeObject(item));
+    }
+    
     const sanitized = {};
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'string') {
