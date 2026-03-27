@@ -4,7 +4,7 @@ const CertificateApprovalSchema = new mongoose.Schema(
   {
     courseId: { type: String, required: true, index: true },
     studentId: { type: String, required: true, index: true },
-    certificateId: { type: String, unique: true, sparse: true, index: true }, // Unique ID for certificate verification
+    certificateId: { type: String, index: true }, // Unique ID defined below via partial index
     approvedBy: { type: String }, // instructor/admin id
     approvedAt: { type: Date },
     revoked: { type: Boolean, default: false },
@@ -24,6 +24,11 @@ const CertificateApprovalSchema = new mongoose.Schema(
 CertificateApprovalSchema.index(
   { courseId: 1, studentId: 1 },
   { unique: true }
+);
+
+CertificateApprovalSchema.index(
+  { certificateId: 1 },
+  { unique: true, partialFilterExpression: { certificateId: { $type: "string", $ne: "" } } }
 );
 
 module.exports = mongoose.model(

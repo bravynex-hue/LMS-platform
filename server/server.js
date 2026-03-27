@@ -361,6 +361,18 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 initializeSocket(server);
 
+// ----------------- DB Init/Cleanup -----------------
+mongoose.connection.once('open', async () => {
+  try {
+    const coll = mongoose.connection.collection('certificateapprovals');
+    // Drop legacy index if exists to allow multiple nulls
+    await coll.dropIndex('certificateId_1').catch(() => {});
+    console.log('✅ Legacy certificateId index cleaned up if existed');
+  } catch (e) {
+    // Ignore error if collection/index doesn't exist
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 WebSocket server initialized`);
