@@ -484,7 +484,7 @@ const generateCompletionCertificate = async (req, res) => {
       // Name and Guardian section (top area) - FIXED COORDINATES
       name: { x: 170, y: 258, width: 260, height: 20 },
       guardian: { x: 400, y: 258, width: 240, height: 20 },
-      studentId: { x: 605, y: 258, width: 190, height: 20 },
+      studentId: { x: 614, y: 258, width: 190, height: 20 },
       
       // Course completion section (middle area) - FIXED COORDINATES
       courseName: { x: 418, y: 284, width: 240, height: 20 },
@@ -549,8 +549,8 @@ const generateCompletionCertificate = async (req, res) => {
       renderTextWithFallback(guardianLine, textPositions.guardian);
     }
     
-    // Student ID - Use custom studentId format (BRX-STU-XXXX) - Centered for better alignment
-    renderTextWithFallback(studentIdToPrint, textPositions.studentId, { align: "center" });
+    // Student ID - Use custom studentId format (BRX-STU-XXXX)
+    renderTextWithFallback(studentIdToPrint, textPositions.studentId);
 
     // has successfully completed the [Course] Course
     renderTextWithFallback(courseNameToPrint, textPositions.courseName);
