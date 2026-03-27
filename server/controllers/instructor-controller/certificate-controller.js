@@ -1,6 +1,7 @@
 const CertificateApproval = require("../../models/CertificateApproval");
 const User = require("../../models/User");
 const Course = require("../../models/Course");
+const mongoose = require("mongoose");
 
 const approveCertificate = async (req, res) => {
   try {
@@ -93,45 +94,66 @@ const bulkApproveCertificates = async (req, res) => {
       return res.status(400).json({ success: false, message: "studentIds must be an array" });
     }
 
-    const course = await Course.findById(courseId);
+    const validStudentIds = studentIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    
+    // Fetch all users and course info in parallel
+    const [users, course] = await Promise.all([
+      User.find({ _id: { $in: validStudentIds } }),
+      Course.findById(courseId)
+    ]);
+
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found" });
     }
-    const courseTitle = course?.certificateCourseName || course?.title || undefined;
 
-    const mongoose = require("mongoose");
-    const docs = await Promise.all(studentIds.map(async (studentId) => {
-      if (!studentId || !mongoose.Types.ObjectId.isValid(studentId)) {
-        console.warn('Skipping invalid studentId:', studentId);
-        return null;
-      }
-      const user = await User.findById(studentId);
-      const studentName = user?.userName || user?.userEmail || String(studentId);
-      const studentEmail = user?.userEmail || undefined;
-      const studentFatherName = user?.guardianName || user?.guardianDetails || undefined;
-      const customStudentId = user?.studentId || undefined;
+    const userMap = {};
+    users.forEach(u => { userMap[u._id.toString()] = u; });
+    
+    const courseTitle = course.certificateCourseName || course.title || undefined;
 
-      return CertificateApproval.findOneAndUpdate(
-        { courseId, studentId },
-        { 
-          approvedBy: approverId, 
-          approvedAt: new Date(), 
-          revoked: false, 
-          revokedAt: null,
-          studentName,
-          studentEmail,
-          studentFatherName,
-          customStudentId,
-          courseTitle,
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-    }));
+    // Use bulkWrite for better performance if updating many docs
+    const operations = validStudentIds.map((studentId) => {
+      const user = userMap[studentId];
+      if (!user) return null;
 
-    res.status(200).json({ success: true, count: docs.filter(Boolean).length });
+      const studentName = user.userName || user.userEmail || String(studentId);
+      const studentEmail = user.userEmail || undefined;
+      const studentFatherName = user.guardianName || user.guardianDetails || undefined;
+      const customStudentId = user.studentId || undefined;
+
+      return {
+        updateOne: {
+          filter: { courseId, studentId },
+          update: {
+            $set: {
+              approvedBy: approverId,
+              approvedAt: new Date(),
+              revoked: false,
+              revokedAt: null,
+              studentName,
+              studentEmail,
+              studentFatherName,
+              customStudentId,
+              courseTitle,
+            }
+          },
+          upsert: true
+        }
+      };
+    }).filter(Boolean);
+
+    if (operations.length > 0) {
+      await CertificateApproval.bulkWrite(operations);
+    }
+
+    res.status(200).json({ success: true, count: operations.length });
   } catch (e) {
     console.error('Bulk approve error:', e);
-    res.status(500).json({ success: false, message: "Failed to bulk approve certificates", error: e.message });
+    res.status(500).json({ 
+      success: false, 
+      message: e.message || "Failed to bulk approve certificates",
+      error: e.name
+    });
   }
 };
 
