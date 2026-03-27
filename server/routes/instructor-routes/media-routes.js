@@ -135,9 +135,9 @@ router.post(
 );
 
 // Delete media
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     if (!id) {
       return res.status(400).json({
         success: false,

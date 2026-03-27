@@ -78,11 +78,21 @@ const bulkApproveCertificates = async (req, res) => {
   try {
     const { courseId, studentIds, approverId: bodyApproverId } = req.body;
     const approverId = bodyApproverId || req.user?._id || req.user?.id;
-    if (!courseId || !studentIds || !Array.isArray(studentIds)) {
-      return res.status(400).json({ success: false, message: "courseId and studentIds (array) are required" });
+    
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: "courseId is required" });
+    }
+    if (!studentIds) {
+      return res.status(400).json({ success: false, message: "studentIds is required" });
+    }
+    if (!Array.isArray(studentIds)) {
+      return res.status(400).json({ success: false, message: "studentIds must be an array" });
     }
 
     const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
     const courseTitle = course?.certificateCourseName || course?.title || undefined;
 
     const docs = await Promise.all(studentIds.map(async (studentId) => {
@@ -112,15 +122,22 @@ const bulkApproveCertificates = async (req, res) => {
     res.status(200).json({ success: true, count: docs.length });
   } catch (e) {
     console.error('Bulk approve error:', e);
-    res.status(500).json({ success: false, message: "Failed to bulk approve certificates" });
+    res.status(500).json({ success: false, message: "Failed to bulk approve certificates", error: e.message });
   }
 };
 
 const bulkRevokeCertificates = async (req, res) => {
   try {
     const { courseId, studentIds } = req.body;
-    if (!courseId || !studentIds || !Array.isArray(studentIds)) {
-      return res.status(400).json({ success: false, message: "courseId and studentIds (array) are required" });
+    
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: "courseId is required" });
+    }
+    if (!studentIds) {
+      return res.status(400).json({ success: false, message: "studentIds is required" });
+    }
+    if (!Array.isArray(studentIds)) {
+      return res.status(400).json({ success: false, message: "studentIds must be an array" });
     }
 
     await CertificateApproval.updateMany(
@@ -131,7 +148,7 @@ const bulkRevokeCertificates = async (req, res) => {
     res.status(200).json({ success: true, message: "Certificates revoked successfully" });
   } catch (e) {
     console.error('Bulk revoke error:', e);
-    res.status(500).json({ success: false, message: "Failed to bulk revoke certificates" });
+    res.status(500).json({ success: false, message: "Failed to bulk revoke certificates", error: e.message });
   }
 };
 

@@ -425,12 +425,16 @@ app.get("*", (req, res) => {
 
   const indexPath = path.join(__dirname, "..", "client", "dist", "index.html");
   if (!fs.existsSync(indexPath)) {
-    console.error('index.html not found at:', indexPath);
-    return res.status(500).json({
+    console.warn('SPA fallback requested but index.html not found at:', indexPath);
+    return res.status(404).json({
       success: false,
-      message: "Frontend build not found. Please ensure the client is built.",
-      path: indexPath
+      message: "Frontend application not found. Please build the client.",
     });
+  }
+
+  // Handle HEAD requests specifically to avoid unnecessary file reads
+  if (req.method === 'HEAD') {
+    return res.status(200).end();
   }
 
   res.sendFile(indexPath, (err) => {

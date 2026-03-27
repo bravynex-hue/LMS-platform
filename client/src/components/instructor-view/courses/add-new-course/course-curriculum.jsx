@@ -71,12 +71,26 @@ function CourseCurriculum() {
   }
 
   async function handleReplaceVideo(currentIndex) {
+    if (!window.confirm("Are you sure you want to replace this video? This will remove the current video.")) return;
+    
     let cpy = [...courseCurriculumFormData];
-    const deleteResponse = await mediaDeleteService(cpy[currentIndex].public_id);
-    if (deleteResponse?.success) {
-      cpy[currentIndex] = { ...cpy[currentIndex], videoUrl: "", public_id: "" };
-      setCourseCurriculumFormData(cpy);
+    const item = cpy[currentIndex];
+    
+    if (item?.public_id) {
+      try {
+        setMediaUploadProgress(true);
+        setMediaUploadProgressPercentage(0);
+        await mediaDeleteService(item.public_id);
+      } catch (error) {
+        console.error("Cloudinary delete error during replace:", error);
+        // We continue anyway so the user can upload a new one
+      } finally {
+        setMediaUploadProgress(false);
+      }
     }
+    
+    cpy[currentIndex] = { ...cpy[currentIndex], videoUrl: "", public_id: "" };
+    setCourseCurriculumFormData(cpy);
   }
 
   function handleOpenBulkUploadDialog() { bulkUploadInputRef.current?.click(); }

@@ -69,7 +69,7 @@ function InstructorCertificatesPage() {
         studentEmail: s.studentEmail || emailFromApproval[s.studentId] || s.userEmail || s.email || "",
         userName: s.userName || nameFromApproval[s.studentId] || "",
         userEmail: s.userEmail || emailFromApproval[s.studentId] || "",
-      }));
+      })).sort((a, b) => new Date(b.enrollmentDate || 0) - new Date(a.enrollmentDate || 0));
       setStudents(merged);
       setSelected({});
     } finally {
@@ -227,6 +227,7 @@ function InstructorCertificatesPage() {
                         <th className="px-5 py-3.5 w-12" />
                         <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs">Student Name</th>
                         <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs">Email</th>
+                        <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs">Enrollment Date</th>
                         <th className="text-left px-5 py-3.5 font-semibold text-gray-500 text-xs">Status</th>
                         <th className="text-right px-5 py-3.5 font-semibold text-gray-500 text-xs">Action</th>
                       </tr>
@@ -257,6 +258,9 @@ function InstructorCertificatesPage() {
                             </td>
                             <td className="px-5 py-4 text-gray-400 text-sm">
                               {s.studentEmail || s.userEmail || 'N/A'}
+                            </td>
+                            <td className="px-5 py-4 text-gray-500 text-xs">
+                              {s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString() : 'N/A'}
                             </td>
                             <td className="px-5 py-4">
                               {approvedMap[s.studentId] ? (
