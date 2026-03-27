@@ -549,8 +549,8 @@ const generateCompletionCertificate = async (req, res) => {
       renderTextWithFallback(guardianLine, textPositions.guardian);
     }
     
-    // Student ID - Use custom studentId format (BRX-STU-XXXX)
-    renderTextWithFallback(studentIdToPrint, textPositions.studentId);
+    // Student ID - Use custom studentId format (BRX-STU-XXXX) - Centered for better alignment
+    renderTextWithFallback(studentIdToPrint, textPositions.studentId, { align: "center" });
 
     // has successfully completed the [Course] Course
     renderTextWithFallback(courseNameToPrint, textPositions.courseName);
