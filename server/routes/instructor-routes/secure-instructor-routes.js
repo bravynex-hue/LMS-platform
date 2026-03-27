@@ -8,7 +8,14 @@ const {
   validateUploadedFiles, 
   uploadRateLimit 
 } = require("../../middleware/secure-upload-middleware");
-const { approveCertificate, revokeCertificate, listApprovedForCourse, checkEligibility } = require("../../controllers/instructor-controller/certificate-controller");
+const { 
+  approveCertificate, 
+  revokeCertificate, 
+  listApprovedForCourse, 
+  checkEligibility,
+  bulkApproveCertificates,
+  bulkRevokeCertificates
+} = require("../../controllers/instructor-controller/certificate-controller");
 const {
   secureCreateCourse,
   secureUpdateCourse,
@@ -170,6 +177,8 @@ router.post("/media/upload-audio",
 // Certificate approval routes (instructor/admin)
 router.post("/certificates/approve", moderateActionLimiter, approveCertificate);
 router.post("/certificates/revoke", moderateActionLimiter, revokeCertificate);
+router.post("/certificates/bulk-approve", moderateActionLimiter, bulkApproveCertificates);
+router.post("/certificates/bulk-revoke", moderateActionLimiter, bulkRevokeCertificates);
 router.get("/certificates/approved/:courseId", listApprovedForCourse);
 router.get("/certificates/eligibility/:courseId/:studentId", checkEligibility);
 

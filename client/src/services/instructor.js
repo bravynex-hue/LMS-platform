@@ -52,8 +52,18 @@ export async function approveCertificateService({ courseId, studentId, approverI
   return data;
 }
 
+export async function approveCertificatesBulkService({ courseId, studentIds, approverId }) {
+  const { data } = await axiosInstance.post(`/secure/instructor/certificates/bulk-approve`, { courseId, studentIds, approverId });
+  return data;
+}
+
 export async function instructorRevokeCertificateService({ courseId, studentId }) {
   const { data } = await axiosInstance.post(`/secure/instructor/certificates/revoke`, { courseId, studentId });
+  return data;
+}
+
+export async function revokeCertificatesBulkService({ courseId, studentIds }) {
+  const { data } = await axiosInstance.post(`/secure/instructor/certificates/bulk-revoke`, { courseId, studentIds });
   return data;
 }
 

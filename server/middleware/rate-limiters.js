@@ -45,10 +45,10 @@ const strictAuthLimiter = buildJsonLimiter({
   message: "Too many attempts, please try again in 15 minutes.",
 });
 
-// Moderate for registration / reset-password
+// Moderate for registration / reset-password / course actions
 const moderateActionLimiter = buildJsonLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 20,
+  max: 100,
   message: "Too many requests, please try again later.",
 });
 

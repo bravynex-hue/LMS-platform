@@ -8,7 +8,9 @@ import {
   fetchInstructorCourseDetailsService,
   listApprovedCertificatesService,
   approveCertificateService,
+  approveCertificatesBulkService,
   instructorRevokeCertificateService,
+  revokeCertificatesBulkService,
 } from "@/services";
 
 function InstructorCertificatesPage() {
@@ -112,7 +114,7 @@ function InstructorCertificatesPage() {
     if (!ids.length) return;
     setWorking(true);
     try {
-      await Promise.allSettled(ids.map((sid) => approveCertificateService({ courseId, studentId: sid, approverId: auth?.user?._id })));
+      await approveCertificatesBulkService({ courseId, studentIds: ids, approverId: auth?.user?._id });
       await loadCourseStudentsAndApprovals(courseId);
     } finally {
       setWorking(false);
@@ -125,7 +127,7 @@ function InstructorCertificatesPage() {
     if (!ids.length) return;
     setWorking(true);
     try {
-      await Promise.allSettled(ids.map((sid) => instructorRevokeCertificateService({ courseId, studentId: sid })));
+      await revokeCertificatesBulkService({ courseId, studentIds: ids });
       await loadCourseStudentsAndApprovals(courseId);
     } finally {
       setWorking(false);
