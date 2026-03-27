@@ -4,7 +4,7 @@ const CertificateApprovalSchema = new mongoose.Schema(
   {
     courseId: { type: String, required: true, index: true },
     studentId: { type: String, required: true, index: true },
-    certificateId: { type: String, index: true }, // Unique ID defined below via partial index
+    certificateId: { type: String }, // Unique ID defined below via partial index
     approvedBy: { type: String }, // instructor/admin id
     approvedAt: { type: Date },
     revoked: { type: Boolean, default: false },
