@@ -1,30 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
-import * as serviceWorkerRegistration from "@/pwa/registerServiceWorker";
+import { registerServiceWorker } from "../registration";
 
 /**
- * Requirement 4 & 6: Update Notification System
- * Detects when a new service worker version is waiting and prompts the user.
+ * PWA Update Notification System
+ * -----------------------------
+ * Detects when a new service worker version is waiting and 
+ * prompts the user with an "Update Now" action.
  */
-const SWUpdatePrompt = () => {
+const UpdatePrompt = () => {
   const { toast } = useToast();
 
-  const showUpdateToast = React.useCallback(
+  const showUpdateToast = useCallback(
     (registration) => {
       toast({
         title: "New Update Available!",
-        description: "A newer version of the app is ready. Refresh to update.",
-        duration: Infinity, // Keep it visible until user acts
+        description: "A newer version of Bravynex is ready. Refresh to update.",
+        duration: Infinity, // Keep visible until user acts
         action: (
           <Button
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 font-bold uppercase text-[10px] h-8 tracking-widest"
             variant="secondary"
             onClick={() => {
-              // 3. Force update behavior (Requirement 3)
-              // Send the message to SW to skip waiting and activate immediately
+              // 1. Force update activation
               if (registration.waiting) {
                 registration.waiting.postMessage({ type: "SKIP_WAITING" });
               }
@@ -40,14 +41,14 @@ const SWUpdatePrompt = () => {
   );
 
   useEffect(() => {
-    // 5. Registration (Requirement 6)
-    serviceWorkerRegistration.register({
+    // 2. Initial Registration with logic callbacks
+    registerServiceWorker({
       onUpdate: (registration) => {
-        // This callback is triggered when a new SW version is waiting
+        // Callback: New version waiting
         showUpdateToast(registration);
       },
       onSuccess: () => {
-        // Optional: Notify user that app is offline-ready on first load
+        // Callback: Initial offline-cache success
         toast({
           title: "Offline Ready",
           description: "This app is now available for offline use.",
@@ -56,7 +57,7 @@ const SWUpdatePrompt = () => {
       },
     });
 
-    // Handle updates found by the browser itself
+    // 3. Periodic update check for persistent sessions
     const updateHandler = async () => {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration?.waiting) {
@@ -64,14 +65,13 @@ const SWUpdatePrompt = () => {
       }
     };
 
-    // Check for updates periodically
-    const interval = setInterval(updateHandler, 1000 * 60 * 60); // Every hour
-    updateHandler(); // Check on mount
+    const interval = setInterval(updateHandler, 1000 * 60 * 60); // Check every hour
+    updateHandler(); // Immediate check on mount
 
     return () => clearInterval(interval);
   }, [toast, showUpdateToast]);
 
-  return null; // This component registers logic/UI via Toasts, doesn't render its own DOM.
+  return null; // Component provides logic & toast notifications only.
 };
 
-export default SWUpdatePrompt;
+export default UpdatePrompt;

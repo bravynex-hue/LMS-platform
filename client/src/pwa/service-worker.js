@@ -5,12 +5,12 @@ import { ExpirationPlugin } from "workbox-expiration";
 import { setCacheNameDetails, clientsClaim } from "workbox-core";
 
 /**
- * 4. Service Worker Caching Strategy (Requirement 4)
- * Critical for LMS: Avoid caching sensitive or dynamic data.
+ * PWA Service Worker (v2.1.0)
+ * Optimized for LMS performance and data security.
  */
 
-// Versioning (Requirement 4)
-const CACHE_VERSION = "v2.0.0";
+// 1. Precise Versioning and Cache Names
+const CACHE_VERSION = "v2.1.0";
 setCacheNameDetails({
   prefix: "bravynex",
   suffix: CACHE_VERSION,
@@ -18,7 +18,7 @@ setCacheNameDetails({
   runtime: "runtime",
 });
 
-// Immediate activation (Requirement 3)
+// 2. Activation Logic
 clientsClaim();
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
@@ -26,15 +26,21 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// Clean old caches (Requirement 4)
+// 3. Clean environment
 cleanupOutdatedCaches();
 
-// Precaching (Vite build assets)
+// 4. Precaching (Vite build assets)
 precacheAndRoute(self.__WB_MANIFEST || []);
 
 /**
- * 4. DO NOT CACHE: API, authenticated data, dashboard (Requirement 4)
+ * 5. Caching Strategy
+ * -------------------
+ * - EXCLUDED: API, auth, user data, dashboard (Requirement 4)
+ * - NAVIGATION: Network-first with HTML fallback
+ * - ASSETS: Cache-first for performance
  */
+
+// Never cache dynamic API or sensitive data
 registerRoute(
   ({ url }) =>
     url.pathname.startsWith("/api/") ||
@@ -44,7 +50,7 @@ registerRoute(
   new NetworkOnly()
 );
 
-// 4. Network-first for HTML (Requirement 4)
+// Network-first for navigations
 registerRoute(
   ({ request }) => request.mode === "navigate",
   new NetworkFirst({
@@ -52,13 +58,13 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 10,
-        maxAgeSeconds: 60 * 60 * 24, // 24 hours
+        maxAgeSeconds: 60 * 60 * 24, // 24h
       }),
     ],
   })
 );
 
-// 4. Cache-first for static assets (Requirement 4)
+// Cache-first for core assets
 registerRoute(
   ({ request }) =>
     request.destination === "style" ||
@@ -69,12 +75,13 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30d
       }),
     ],
   })
 );
 
+// Optimized cache for static media
 registerRoute(
   ({ request }) => request.destination === "image" || request.destination === "font",
   new CacheFirst({
@@ -82,13 +89,13 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
+        maxAgeSeconds: 60 * 60 * 24 * 90, // 90d
       }),
     ],
   })
 );
 
-// Offline fallback for navigations
+// Offline fallback
 setCatchHandler(async ({ event }) => {
   if (event.request?.mode === "navigate") {
     return caches.match("/index.html");

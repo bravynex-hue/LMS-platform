@@ -14,7 +14,7 @@ import { SpinnerOverlay } from "@/components/ui/spinner";
 import CommonForm from "@/components/common-form";
 import ForgotPassword from "@/components/auth/forgot-password";
 import ResetPassword from "@/components/auth/reset-password";
-import PWAInstallSection from "@/components/pwa/PWAInstallSection";
+import PWAInstallSection from "@/pwa/components/PWAInstallSection";
 import {
   ArrowRight,
   Zap,

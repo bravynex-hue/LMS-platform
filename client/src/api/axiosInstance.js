@@ -150,9 +150,42 @@ axiosInstance.interceptors.request.use(
 // Global response interceptor for auth errors
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error?.response?.status;
+
+    // If 401 (Unauthorized) and not already retrying
+    if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        // Attempt to refresh the token using the HttpOnly cookie
+        const response = await axios.post(
+          `${API_BASE.replace(/\/$/, "")}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+
+        if (response.data.success) {
+          const { accessToken } = response.data.data;
+          tokenManager.setToken(accessToken);
+          
+          // Update the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return axiosInstance(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error("Session refresh failed:", refreshError);
+        // If refresh fails, log out the user
+        tokenManager.removeToken();
+        if (typeof window !== "undefined" && !window.location.pathname.includes("/auth")) {
+          window.location.href = "/auth";
+        }
+      }
+    }
+
     const url = (error?.config?.url || "").toString();
+    // ... rest of the error handling (keeping existing logic for other codes)
     const isAuthLogin = /\/auth\/login($|\?)/.test(url);
     const isAuthRegister = /\/auth\/register($|\?)/.test(url);
     const isAuthForgot = /\/(auth|secure)\/(forgot-password|reset-password)($|\?)/.test(url);
@@ -168,12 +201,10 @@ axiosInstance.interceptors.response.use(
     const isSecureInstructor = /\/secure\/instructor\//.test(url);
     const isAdminEndpoint = /\/admin\//.test(url);
     const isFeedbackEndpoint = /\/feedback($|\/)/.test(url);
-    
-    
-    if (status === 401 || status === 403) {
+
+    if ((status === 401 || status === 403) && !originalRequest._retry) {
+      // Existing logic for non-retriable errors
       const message = error?.response?.data?.message || (status === 401 ? "Unauthorized" : "Forbidden");
-      
-      // Special handling for media uploads - don't auto-logout on token expiry
       if (isMediaUpload && status === 401 && message === "Token expired") {
         toast({ 
           title: "Upload failed", 
@@ -183,28 +214,22 @@ axiosInstance.interceptors.response.use(
       }
       
       if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isMediaDelete && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
-        // Only clear token and redirect for non-course related endpoints
         tokenManager.removeToken();
         toast({ title: "Session expired", description: "Please login again to continue" });
         if (typeof window !== "undefined") {
           window.location.href = "/auth";
         }
-      } else if (isAuthLogin) {
-        // For login failures, do not redirect or clear input; allow caller to handle toast
-      } else if (isVideoProgress || isCourseRelated || isInstructorCourse || isStudentOrder || isSecureInstructor || isAdminEndpoint || isFeedbackEndpoint || isMediaDelete) {
-        console.warn("Course/instructor/admin/feedback/media-related request failed:", message);
       }
     }
-    // CSRF errors - clear token and retry (but not for auth endpoints)
+
+    // CSRF errors - clear token and retry
     if (status === 419 || 
         error?.response?.data?.message?.toLowerCase().includes("csrf") ||
         error?.response?.data?.message?.toLowerCase().includes("invalid token")) {
-      // Clear cached CSRF token to force refresh
       csrfToken = null;
       lastFetchTime = 0;
       retryCount = 0;
       
-      // Don't show CSRF error for auth endpoints, course-related requests, media uploads, media deletes, instructor course, secure instructor, student order, admin, or feedback endpoints
       if (!isAuthEndpoint && !isVideoProgress && !isCourseRelated && !isMediaUpload && !isMediaDelete && !isInstructorCourse && !isStudentOrder && !isNotifyContact && !isSecureInstructor && !isAdminEndpoint && !isFeedbackEndpoint) {
         toast({ 
           title: "Security error", 
@@ -216,8 +241,6 @@ axiosInstance.interceptors.response.use(
             window.location.reload();
           }
         }, 2000);
-      } else {
-        console.warn("CSRF token issue for request, token cleared for retry.");
       }
     }
     if (!status) {

@@ -2,12 +2,8 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import { useContext, lazy, Suspense } from "react";
 const AuthPage = lazy(() => import("./pages/auth"));
 const OAuthSuccess = lazy(() => import("./pages/auth/OAuthSuccess"));
-import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard, AdminRouteGuard } from "./components/route-guard";
-import NotFoundPage from "./pages/not-found";
-import UnauthorizedPage from "./pages/not-found/unauthorized";
 const InstructorDashboardpage = lazy(() => import("./pages/instructor"));
 const AdminDashboardpage = lazy(() => import("./pages/admin"));
-
 const AddNewCoursePage = lazy(() => import("./pages/instructor/add-new-course/index"));
 const StudentViewCommonLayout = lazy(() => import("./components/student-view/common-layout"));
 const StudentHomePage = lazy(() => import("./pages/student/home"));
@@ -18,12 +14,14 @@ const StudentCoursesPage = lazy(() => import("./pages/student/student-courses"))
 const StudentViewCourseProgressPage = lazy(() => import("./pages/student/course-progress"));
 const LearnPage = lazy(() => import("./pages/student/learn"));
 const AboutPage = lazy(() => import("./pages/student/about"));
-
 const StudentFeedbackSupportPage = lazy(() => import("./pages/student/feedback-support"));
-import AnimationProvider from "./context/animation-context";
 const InstructorCertificatesPage = lazy(() => import("./pages/instructor/certificates"));
 const CertificateVerificationPage = lazy(() => import("./pages/public/certificate-verification"));
+const NotFoundPage = lazy(() => import("./pages/not-found"));
+const UnauthorizedPage = lazy(() => import("./pages/not-found/unauthorized"));
 
+import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard, AdminRouteGuard } from "./components/route-guard";
+import AnimationProvider from "./context/animation-context";
 import { AuthContext } from "./context/auth-context";
 import { SpinnerFullPage } from "./components/ui/spinner";
 

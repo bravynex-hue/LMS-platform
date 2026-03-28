@@ -1,10 +1,9 @@
 /**
- * Service Worker Registration Logic
- * Handles registration, update detection, and offline caching success.
- * Follows Requirement 6: structured registerServiceWorker.js
+ * Service Worker Registration & Lifecycle Management
+ * Optimized for React + Vite PWA strategies.
  */
 
-export function register(config) {
+export function registerServiceWorker(config) {
   if (import.meta.env.PROD || import.meta.env.DEV) {
     if ("serviceWorker" in navigator) {
       const isProd = import.meta.env.PROD;
@@ -12,19 +11,22 @@ export function register(config) {
       const swType = isProd ? "classic" : "module";
 
       window.addEventListener("load", () => {
-        registerValidSW(swUrl, config, swType);
+        handleServiceWorker(swUrl, config, swType);
       });
     }
   }
 }
 
-function registerValidSW(swUrl, config, swType) {
+function handleServiceWorker(swUrl, config, swType) {
   navigator.serviceWorker
     .register(swUrl, { type: swType })
     .then((registration) => {
-      // Check for updates periodically
-      // registration.update();
+      // 1. Initial/periodic check for waiting worker if user refreshes
+      if (registration.waiting && config?.onUpdate) {
+        config.onUpdate(registration);
+      }
 
+      // 2. Lifecycle listeners
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) return;
@@ -32,15 +34,14 @@ function registerValidSW(swUrl, config, swType) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === "installed") {
             if (navigator.serviceWorker.controller) {
-              // 4. Update notification system (Requirement 4)
-              // This is where we detect a new version is available but not active.
-              console.log("New content is available; please refresh.");
+              // Version changed: Content available but not yet active
+              console.log("PWA: New version detected; waiting for user action.");
               if (config && config.onUpdate) {
                 config.onUpdate(registration);
               }
             } else {
-              // Offline success (Requirement 7)
-              console.log("Content is cached for offline use.");
+              // Initial caching
+              console.log("PWA: Initial offline caching complete.");
               if (config && config.onSuccess) {
                 config.onSuccess(registration);
               }
@@ -50,14 +51,14 @@ function registerValidSW(swUrl, config, swType) {
       };
     })
     .catch((error) => {
-      console.error("Error during service worker registration:", error);
+      console.error("PWA: Registration error:", error);
     });
 }
 
 /**
- * 5. Auto reload (Requirement 5)
- * Listen for service worker controller change to reload the page.
- * This ensures the new service worker takes control smoothly.
+ * 3. Atomic Activation Lifecycle
+ * ----------------------------
+ * Ensures the app reloads seamlessly when the new worker takes control.
  */
 let refreshing = false;
 navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -66,14 +67,12 @@ navigator.serviceWorker.addEventListener("controllerchange", () => {
   window.location.reload();
 });
 
-export function unregister() {
+export function unregisterServiceWorker() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.ready
       .then((registration) => {
         registration.unregister();
       })
-      .catch((error) => {
-        console.error(error.message);
-      });
+      .catch((error) => console.error(error.message));
   }
 }

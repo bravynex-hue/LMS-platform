@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
 const passport = require("passport");
+const cookieParser = require("cookie-parser");
 
 // ----------------- Routes -----------------
 const authRoutes = require("./routes/auth-routes/index");
@@ -101,6 +102,7 @@ const corsOptions = {
 };
 
 // Apply CORS middleware first (needed for preflight requests)
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // preflight
 

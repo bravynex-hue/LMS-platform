@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       strategies: "injectManifest",
-      srcDir: "src",
+      srcDir: "src/pwa",
       filename: "service-worker.js",
       registerType: "prompt",
       injectRegister: null,

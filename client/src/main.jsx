@@ -12,8 +12,8 @@ import { SpinnerFullPage } from "./components/ui/spinner.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import MaintenancePage from "./pages/maintenance/index.jsx";
 
-import SWUpdatePrompt from "./components/pwa/SWUpdatePrompt.jsx";
-import InstallPrompt from "./components/pwa/InstallPrompt.jsx";
+import UpdatePrompt from "./pwa/components/UpdatePrompt.jsx";
+import InstallPrompt from "./pwa/components/InstallPrompt.jsx";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -90,7 +90,7 @@ function Root() {
         <SocketProvider>
           <InstructorProvider>
             <StudentProvider>
-              <SWUpdatePrompt />
+              <UpdatePrompt />
               <InstallPrompt />
               <App />
               <Toaster />

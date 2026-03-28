@@ -166,21 +166,41 @@ const loginUser = async (req, res) => {
     });
   }
 
+  const payload = {
+    _id: checkUser._id,
+    userName: checkUser.userName,
+    userEmail: checkUser.userEmail,
+    role: checkUser.role,
+    studentId: checkUser.studentId,
+    guardianDetails: checkUser.guardianDetails,
+  };
+
   const accessToken = jwt.sign(
-    {
-      _id: checkUser._id,
-      userName: checkUser.userName,
-      userEmail: checkUser.userEmail,
-      role: checkUser.role,
-      studentId: checkUser.studentId,
-      guardianDetails: checkUser.guardianDetails,
-    },
+    payload,
     process.env.JWT_SECRET || "JWT_SECRET",
-    { expiresIn: "120m" }
+    { expiresIn: "15m" } // Short-lived access token
   );
 
-  // TODO: Implement notification system
-  console.log(`User ${checkUser.userName} logged in successfully at ${new Date()}`);
+  const refreshToken = jwt.sign(
+    { _id: checkUser._id },
+    process.env.JWT_REFRESH_SECRET || "JWT_REFRESH_SECRET",
+    { expiresIn: "7d" }
+  );
+
+  // Store active session in database (Requirement 4)
+  await checkUser.addActiveSession({
+    tokenId: refreshToken.substring(refreshToken.length - 20),
+    ipAddress: req.ip,
+    userAgent: req.get("user-agent"),
+  });
+
+  // Set HTTP-only cookie for refresh token (Requirement 4)
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
 
   res.status(200).json({
     success: true,
@@ -360,4 +380,73 @@ const googleLogin = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, googleLogin };
+const refreshAccessToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ success: false, message: "No refresh token" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "JWT_REFRESH_SECRET");
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      return res.status(403).json({ success: false, message: "Invalid user" });
+    }
+
+    // Verify token exists in active sessions
+    const tokenId = refreshToken.substring(refreshToken.length - 20);
+    const sessionExists = user.activeSessions.some(s => s.tokenId === tokenId);
+    
+    if (!sessionExists) {
+      return res.status(403).json({ success: false, message: "Session expired or revoked" });
+    }
+
+    const newPayload = {
+      _id: user._id,
+      userName: user.userName,
+      userEmail: user.userEmail,
+      role: user.role,
+      studentId: user.studentId,
+      guardianDetails: user.guardianDetails,
+    };
+
+    const accessToken = jwt.sign(
+      newPayload,
+      process.env.JWT_SECRET || "JWT_SECRET",
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: { accessToken, user: newPayload }
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(403).json({ success: false, message: "Invalid refresh token" });
+  }
+};
+
+const logoutUser = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (refreshToken) {
+    const tokenId = refreshToken.substring(refreshToken.length - 20);
+    const decoded = jwt.decode(refreshToken);
+    if (decoded && decoded._id) {
+      const user = await User.findById(decoded._id);
+      if (user) {
+        await user.removeActiveSession(tokenId);
+      }
+    }
+  }
+
+  res.clearCookie("refreshToken");
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
+module.exports = { registerUser, loginUser, googleLogin, refreshAccessToken, logoutUser };

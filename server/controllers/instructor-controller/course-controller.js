@@ -1,5 +1,26 @@
 const Course = require("../../models/Course");
 const User = require("../../models/User");
+const redisClient = require("../../config/redis");
+
+const clearCourseCache = async (courseId = null) => {
+  try {
+    // Clear the specific course details cache if ID is provided
+    if (courseId) {
+      await redisClient.del(`course:details:${courseId}`);
+    }
+    
+    // Clear all course list caches
+    // Note: For large datasets, use scan instead of keys, but for most LMS apps, 
+    // we just want to invalidate the student-view lists.
+    const keys = await redisClient.keys("courses:list:*");
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+    console.log("Course cache cleared successfully");
+  } catch (err) {
+    console.error("Error clearing course cache:", err);
+  }
+};
 
 
 const addNewCourse = async (req, res) => {
@@ -9,6 +30,9 @@ const addNewCourse = async (req, res) => {
     const saveCourse = await newlyCreatedCourse.save();
 
     if (saveCourse) {
+      // Invalidate cache
+      await clearCourseCache();
+      
       res.status(201).json({
         success: true,
         message: "Course saved successfully",
@@ -213,11 +237,16 @@ const updateCourseByID = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Course updated successfully",
-      data: updatedCourse,
-    });
+    if (updatedCourse) {
+      // Invalidate cache for this specific course and the general lists
+      await clearCourseCache(id);
+      
+      res.status(200).json({
+        success: true,
+        message: "Course updated successfully",
+        data: updatedCourse,
+      });
+    }
   } catch (e) {
     console.log(e);
     res.status(500).json({
@@ -308,6 +337,10 @@ const deleteCourseByID = async (req, res) => {
       }
 
       console.log('Course deleted successfully:', deletedCourse._id);
+      
+      // Invalidate cache
+      await clearCourseCache(id);
+      
       res.status(200).json({
         success: true,
         message: "Course deleted successfully",
