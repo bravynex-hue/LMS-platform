@@ -1,103 +1,93 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 
-function isIOSDevice() {
-  if (typeof window === "undefined") return false;
+/**
+ * 1. Platform Detection (Requirement 1)
+ * Detect device type for dynamic install UI.
+ */
+function getPlatform() {
   const ua = window.navigator.userAgent || "";
-  const isIOS = /iPad|iPhone|iPod/.test(ua);
-  const isIPadOS =
-    /Macintosh/.test(ua) &&
-    typeof navigator !== "undefined" &&
-    navigator.maxTouchPoints &&
-    navigator.maxTouchPoints > 1;
-  return isIOS || isIPadOS;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  const isDesktop = !isIOS && !isAndroid;
+  
+  return { isIOS, isAndroid, isDesktop };
 }
 
 function isInStandaloneMode() {
-  if (typeof window === "undefined") return false;
   return (
     window.matchMedia?.("(display-mode: standalone)")?.matches ||
     window.navigator.standalone === true
   );
 }
 
+/**
+ * 2. PWA Install Handling (Requirement 2)
+ */
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredPWAPrompt || null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isStandalone, setIsStandalone] = useState(isInStandaloneMode());
-  const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
-
-  const isIOS = useMemo(() => isIOSDevice(), []);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const platform = useMemo(() => getPlatform(), []);
 
   useEffect(() => {
-    // Give the browser 2 seconds to fire the initial event before we stop "waiting"
-    const timer = setTimeout(() => setIsInitialCheckDone(true), 2000);
-
-    const syncState = () => {
-      if (window.deferredPWAPrompt && deferredPrompt !== window.deferredPWAPrompt) {
-        setDeferredPrompt(window.deferredPWAPrompt);
-        setIsInitialCheckDone(true);
-      }
-    };
-    
-    syncState();
-
-    const onPromptReady = () => {
-      syncState();
-    };
-
-    const onAppInstalled = () => {
-      setDeferredPrompt(null);
-      window.deferredPWAPrompt = null;
-      setIsStandalone(true);
-    };
-
-    window.addEventListener("pwa-prompt-ready", onPromptReady);
-    window.addEventListener("appinstalled", onAppInstalled);
-
+    // 2. beforeinstallprompt event (Requirement 2)
     const onBeforeInstall = (e) => {
       e.preventDefault();
-      window.deferredPWAPrompt = e;
       setDeferredPrompt(e);
-      setIsInitialCheckDone(true);
+      console.log("PWA: Install prompt available");
     };
-    window.addEventListener("beforeinstallprompt", onBeforeInstall);
 
-    const mm = window.matchMedia?.("(display-mode: standalone)");
+    // 2. appinstalled event (Requirement 2 & 5)
+    const onAppInstalled = () => {
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+      setIsInstalled(true);
+      console.log("PWA: App installed successfully");
+    };
+
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onAppInstalled);
+
+    const mm = window.matchMedia("(display-mode: standalone)");
     const onDisplayModeChange = () => setIsStandalone(isInStandaloneMode());
-    mm?.addEventListener?.("change", onDisplayModeChange);
+    mm.addEventListener("change", onDisplayModeChange);
 
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener("pwa-prompt-ready", onPromptReady);
-      window.removeEventListener("appinstalled", onAppInstalled);
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
-      mm?.removeEventListener?.("change", onDisplayModeChange);
+      window.removeEventListener("appinstalled", onAppInstalled);
+      mm.removeEventListener("change", onDisplayModeChange);
     };
-  }, [deferredPrompt]);
+  }, []);
 
-  const canPromptInstall = (Boolean(deferredPrompt) || Boolean(window.deferredPWAPrompt)) && !isStandalone;
+  /**
+   * 2. Trigger install prompt (Requirement 2)
+   */
+  const install = useCallback(async () => {
+    if (!deferredPrompt) {
+      console.warn("PWA: No install prompt available");
+      return null;
+    }
 
-  const promptInstall = useCallback(async () => {
-    const promptEvent = deferredPrompt || window.deferredPWAPrompt;
-    if (!promptEvent) return { outcome: "dismissed" };
-    
     try {
-      promptEvent.prompt();
-      const res = await promptEvent.userChoice;
-      setDeferredPrompt(null);
-      window.deferredPWAPrompt = null;
-      return res;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA: User choice outcome: ${outcome}`);
+      
+      if (outcome === "accepted") {
+        setDeferredPrompt(null);
+      }
+      return outcome;
     } catch (err) {
-      console.error("PWA install prompt error:", err);
-      return { outcome: "error" };
+      console.error("PWA: Error during prompt:", err);
+      return null;
     }
   }, [deferredPrompt]);
 
   return {
-    isIOS,
+    ...platform,
     isStandalone,
-    canPromptInstall,
-    promptInstall,
-    isPreparing: !isInitialCheckDone && !canPromptInstall && !isStandalone
+    isInstalled,
+    canInstall: Boolean(deferredPrompt) && !isStandalone,
+    install,
   };
 }
-

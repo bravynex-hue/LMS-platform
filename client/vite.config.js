@@ -11,7 +11,7 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "service-worker.js",
-      registerType: "autoUpdate",
+      registerType: "prompt",
       injectRegister: null,
       includeAssets: [
         "manifest.json",

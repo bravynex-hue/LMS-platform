@@ -12,20 +12,11 @@ import { SpinnerFullPage } from "./components/ui/spinner.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import MaintenancePage from "./pages/maintenance/index.jsx";
 
+import SWUpdatePrompt from "./components/pwa/SWUpdatePrompt.jsx";
+import InstallPrompt from "./components/pwa/InstallPrompt.jsx";
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    const isProd = import.meta.env.MODE === "production";
-    const swUrl = isProd ? "/service-worker.js" : "/dev-sw.js?dev-sw";
-    const swType = isProd ? "classic" : "module";
-
-    navigator.serviceWorker.register(swUrl, { type: swType }).catch(() => {
-      // Registration errors will surface in DevTools console.
-    });
-  });
-}
 
 const API_BASE = (
   import.meta.env.VITE_API_BASE_URL ||
@@ -99,6 +90,8 @@ function Root() {
         <SocketProvider>
           <InstructorProvider>
             <StudentProvider>
+              <SWUpdatePrompt />
+              <InstallPrompt />
               <App />
               <Toaster />
             </StudentProvider>

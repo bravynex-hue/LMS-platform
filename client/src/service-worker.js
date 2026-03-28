@@ -1,125 +1,97 @@
-import { cleanupOutdatedCaches, precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
+import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
 import { registerRoute, setCatchHandler } from "workbox-routing";
-import { NetworkFirst, StaleWhileRevalidate, CacheFirst, NetworkOnly } from "workbox-strategies";
+import { NetworkFirst, CacheFirst, NetworkOnly } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
-import { Queue } from "workbox-background-sync";
+import { setCacheNameDetails, clientsClaim } from "workbox-core";
 
+/**
+ * 4. Service Worker Caching Strategy (Requirement 4)
+ * Critical for LMS: Avoid caching sensitive or dynamic data.
+ */
+
+// Versioning (Requirement 4)
+const CACHE_VERSION = "v2.0.0";
+setCacheNameDetails({
+  prefix: "bravynex",
+  suffix: CACHE_VERSION,
+  precache: "precache",
+  runtime: "runtime",
+});
+
+// Immediate activation (Requirement 3)
+clientsClaim();
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
+// Clean old caches (Requirement 4)
 cleanupOutdatedCaches();
+
+// Precaching (Vite build assets)
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-// SPA navigation fallback (so previously-cached shell works offline)
-let allowlist;
-if (import.meta.env.DEV) {
-  // In dev, only intercept the entry point to avoid breaking HMR/routes.
-  allowlist = [/^\/$/];
-}
-
+/**
+ * 4. DO NOT CACHE: API, authenticated data, dashboard (Requirement 4)
+ */
 registerRoute(
-  ({ request, url }) =>
-    request.mode === "navigate" &&
-    url.origin === self.location.origin &&
-    (!allowlist || allowlist.some((re) => re.test(url.pathname))),
-  createHandlerBoundToURL("/index.html")
+  ({ url }) =>
+    url.pathname.startsWith("/api/") ||
+    url.pathname.includes("/auth/") ||
+    url.pathname.includes("/dashboard/") ||
+    url.pathname.includes("/user/"),
+  new NetworkOnly()
 );
 
-// JS/CSS: fast with background update
+// 4. Network-first for HTML (Requirement 4)
 registerRoute(
-  ({ request }) => request.destination === "script" || request.destination === "style" || request.destination === "worker",
-  new StaleWhileRevalidate({ cacheName: "assets" })
-);
-
-// Images: cache-first with expiration
-registerRoute(
-  ({ request }) => request.destination === "image",
-  new CacheFirst({
-    cacheName: "images",
+  ({ request }) => request.mode === "navigate",
+  new NetworkFirst({
+    cacheName: "html-cache",
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 60,
+        maxEntries: 10,
+        maxAgeSeconds: 60 * 60 * 24, // 24 hours
+      }),
+    ],
+  })
+);
+
+// 4. Cache-first for static assets (Requirement 4)
+registerRoute(
+  ({ request }) =>
+    request.destination === "style" ||
+    request.destination === "script" ||
+    request.destination === "worker",
+  new CacheFirst({
+    cacheName: "assets-cache",
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
         maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
       }),
     ],
   })
 );
 
-// Documents: try network first, fall back to cache (good for basic pages)
 registerRoute(
-  ({ request }) => request.destination === "document",
-  new NetworkFirst({
-    cacheName: "pages",
-    networkTimeoutSeconds: 4,
+  ({ request }) => request.destination === "image" || request.destination === "font",
+  new CacheFirst({
+    cacheName: "static-media-cache",
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
+      }),
+    ],
   })
 );
 
-// Background sync scaffold (replays queued requests when connectivity returns)
-const bgSyncQueue = new Queue("bravynex-bg-sync", {
-  maxRetentionTime: 24 * 60, // minutes
-});
-
-registerRoute(
-  ({ url, request }) =>
-    url.origin === self.location.origin &&
-    request.method !== "GET" &&
-    // Avoid queuing non-API resources; tune these prefixes to your API surface.
-    ["/auth/", "/secure/", "/notify/", "/student/", "/instructor/"].some((p) => url.pathname.startsWith(p)),
-  new NetworkOnly({
-    plugins: [
-      {
-        fetchDidFail: async ({ request }) => {
-          await bgSyncQueue.pushRequest({ request });
-        },
-      },
-    ],
-  }),
-  "POST"
-);
-
-self.addEventListener("sync", (event) => {
-  if (event.tag === "bravynex-sync") {
-    event.waitUntil(bgSyncQueue.replayRequests());
-  }
-});
-
-// Push-notification ready scaffold
-self.addEventListener("push", (event) => {
-  let payload = {};
-  try {
-    payload = event.data?.json?.() || {};
-  } catch {
-    payload = { title: event.data?.text?.() || "Bravynex", body: "You have a new update." };
-  }
-
-  const title = payload.title || "Bravynex";
-  const options = {
-    body: payload.body || "You have a new update.",
-    icon: "/icons/icon-192.svg",
-    badge: "/icons/icon-192.svg",
-    data: payload.data || {},
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const targetUrl = event.notification?.data?.url || "/";
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsArr) => {
-      const existing = clientsArr.find((c) => "focus" in c);
-      if (existing) {
-        existing.focus();
-        existing.navigate?.(targetUrl);
-        return;
-      }
-      return self.clients.openWindow(targetUrl);
-    })
-  );
-});
-
-// Offline fallback for failed navigations
+// Offline fallback for navigations
 setCatchHandler(async ({ event }) => {
   if (event.request?.mode === "navigate") {
     return caches.match("/index.html");
   }
-  throw new Error("No fallback available");
+  return Response.error();
 });
