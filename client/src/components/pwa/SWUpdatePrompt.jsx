@@ -11,6 +11,34 @@ import * as serviceWorkerRegistration from "@/pwa/registerServiceWorker";
 const SWUpdatePrompt = () => {
   const { toast } = useToast();
 
+  const showUpdateToast = React.useCallback(
+    (registration) => {
+      toast({
+        title: "New Update Available!",
+        description: "A newer version of the app is ready. Refresh to update.",
+        duration: Infinity, // Keep it visible until user acts
+        action: (
+          <Button
+            size="sm"
+            className="flex items-center gap-2"
+            variant="secondary"
+            onClick={() => {
+              // 3. Force update behavior (Requirement 3)
+              // Send the message to SW to skip waiting and activate immediately
+              if (registration.waiting) {
+                registration.waiting.postMessage({ type: "SKIP_WAITING" });
+              }
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Update Now
+          </Button>
+        ),
+      });
+    },
+    [toast]
+  );
+
   useEffect(() => {
     // 5. Registration (Requirement 6)
     serviceWorkerRegistration.register({
@@ -41,32 +69,7 @@ const SWUpdatePrompt = () => {
     updateHandler(); // Check on mount
 
     return () => clearInterval(interval);
-  }, []);
-
-  const showUpdateToast = (registration) => {
-    toast({
-      title: "New Update Available!",
-      description: "A newer version of the app is ready. Refresh to update.",
-      duration: Infinity, // Keep it visible until user acts
-      action: (
-        <Button
-          size="sm"
-          className="flex items-center gap-2"
-          variant="secondary"
-          onClick={() => {
-            // 3. Force update behavior (Requirement 3)
-            // Send the message to SW to skip waiting and activate immediately
-            if (registration.waiting) {
-              registration.waiting.postMessage({ type: "SKIP_WAITING" });
-            }
-          }}
-        >
-          <RefreshCw className="h-4 w-4" />
-          Update Now
-        </Button>
-      ),
-    });
-  };
+  }, [toast, showUpdateToast]);
 
   return null; // This component registers logic/UI via Toasts, doesn't render its own DOM.
 };

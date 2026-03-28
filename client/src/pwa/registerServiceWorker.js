@@ -5,7 +5,7 @@
  */
 
 export function register(config) {
-  if (process.env.NODE_ENV === "production" || import.meta.env.DEV) {
+  if (import.meta.env.PROD || import.meta.env.DEV) {
     if ("serviceWorker" in navigator) {
       const isProd = import.meta.env.PROD;
       const swUrl = isProd ? "/service-worker.js" : "/dev-sw.js?dev-sw";

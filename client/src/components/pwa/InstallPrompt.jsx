@@ -3,7 +3,7 @@ import { usePWAInstall } from "@/pwa/usePWAInstall";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, Laptop, Smartphone, Download, Share, PlusSquare, ArrowUpFromLine } from "lucide-react";
+import { Phone, Laptop, Smartphone, Download, PlusSquare, ArrowUpFromLine } from "lucide-react";
 
 /**
  * 1. Platform Detection (Dynamic UI) (Requirement 1)
@@ -32,7 +32,7 @@ const InstallPrompt = () => {
       });
       setShowPrompt(false);
     }
-  }, [isInstalled, toast]);
+  }, [isInstalled, toast, setShowPrompt]);
 
   // Initial prompt display logic
   useEffect(() => {
@@ -44,7 +44,7 @@ const InstallPrompt = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [canInstall, isIOS, isStandalone]);
+  }, [canInstall, isIOS, isStandalone, setShowPrompt]);
 
   if (!showPrompt || isStandalone) return null;
 
