@@ -298,12 +298,13 @@ app.post("/test-csrf", (req, res) => {
 });
 
 // ----------------- Serve React SPA -----------------
-const clientDistPath = path.join(__dirname, "..", "client", "dist");
+const clientDistPath = path.resolve(__dirname, "..", "client", "dist");
+
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
   console.log("✅ Serving static files from:", clientDistPath);
 } else {
-  console.warn("⚠️ Client dist directory not found at:", clientDistPath);
+  console.warn("⚠️ Client build not detected. Static serving disabled for:", clientDistPath);
 }
 
 // ----------------- Global Error Handler (must be before catch-all) -----------------
@@ -339,7 +340,7 @@ app.get("*", (req, res) => {
     });
   }
 
-  const indexPath = path.join(__dirname, "..", "client", "dist", "index.html");
+  const indexPath = path.resolve(__dirname, "..", "client", "dist", "index.html");
   if (!fs.existsSync(indexPath)) {
     console.warn('SPA fallback requested but index.html not found at:', indexPath);
     return res.status(404).json({
