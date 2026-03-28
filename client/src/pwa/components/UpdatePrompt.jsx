@@ -27,6 +27,7 @@ const UpdatePrompt = () => {
             onClick={() => {
               // 1. Force update activation
               if (registration.waiting) {
+                sessionStorage.setItem("pwa_updated", "true");
                 registration.waiting.postMessage({ type: "SKIP_WAITING" });
               }
             }}
@@ -41,14 +42,23 @@ const UpdatePrompt = () => {
   );
 
   useEffect(() => {
-    // 2. Initial Registration with logic callbacks
+    // 1. Success Notification after successful reload
+    const isUpdating = sessionStorage.getItem("pwa_updated");
+    if (isUpdating) {
+      toast({
+        title: "App Updated Successfully 🎉",
+        description: "Bravynex is now running the latest version.",
+        duration: 5000,
+      });
+      sessionStorage.removeItem("pwa_updated");
+    }
+
+    // 2. Initial Registration
     registerServiceWorker({
       onUpdate: (registration) => {
-        // Callback: New version waiting
         showUpdateToast(registration);
       },
       onSuccess: () => {
-        // Callback: Initial offline-cache success
         toast({
           title: "Offline Ready",
           description: "This app is now available for offline use.",
@@ -57,7 +67,6 @@ const UpdatePrompt = () => {
       },
     });
 
-    // 3. Periodic update check for persistent sessions
     const updateHandler = async () => {
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration?.waiting) {
@@ -65,8 +74,8 @@ const UpdatePrompt = () => {
       }
     };
 
-    const interval = setInterval(updateHandler, 1000 * 60 * 60); // Check every hour
-    updateHandler(); // Immediate check on mount
+    const interval = setInterval(updateHandler, 1000 * 60 * 30); // Check more frequently (30m)
+    updateHandler();
 
     return () => clearInterval(interval);
   }, [toast, showUpdateToast]);

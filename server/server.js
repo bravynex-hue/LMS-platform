@@ -229,8 +229,12 @@ app.use((req, res, next) => {
   return generalApiLimiter(req, res, next);
 });
 
-// CSRF protection is not needed for stateless JWT-based authentication
-app.get("/health", (req, res) => res.status(200).send("OK"));
+// health and csrf-token routes
+app.get("/health", (req, res) => res.status(200).json({ success: true, status: "OK", maintenance: false }));
+
+app.get("/csrf-token", (req, res) => {
+  res.json({ success: true, csrfToken: "BravynexSecuredModeEnabled" });
+});
 
 // ----------------- Database -----------------
 // Optimized MongoDB connection with pooling for better performance

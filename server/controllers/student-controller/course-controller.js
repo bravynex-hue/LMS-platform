@@ -214,7 +214,7 @@ const checkCoursePurchaseInfo = async (req, res) => {
 
     // Check if student already bought the current course
     const ifStudentAlreadyBoughtCurrentCourse = studentCourses.courses.some(
-      (item) => item.courseId === id
+      (item) => item.courseId.toString() === id.toString()
     );
 
     console.log("Purchase check result:", ifStudentAlreadyBoughtCurrentCourse);

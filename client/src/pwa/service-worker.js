@@ -9,8 +9,8 @@ import { setCacheNameDetails, clientsClaim } from "workbox-core";
  * Optimized for LMS performance and data security.
  */
 
-// 1. Precise Versioning and Cache Names
-const CACHE_VERSION = "v2.1.0";
+// 1. Precise Versioning for Cache Busting (Requirement 3)
+const CACHE_VERSION = "lms-app-v2.2.0"; 
 setCacheNameDetails({
   prefix: "bravynex",
   suffix: CACHE_VERSION,
@@ -18,36 +18,38 @@ setCacheNameDetails({
   runtime: "runtime",
 });
 
-// 2. Activation Logic
+// 2. Immediate Activation (Requirement 2)
+self.skipWaiting();
 clientsClaim();
+
+// 3. Update Handler (Requirement 1 & 6)
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
 
-// 3. Clean environment
+// 4. Clean old caches automatically (Requirement 3)
 cleanupOutdatedCaches();
 
-// 4. Precaching (Vite build assets)
+// 5. Precaching (Vite build assets)
 precacheAndRoute(self.__WB_MANIFEST || []);
 
 /**
- * 5. Caching Strategy
- * -------------------
- * - EXCLUDED: API, auth, user data, dashboard (Requirement 4)
- * - NAVIGATION: Network-first with HTML fallback
- * - ASSETS: Cache-first for performance
+ * 6. Smart Caching Strategy (Requirement 4 & 5)
+ * -------------------------------------------
+ * - NEVER cache API, course content, or secure data.
+ * - ALWAYS fetch fresh data from the backend.
  */
 
-// Never cache dynamic API or sensitive data
+// Route: API and Course Data (Network Only)
 registerRoute(
-  ({ url }) =>
-    url.pathname.startsWith("/api/") ||
-    url.pathname.includes("/auth/") ||
-    url.pathname.includes("/dashboard/") ||
-    url.pathname.includes("/user/"),
-  new NetworkOnly()
+  ({ url }) => 
+    url.pathname.includes("/api/") || 
+    url.pathname.includes("/student/") || 
+    url.pathname.includes("/instructor/") ||
+    url.pathname.includes("/auth/"),
+  new NetworkOnly() // Ensures fresh data (Requirement 5)
 );
 
 // Network-first for navigations

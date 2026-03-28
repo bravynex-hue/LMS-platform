@@ -1,7 +1,7 @@
 import { courseCategories, signInFormControls, signUpFormControls } from "@/config";
 import { useState, useContext, useEffect, useCallback, useRef, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
-import { StudentContext } from "@/context/student-context";
+import { StudentContext, useStudent } from "@/context/student-context";
 import { AuthContext } from "@/context/auth-context";
 import {
   checkCoursePurchaseInfoService,
@@ -367,7 +367,7 @@ function LandingAuthSection() {
 
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────
 function StudentHomePage() {
-  const { studentViewCoursesList, setStudentViewCoursesList } = useContext(StudentContext);
+  const { studentViewCoursesList, setStudentViewCoursesList } = useStudent();
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const pageRef = useRef(null);
@@ -381,7 +381,7 @@ function StudentHomePage() {
 
   const fetchAllStudentViewCourses = useCallback(async () => {
     const response = await fetchStudentViewCourseListService();
-    if (response?.success) setStudentViewCoursesList(response?.data);
+    if (response?.success) setStudentViewCoursesList(response?.data?.courses || []);
   }, [setStudentViewCoursesList]);
 
 

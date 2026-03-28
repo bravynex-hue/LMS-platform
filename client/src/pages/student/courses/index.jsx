@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { filterOptions, sortOptions, courseCategories } from "@/config";
 import { AuthContext } from "@/context/auth-context";
-import { StudentContext } from "@/context/student-context";
+import { StudentContext, useStudent } from "@/context/student-context";
 import {
   checkCoursePurchaseInfoService,
   fetchStudentViewCourseListService,
@@ -59,9 +59,11 @@ function StudentViewCoursesPage() {
   const {
     studentViewCoursesList,
     setStudentViewCoursesList,
+    paginationInfo,
+    setPaginationInfo,
     loadingState,
     setLoadingState,
-  } = useContext(StudentContext);
+  } = useStudent();
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
   const pageRef = usePageTransition();
@@ -174,10 +176,15 @@ function StudentViewCoursesPage() {
 
     const response = await fetchStudentViewCourseListService(query.toString());
     if (response?.success) {
-      setStudentViewCoursesList(response?.data);
+      setStudentViewCoursesList(response?.data?.courses || []);
+      setPaginationInfo({
+        totalCount: response?.data?.totalCount || 0,
+        totalPages: response?.data?.totalPages || 0,
+        currentPage: response?.data?.currentPage || 1
+      });
       setLoadingState(false);
     }
-  }, [setStudentViewCoursesList, setLoadingState]);
+  }, [setStudentViewCoursesList, setPaginationInfo, setLoadingState]);
 
   async function handleCourseNavigate(getCurrentCourseId) {
     if (!auth?.authenticate) {
