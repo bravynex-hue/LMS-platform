@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { SpinnerFullPage } from "@/components/ui/spinner";
+import { GlobalSkeletonLoader } from "@/components/common/skeleton-loaders";
 import tokenManager from "@/utils/tokenManager";
 
 export const AuthContext = createContext(null);
@@ -307,7 +308,7 @@ export default function AuthProvider({ children }) {
       }}
     >
       {loading ? (
-        <SpinnerFullPage message="Initializing Bravynex App..." />
+        <GlobalSkeletonLoader />
       ) : children}
     </AuthContext.Provider>
   );

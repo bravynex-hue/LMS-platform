@@ -17,68 +17,53 @@ export function Spinner({ className, size = "default", ...props }) {
   );
 }
 
-export function SpinnerFullPage({ message = "Loading..." }) {
+export function SpinnerFullPage() {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center z-[10000] overflow-hidden bg-[#020617]">
-      {/* Background ambient orbs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '6s', animationDirection: 'reverse' }} />
-      
-      {/* Grid overlay */}
+    <div className="fixed inset-0 min-h-screen flex flex-col items-center justify-center space-y-8 bg-[#020617] relative overflow-hidden z-[10000]">
+      {/* Dynamic Background */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.02)_1px,transparent_1px)] bg-[size:60px_60px] opacity-30 pointer-events-none" />
-
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Animated Rings */}
-        <div className="relative w-28 h-28 mb-8 flex items-center justify-center">
-          {/* Outer ring */}
-          <div className="absolute inset-0 rounded-full border border-blue-500/10 border-t-blue-500/80 animate-spin" style={{ animationDuration: '2.5s' }} />
-          {/* Middle ring */}
-          <div className="absolute inset-2 rounded-full border border-purple-500/10 border-b-purple-500/70 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-          {/* Inner ring */}
-          <div className="absolute inset-4 rounded-full border border-cyan-400/10 border-r-cyan-400/60 animate-spin" style={{ animationDuration: '3s' }} />
-          
-          {/* Core */}
-          <img 
-            src="/icons/icon-192.png" 
-            alt="Bravynex" 
-            className="absolute w-12 h-12 z-20 mix-blend-screen drop-shadow-[0_0_12px_rgba(59,130,246,0.6)] animate-pulse" 
-            style={{ animationDuration: '3s' }}
-          />
-          <div className="w-12 h-12 rounded-full bg-blue-500/10 blur-xl animate-pulse" />
+      
+      <div className="relative z-10 flex flex-col items-center max-w-sm w-full px-6">
+        {/* Animated Brand Placeholder */}
+        <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 relative">
+           <div className="absolute inset-0 rounded-2xl border border-blue-500/30 animate-ping" />
+           <div className="w-10 h-10 rounded-full bg-blue-500/20 blur-xl animate-pulse" />
         </div>
-
-        {/* Branding */}
-        <div className="flex flex-col items-center">
-          <h2 className="text-4xl sm:text-6xl font-black tracking-[-0.05em] uppercase mb-1 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            <span style={{ color: "#ffffff", opacity: 0.9 }}>Bravy</span>
-            <span style={{
-              background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>nex</span>
-          </h2>
-          <div className="w-12 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-40 rounded-full mb-6" />
+        
+        {/* Content Skeletons */}
+        <div className="w-full space-y-4">
+          <div className="h-8 w-3/4 mx-auto rounded-lg bg-white/5 animate-pulse" />
+          <div className="h-3 w-1/2 mx-auto rounded-lg bg-white/5 animate-pulse" />
+          <div className="pt-6">
+            <div className="h-1 w-full rounded-full bg-white/5 overflow-hidden">
+              <div className="h-full bg-blue-600 w-1/3 animate-[shimmer_2s_infinite]" />
+            </div>
+          </div>
         </div>
-
-        {/* Loading Message */}
-        <div className="flex items-center gap-3 mt-2 px-6 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm shadow-xl">
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping" />
-          <p className="text-slate-300 font-semibold tracking-[0.2em] uppercase text-[10px] sm:text-xs">
-            {message}
-          </p>
-          <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-ping" style={{ animationDelay: "0.4s" }} />
-        </div>
+        
+        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500/60 animate-pulse">Initializing Ecosystem</p>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+      `}} />
     </div>
   );
 }
 
-export function SpinnerOverlay({ message = "Loading..." }) {
+export function SpinnerOverlay() {
   return (
-    <div className="flex flex-col items-center justify-center py-20 bg-transparent">
-      <Spinner size="lg" className="text-blue-500" />
-      <p className="mt-4 text-blue-400/70 text-xs font-bold tracking-wider uppercase">{message}</p>
+    <div className="flex flex-col items-center justify-center py-20 bg-transparent space-y-4 w-full">
+      <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-500/20 animate-pulse" />
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-blue-500 animate-[shimmer_2s_infinite]" />
+      </div>
+      <div className="h-2 w-24 bg-white/5 rounded-full relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-500/10 animate-pulse" />
+      </div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import StudentProvider from "./context/student-context/index.jsx";
 import { Toaster } from "./components/ui/toaster.jsx";
 import { SocketProvider } from "./context/socket-context/index.jsx";
 import { SpinnerFullPage } from "./components/ui/spinner.jsx";
+import { GlobalSkeletonLoader } from "./components/common/skeleton-loaders.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import MaintenancePage from "./pages/maintenance/index.jsx";
 
@@ -76,7 +77,7 @@ function Root() {
   const { loading, maintenance } = useMaintenanceMode();
 
   if (loading) {
-    return <SpinnerFullPage message="Checking system status..." />;
+    return <GlobalSkeletonLoader />;
   }
 
   if (maintenance) {

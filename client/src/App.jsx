@@ -24,15 +24,16 @@ import { PublicRouteGuard, InstructorRouteGuard, StudentRouteGuard, AdminRouteGu
 import AnimationProvider from "./context/animation-context";
 import { AuthContext } from "./context/auth-context";
 import { SpinnerFullPage } from "./components/ui/spinner";
+import { GlobalSkeletonLoader } from "./components/common/skeleton-loaders";
+
 
 // Component to redirect instructors away from student home page
 function HomePageRedirect() {
   const { auth, loading } = useContext(AuthContext);
-  
 
-  // Show loading spinner while checking authentication
+  // Show loading skeleton while checking authentication
   if (loading) {
-    return <SpinnerFullPage message="Loading..." />;
+    return <GlobalSkeletonLoader />;
   }
 
   // If user is authenticated, redirect to appropriate dashboard based on role
@@ -50,7 +51,7 @@ function HomePageRedirect() {
 function App() {
   return (
     <AnimationProvider>
-      <Suspense fallback={<SpinnerFullPage message="Loading application..." />}>
+      <Suspense fallback={<GlobalSkeletonLoader />}>
         <Routes>
         {/* Public Routes - No Authentication Required */}
         <Route path="/verify-certificate/:certificateId" element={<CertificateVerificationPage />} />

@@ -28,6 +28,7 @@ import { SpinnerOverlay } from "@/components/ui/spinner";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePageTransition } from "@/hooks/use-gsap";
+import { SkeletonCard } from "@/components/common/skeleton-loaders";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -329,7 +330,7 @@ function StudentViewCoursesPage() {
                 </DropdownMenuContent>
              </DropdownMenu>
           </div>
-
+          
           <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
             <DialogContent className="bg-[#0a1428] border-white/10 text-gray-200 w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-4 sm:p-6 z-[100]">
               <DialogHeader>
@@ -343,6 +344,7 @@ function StudentViewCoursesPage() {
               </Button>
             </DialogContent>
           </Dialog>
+
 
           {/* Results Main Content */}
           <main className="flex-1">
@@ -379,19 +381,8 @@ function StudentViewCoursesPage() {
             </div>
 
             {loadingState ? (
-              <div className="flex flex-col items-center justify-center py-32 space-y-10">
-                <div className="relative w-24 h-24">
-                  <div className="absolute inset-0 rounded-full border-2 border-blue-500/10 border-t-blue-500 animate-spin" />
-                  <div className="absolute inset-2 rounded-full border-2 border-purple-500/10 border-b-purple-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Zap className="w-8 h-8 text-blue-400 animate-pulse" />
-                  </div>
-                  <div className="absolute -inset-4 bg-blue-500/5 blur-2xl rounded-full" />
-                </div>
-                <div className="space-y-2 text-center">
-                  <span className="block text-[10px] font-black tracking-[0.4em] uppercase text-blue-500/60 animate-pulse">Initializing Hub</span>
-                  <p className="text-gray-500 font-bold tracking-widest uppercase text-[11px]">Synchronizing Active Registry...</p>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <SkeletonCard count={8} />
               </div>
             ) : studentViewCoursesList?.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

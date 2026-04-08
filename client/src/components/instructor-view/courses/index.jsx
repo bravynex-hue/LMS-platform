@@ -18,10 +18,11 @@ import { useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { deleteCourseService } from "@/services";
+import { SkeletonTable } from "@/components/common/skeleton-loaders";
 
 const formatINR = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
 
-function InstructorCourses({ listOfCourses }) {
+function InstructorCourses({ listOfCourses, isLoading }) {
   const navigate = useNavigate();
   const [deletingCourseId, setDeletingCourseId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -101,7 +102,11 @@ function InstructorCourses({ listOfCourses }) {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {listOfCourses && listOfCourses.length > 0 ? (
+          {isLoading ? (
+            <div className="p-6">
+              <SkeletonTable rows={5} cols={4} />
+            </div>
+          ) : listOfCourses && listOfCourses.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

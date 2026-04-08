@@ -24,11 +24,13 @@ const INSTRUCTOR_MENU_ITEMS = [
 function InstructorDashboardpage() {
   const [currentView, setCurrentView] = useState("courses");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const { auth } = useContext(AuthContext);
   const { instructorCoursesList, setInstructorCoursesList } = useContext(InstructorContext);
 
   const fetchAllCourses = useCallback(async () => {
     try {
+      setIsLoading(true);
       const response = await fetchInstructorCourseListService();
       if (response?.success) {
         setInstructorCoursesList(response?.data);
@@ -38,6 +40,8 @@ function InstructorDashboardpage() {
     } catch (error) {
       console.error("❌ Error fetching courses:", error);
       setInstructorCoursesList([]);
+    } finally {
+      setIsLoading(false);
     }
   }, [setInstructorCoursesList]);
 
@@ -54,7 +58,7 @@ function InstructorDashboardpage() {
   const renderContent = () => {
     switch (currentView) {
       case "courses":
-        return <InstructorCourses listOfCourses={filteredCourses} />;
+        return <InstructorCourses listOfCourses={filteredCourses} isLoading={isLoading} />;
       case "communication":
         return <CommunicationPage />;
       case "certificates":

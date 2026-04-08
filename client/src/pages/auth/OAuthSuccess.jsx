@@ -1,7 +1,7 @@
 import { useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
-import { SpinnerFullPage } from "@/components/ui/spinner";
+import { GlobalSkeletonLoader } from "@/components/common/skeleton-loaders";
 
 function OAuthSuccess() {
   const [searchParams] = useSearchParams();
@@ -52,7 +52,7 @@ function OAuthSuccess() {
     }
   }, [searchParams, navigate, checkAuthUser]);
 
-  return <SpinnerFullPage message="Authenticating with Bravynex Identity..." />;
+  return <GlobalSkeletonLoader />;
 }
 
 export default OAuthSuccess;

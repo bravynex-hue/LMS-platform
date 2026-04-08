@@ -19,6 +19,7 @@ import {
   checkCoursePurchaseInfoService,
 } from "@/services";
 import { SpinnerFullPage } from "@/components/ui/spinner";
+import { SkeletonProfile } from "@/components/common/skeleton-loaders";
 import CommonForm from "@/components/common-form";
 import { enrollmentFormControls, initialEnrollmentFormData } from "@/config";
 
@@ -282,7 +283,24 @@ function StudentViewCourseDetailsPage() {
     }
   }, [location.pathname, setStudentViewCourseDetails, setCurrentCourseDetailsId]);
 
-  if (loadingState) return <SpinnerFullPage message="Loading course details..." />;
+
+  if (loadingState) {
+    return (
+      <div className="min-h-screen p-8 lg:p-24" style={{ background: "var(--bg-dark)" }}>
+        <div className="max-w-7xl mx-auto space-y-8">
+          <SkeletonProfile />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <SkeletonProfile />
+            </div>
+            <div className="space-y-6">
+              <SkeletonProfile />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (approvalUrl !== "") {
     window.location.href = approvalUrl;

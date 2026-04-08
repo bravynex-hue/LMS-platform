@@ -6,7 +6,7 @@ import { fetchStudentBoughtCoursesService } from "@/services";
 import { Watch, Zap, Rocket, ChevronRight, BookText } from "lucide-react";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SpinnerOverlay } from "@/components/ui/spinner";
+import { SkeletonCard } from "@/components/common/skeleton-loaders";
 
 function StudentCoursesPage() {
   const { auth } = useContext(AuthContext);
@@ -64,11 +64,9 @@ function StudentCoursesPage() {
           </div>
         </div>
 
-        {/* Courses Grid */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-6">
-             <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Loading your courses...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <SkeletonCard count={4} />
           </div>
         ) : studentBoughtCoursesList && studentBoughtCoursesList.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

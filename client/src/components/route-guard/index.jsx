@@ -1,15 +1,15 @@
 import { useContext } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
-import { SpinnerFullPage } from "@/components/ui/spinner";
+import { GlobalSkeletonLoader } from "@/components/common/skeleton-loaders";
 
 export default function RouteGuard({ children, requireAuth = true, allowedRoles = [] }) {
   const { auth, loading } = useContext(AuthContext);
   const location = useLocation();
 
-  // Show loading spinner while checking authentication
+  // Show loading skeleton while checking authentication
   if (loading) {
-    return <SpinnerFullPage message="Loading..." />;
+    return <GlobalSkeletonLoader />;
   }
 
   // If route requires authentication but user is not authenticated
