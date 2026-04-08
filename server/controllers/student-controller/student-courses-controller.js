@@ -15,27 +15,37 @@ const getCoursesByStudentId = async (req, res) => {
       });
     }
 
-    // Filter out courses that no longer exist (deleted by instructor)
+    // Filter out courses that no longer exist and SYNC current details (image, title)
     const validCourses = [];
     for (const course of studentBoughtCourses.courses) {
       try {
-        const courseExists = await Course.findById(course.courseId);
-        if (courseExists) {
-          validCourses.push(course);
+        const currentCourseData = await Course.findById(course.courseId);
+        if (currentCourseData) {
+          // Merge current data into the enrollment object
+          validCourses.push({
+            ...course.toObject(),
+            title: currentCourseData.title, // Sync current title
+            courseImage: currentCourseData.image, // Sync current image
+          });
         } else {
           console.log(`Course ${course.courseId} no longer exists, removing from student ${studentId}`);
         }
       } catch (error) {
         console.error(`Error checking course ${course.courseId}:`, error);
-        // If there's an error checking the course, assume it's invalid
       }
     }
 
     // Update the student's course list to remove deleted courses
     if (validCourses.length !== studentBoughtCourses.courses.length) {
-      studentBoughtCourses.courses = validCourses;
+      studentBoughtCourses.courses = validCourses.map(c => ({
+        courseId: c.courseId,
+        title: c.title,
+        instructorId: c.instructorId,
+        instructorName: c.instructorName,
+        dateOfPurchase: c.dateOfPurchase,
+        courseImage: c.courseImage
+      }));
       await studentBoughtCourses.save();
-      console.log(`Updated student ${studentId} courses: removed ${studentBoughtCourses.courses.length - validCourses.length} deleted courses`);
     }
 
     res.status(200).json({
