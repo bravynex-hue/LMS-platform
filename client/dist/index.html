@@ -22,8 +22,8 @@
       window.deferredPWAPrompt = null;
     });
   </script>
-  <script type="module" crossorigin src="/assets/index-DRE3FFo4.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-B9zXSdlD.css">
+  <script type="module" crossorigin src="/assets/index-muew77e2.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-B_cc2ksF.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 
 <body style="background-color: #020617;">
@@ -33,211 +33,136 @@
         background-color: #020617;
         position: fixed;
         inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
         overflow: hidden;
         z-index: 10000;
+        display: flex;
+        flex-direction: column;
       }
 
-      .splash-orb-1 {
+      .splash-orb {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 500px;
-        height: 500px;
-        background: rgba(37, 99, 235, 0.1);
         border-radius: 50%;
         filter: blur(120px);
-        animation: splash-pulse 4s infinite;
+        opacity: 0.1;
+        pointer-events: none;
       }
 
-      .splash-orb-2 {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 350px;
-        height: 350px;
-        background: rgba(147, 51, 234, 0.1);
-        border-radius: 50%;
-        filter: blur(100px);
-        animation: splash-pulse 6s infinite reverse;
+      .orb-1 {
+        top: -100px;
+        right: -100px;
+        width: 600px;
+        height: 600px;
+        background: #3b82f6;
+      }
+
+      .orb-2 {
+        bottom: -100px;
+        left: -100px;
+        width: 500px;
+        height: 500px;
+        background: #a855f7;
       }
 
       .splash-grid {
         position: absolute;
         inset: 0;
-        background-image: linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.02) 1px, transparent 1px);
-        background-size: 60px 60px;
-        opacity: 0.3;
+        background-image: linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.5;
         pointer-events: none;
       }
 
-      .splash-rings {
+      .skeleton {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
         position: relative;
-        width: 112px;
-        height: 112px;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        overflow: hidden;
       }
 
-      .splash-ring {
+      .skeleton::after {
+        content: "";
         position: absolute;
-        border-radius: 50%;
-        border: 1px solid transparent;
-      }
-
-      .splash-ring-1 {
         inset: 0;
-        border-color: rgba(59, 130, 246, 0.1);
-        border-top-color: rgba(59, 130, 246, 0.8);
-        animation: splash-spin 2.5s linear infinite;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+        animation: shimmer 2s infinite;
       }
 
-      .splash-ring-2 {
-        inset: 8px;
-        border-color: rgba(168, 85, 247, 0.1);
-        border-bottom-color: rgba(168, 85, 247, 0.7);
-        animation: splash-spin 2s linear infinite reverse;
+      @keyframes shimmer {
+        100% { transform: translateX(100%); }
       }
 
-      .splash-ring-3 {
-        inset: 16px;
-        border-color: rgba(34, 211, 238, 0.1);
-        border-right-color: rgba(34, 211, 238, 0.6);
-        animation: splash-spin 3s linear infinite;
+      .container {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 10;
       }
 
-      .splash-core {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(to top right, #2563eb, #9333ea);
-        filter: blur(12px);
-        animation: splash-pulse 2s infinite;
-      }
-
-      .splash-core-inner {
-        position: absolute;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: linear-gradient(to top right, #60a5fa, #c084fc);
-        opacity: 0.9;
-        box-shadow: 0 0 20px rgba(96, 165, 250, 0.8);
-      }
-
-      .splash-brand {
-        font-family: system-ui, -apple-system, sans-serif;
-        font-size: 2.25rem;
-        font-weight: 900;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-bottom: 1rem;
-        color: #f8fafc;
-        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-      }
-
-      .splash-brand span {
-        background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .splash-msg-box {
+      /* Header */
+      .header {
+        height: 80px;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-top: 0.5rem;
-        padding: 0.5rem 1.5rem;
-        border-radius: 9999px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       }
 
-      .splash-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
+      .logo-shimmer { width: 140px; height: 32px; }
+      .nav-shimmer { width: 400px; height: 16px; display: none; }
+      @media (min-width: 768px) { .nav-shimmer { display: block; } }
+
+      /* Hero */
+      .hero {
+        padding: 100px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
       }
 
-      .splash-dot-1 {
-        background-color: #3b82f6;
-        animation: splash-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+      .hero-title { width: 70%; height: 64px; border-radius: 20px; }
+      .hero-subtitle { width: 40%; height: 20px; }
+      .hero-btn { width: 200px; height: 50px; border-radius: 16px; margin-top: 1rem; }
+
+      /* Cards Grid */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+        padding-bottom: 100px;
       }
 
-      .splash-dot-2 {
-        background-color: #a855f7;
-        animation: splash-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite 0.4s;
-      }
+      @media (min-width: 640px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1024px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
 
-      .splash-text {
-        color: #cbd5e1;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        font-size: 10px;
-        margin: 0;
-      }
-
-      @keyframes splash-pulse {
-
-        0%,
-        100% {
-          opacity: 1;
-        }
-
-        50% {
-          opacity: .5;
-        }
-      }
-
-      @keyframes splash-spin {
-        from {
-          transform: rotate(0deg);
-        }
-
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      @keyframes splash-ping {
-
-        75%,
-        100% {
-          transform: scale(2);
-          opacity: 0;
-        }
-      }
+      .card-shimmer { aspect-ratio: 16/10; border-radius: 24px; }
     </style>
     <div class="splash-bg">
-      <div class="splash-orb-1"></div>
-      <div class="splash-orb-2"></div>
+      <div class="splash-orb orb-1"></div>
+      <div class="splash-orb orb-2"></div>
       <div class="splash-grid"></div>
-      <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center;">
-        <div class="splash-rings">
-          <div class="splash-ring splash-ring-1"></div>
-          <div class="splash-ring splash-ring-2"></div>
-          <div class="splash-ring splash-ring-3"></div>
-          <img src="/icons/icon-192.png" alt="Bravynex Logo" style="position: absolute; width: 48px; height: 48px; z-index: 20; filter: drop-shadow(0 0 8px rgba(59,130,246,0.5));" />
-          <div class="splash-core"></div>
-        </div>
-        <h2 class="splash-brand">Bravy<span>nex</span></h2>
-        <div class="splash-msg-box">
-          <div class="splash-dot splash-dot-1"></div>
-          <p class="splash-text">Loading...</p>
-          <div class="splash-dot splash-dot-2"></div>
-        </div>
+      
+      <div class="container header">
+        <div class="skeleton logo-shimmer"></div>
+        <div class="skeleton nav-shimmer"></div>
+        <div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+      </div>
+
+      <div class="container hero">
+        <div class="skeleton hero-title"></div>
+        <div class="skeleton hero-subtitle"></div>
+        <div class="skeleton hero-btn"></div>
+      </div>
+
+      <div class="container cards-grid">
+        <div class="skeleton card-shimmer"></div>
+        <div class="skeleton card-shimmer"></div>
+        <div class="skeleton card-shimmer"></div>
       </div>
     </div>
   </div>
